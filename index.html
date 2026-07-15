@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jadwal Keluarga — Suami & Istri</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ===================== HEADER + MAIN TABS ===================== -->
+<header class="site-header">
+  <h1>📅 Jadwal Keluarga</h1>
+  <p>SMAN 8 Kota Kediri · artilerianstore · salmarket · Keluarga Kecil Kami</p>
+  <nav class="main-tabs">
+    <button id="mtab-jadwal" class="active" onclick="showView('jadwal')">Jadwal Harian</button>
+    <button id="mtab-bersama" onclick="showView('bersama')">🤝 Momen Bersama</button>
+  </nav>
+</header>
+
+<!-- ===================== LEGEND ===================== -->
+<div class="legend-bar">
+  <div class="leg"><div class="leg-dot" style="background:#639922"></div>Ibadah</div>
+  <div class="leg"><div class="leg-dot" style="background:#378add"></div>Olahraga</div>
+  <div class="leg"><div class="leg-dot" style="background:#7f77dd"></div>Kerja/Sekolah</div>
+  <div class="leg"><div class="leg-dot" style="background:#888780"></div>Istirahat/Makan</div>
+  <div class="leg"><div class="leg-dot" style="background:#ba7517"></div>Nongki/Sosial</div>
+  <div class="leg"><div class="leg-dot" style="background:#d85a30"></div>Hobi & Kreatif</div>
+  <div class="leg"><div class="leg-dot" style="background:#d4537e"></div>Keluarga</div>
+  <div class="leg"><div class="leg-dot" style="background:#1d9e75"></div>Toko Shopee</div>
+</div>
+
+<!-- ===================== MAIN CONTENT ===================== -->
+<main class="main-content">
+
+  <!-- ========== VIEW: JADWAL HARIAN ========== -->
+  <div id="view-jadwal" class="view-panel active">
+    <div class="dual-grid">
+
+      <!-- ===== KOLOM SUAMI ===== -->
+      <div class="col-card">
+        <div class="col-header suami">
+          <div class="avatar">S</div>
+          <div class="col-meta">
+            <div class="col-name">Suami — Guru PPPK</div>
+            <div class="col-sub">SMAN 8 Kediri · 32 tahun · Milenial</div>
+          </div>
+        </div>
+
+        <div class="col-body">
+          <!-- Tab hari -->
+          <div class="day-tabs">
+            <button data-day="senin"   onclick="showDay('senin',this)">Sen</button>
+            <button data-day="selasa"  onclick="showDay('selasa',this)">Sel</button>
+            <button data-day="rabu"    onclick="showDay('rabu',this)">Rab</button>
+            <button data-day="kamis"   onclick="showDay('kamis',this)">Kam</button>
+            <button data-day="jumat"   onclick="showDay('jumat',this)">Jum</button>
+            <button data-day="sabtu"   onclick="showDay('sabtu',this)">Sab</button>
+            <button data-day="minggu"  onclick="showDay('minggu',this)">Min</button>
+          </div>
+
+          <!-- SENIN -->
+          <div class="day-panel" id="day-senin">
+            <div class="col-day-label">Senin — Hari Kerja</div>
+            <div class="timeline">
+              <div class="row"><span class="time">04.00</span><div class="block blk-ibadah">Bangun — Sahur (jika puasa) / persiapan Subuh</div></div>
+              <div class="row"><span class="time">04.30</span><div class="block blk-ibadah">Sholat Subuh + Dzikir pagi + Tilawah Al-Qur'an (15–20 menit)</div></div>
+              <div class="row"><span class="time">05.00</span><div class="block blk-olahraga">Workout pagi — bodyweight / lari ringan (30–40 menit)</div></div>
+              <div class="row"><span class="time">05.40</span><div class="block blk-istirahat">Mandi, berpakaian rapi, sarapan</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke SMAN 8 Kota Kediri (maks. 06.20 keluar rumah)</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah — absensi pagi</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Istirahat — Sholat Dhuha (2–4 rakaat) + snack ringan</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur berjamaah + makan siang (jika tidak puasa)</div></div>
+              <div class="row"><span class="time">12.15</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">14.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-kerja">Absensi pulang — perjalanan ke rumah</div></div>
+              <div class="row"><span class="time">16.00</span><div class="block blk-olahraga">Workout sore ringan (opsional) atau jalan-jalan sore</div></div>
+              <div class="row"><span class="time">16.30</span><div class="block blk-istirahat">Mandi sore + istirahat</div></div>
+              <div class="row"><span class="time">17.30</span><div class="block blk-sosial">Nongki setelah Ashar (jika sudah mandi) atau santai di rumah</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Sholat Maghrib + Tilawah Al-Qur'an (15 menit)</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga / nongki bareng istri</div></div>
+              <div class="row"><span class="time">19.00</span><div class="block blk-ibadah">Sholat Isya + Dzikir malam</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-hobby">Me-time: baca buku / nulis artikel / coding / nonton / cek toko</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Persiapan tidur — target tidur 21.30–22.00</div></div>
+            </div>
+            <div class="note">💡 Workout pagi <b>wajib</b> Senin–Jumat. Sore opsional. Tilawah bisa dipindah habis Isya jika subuh terlalu singkat.</div>
+          </div>
+
+          <!-- SELASA -->
+          <div class="day-panel" id="day-selasa">
+            <div class="col-day-label">Selasa — Hari Kerja</div>
+            <div class="timeline">
+              <div class="row"><span class="time">04.30</span><div class="block blk-ibadah">Subuh + Dzikir + Tilawah Al-Qur'an</div></div>
+              <div class="row"><span class="time">05.00</span><div class="block blk-olahraga">Workout pagi (30–40 menit)</div></div>
+              <div class="row"><span class="time">05.40</span><div class="block blk-istirahat">Mandi + sarapan</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke sekolah</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Istirahat — Sholat Dhuha + snack</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur + makan siang</div></div>
+              <div class="row"><span class="time">12.15</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">14.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-kerja">Absensi pulang</div></div>
+              <div class="row"><span class="time">16.00</span><div class="block blk-hobby">Fotografi / videografi sore (konten kreatif)</div></div>
+              <div class="row"><span class="time">16.45</span><div class="block blk-istirahat">Mandi + istirahat</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga</div></div>
+              <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">19.45</span><div class="block blk-hobby">Nulis artikel / edit foto-video / baca buku / cek toko</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur</div></div>
+            </div>
+          </div>
+
+          <!-- RABU -->
+          <div class="day-panel" id="day-rabu">
+            <div class="col-day-label">Rabu — Hari Kerja + Madin/TPA</div>
+            <div class="timeline">
+              <div class="row"><span class="time">04.30</span><div class="block blk-ibadah">Subuh + Dzikir + Tilawah</div></div>
+              <div class="row"><span class="time">05.00</span><div class="block blk-olahraga">Workout pagi (30 menit — lebih ringkas, malam ada jadwal padat)</div></div>
+              <div class="row"><span class="time">05.40</span><div class="block blk-istirahat">Mandi + sarapan</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke sekolah</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Istirahat — Sholat Dhuha</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur + makan siang</div></div>
+              <div class="row"><span class="time">12.15</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">14.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-kerja">Absensi pulang — segera pulang</div></div>
+              <div class="row"><span class="time">15.45</span><div class="block blk-istirahat">Makan ringan + persiapan mengajar madin</div></div>
+              <div class="row"><span class="time">16.30</span><div class="block blk-madin">Mengajar Madin / TPA (hingga 19.00)</div></div>
+              <div class="row"><span class="time">19.00</span><div class="block blk-ibadah">Selesai madin — Sholat Maghrib</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Sholat Isya</div></div>
+              <div class="row"><span class="time">19.45</span><div class="block blk-istirahat">Makan malam + istirahat ringan</div></div>
+              <div class="row"><span class="time">20.30</span><div class="block blk-hobby">Santai: baca / coding ringan / cek toko (maks. 1 jam)</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur lebih awal — Rabu hari yang padat</div></div>
+            </div>
+            <div class="note">⚠️ Rabu adalah hari tersibuk. Workout sore ditiadakan. Prioritaskan stamina.</div>
+          </div>
+
+          <!-- KAMIS -->
+          <div class="day-panel" id="day-kamis">
+            <div class="col-day-label">Kamis — Hari Kerja (Recovery Rabu)</div>
+            <div class="timeline">
+              <div class="row"><span class="time">04.30</span><div class="block blk-ibadah">Subuh + Tilawah</div></div>
+              <div class="row"><span class="time">05.00</span><div class="block blk-olahraga">Workout pagi (bisa lebih santai — lari / stretching)</div></div>
+              <div class="row"><span class="time">05.45</span><div class="block blk-istirahat">Mandi + sarapan</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Sholat Dhuha + istirahat</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Dzuhur + makan siang</div></div>
+              <div class="row"><span class="time">12.15</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">14.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-kerja">Absensi pulang</div></div>
+              <div class="row"><span class="time">16.15</span><div class="block blk-sosial">Nongki sore / jalan-jalan ringan</div></div>
+              <div class="row"><span class="time">17.30</span><div class="block blk-istirahat">Mandi + istirahat</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Waktu keluarga / makan malam bersama</div></div>
+              <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">19.45</span><div class="block blk-hobby">Baca buku / nulis / coding / cek toko</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur</div></div>
+            </div>
+          </div>
+
+          <!-- JUMAT -->
+          <div class="day-panel" id="day-jumat">
+            <div class="col-day-label">Jumat — Hari Kerja Spesial</div>
+            <div class="timeline">
+              <div class="row"><span class="time">04.30</span><div class="block blk-ibadah">Subuh + Tilawah (sunnah baca Al-Kahfi pagi Jumat)</div></div>
+              <div class="row"><span class="time">05.00</span><div class="block blk-olahraga">Workout pagi (opsional — bisa diganti jalan pagi)</div></div>
+              <div class="row"><span class="time">05.45</span><div class="block blk-istirahat">Mandi + sarapan</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba sekolah</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Sholat Dhuha + istirahat</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.00</span><div class="block blk-ibadah">Persiapan Sholat Jumat (mandi Jumat sebelum ke masjid)</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Berangkat ke Masjid — Sholat Jumat</div></div>
+              <div class="row"><span class="time">13.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">14.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Ashar</div></div>
+              <div class="row"><span class="time">16.00</span><div class="block blk-kerja">Absensi pulang + pulang</div></div>
+              <div class="row"><span class="time">16.30</span><div class="block blk-olahraga">Workout sore / mancing sore (hobi)</div></div>
+              <div class="row"><span class="time">17.00</span><div class="block blk-istirahat">Mandi + istirahat</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-sosial">Nongki malam / makan malam bersama istri</div></div>
+              <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-keluarga">Quality time keluarga / ngobrol santai / cek toko</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur</div></div>
+            </div>
+          </div>
+
+          <!-- SABTU -->
+          <div class="day-panel" id="day-sabtu">
+            <div class="col-day-label">Sabtu — Hari Libur Produktif</div>
+            <div class="timeline">
+              <div class="row"><span class="time">04.30</span><div class="block blk-ibadah">Subuh + Tilawah + Dzikir (lebih santai)</div></div>
+              <div class="row"><span class="time">05.15</span><div class="block blk-olahraga">Olahraga pagi lebih lama: lari / workout / sepedaan (45–60 menit)</div></div>
+              <div class="row"><span class="time">06.15</span><div class="block blk-keluarga">Bantu istri mandikan anak (rutinitas libur)</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-istirahat">Sarapan bersama keluarga</div></div>
+              <div class="row"><span class="time">07.30</span><div class="block blk-hobby">Merawat tanaman & aquascape (rutin mingguan)</div></div>
+              <div class="row"><span class="time">08.30</span><div class="block blk-hobby">Bersih-bersih sekitar rumah</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-ibadah">Sholat Dhuha</div></div>
+              <div class="row"><span class="time">09.45</span><div class="block blk-hobby">Produktif kreatif: fotografi / coding / nulis artikel</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Dzuhur</div></div>
+              <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Makan siang + tidur siang (1–1.5 jam — porsi tidur ekstra)</div></div>
+              <div class="row"><span class="time">13.30</span><div class="block blk-toko">Evaluasi toko Shopee — brief karyawan mingguan</div></div>
+              <div class="row"><span class="time">14.30</span><div class="block blk-keluarga">Jalan-jalan keluarga / wisata kuliner kota Kediri</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-hobby">Mancing sore / jalan-jalan / nongki santai</div></div>
+              <div class="row"><span class="time">17.30</span><div class="block blk-istirahat">Mandi + istirahat</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga / nongki bareng istri</div></div>
+              <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-hobby">Baca buku / nonton film / masak bareng istri</div></div>
+              <div class="row"><span class="time">22.00</span><div class="block blk-tidur">Tidur (boleh lebih malam — besok Minggu)</div></div>
+            </div>
+            <div class="note">🌿 Sabtu = recharge + produktif. Jika ada rencana liburan keluar kota, geser aktivitas rumah ke Minggu pagi.</div>
+          </div>
+
+          <!-- MINGGU -->
+          <div class="day-panel" id="day-minggu">
+            <div class="col-day-label">Minggu — Hari Istirahat & Keluarga</div>
+            <div class="timeline">
+              <div class="row"><span class="time">05.00</span><div class="block blk-ibadah">Subuh (boleh agak telat bangun — weekend rest)</div></div>
+              <div class="row"><span class="time">05.30</span><div class="block blk-tidur">Tidur lagi / rebahan santai</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-keluarga">Bangun — bantu mandikan anak, sarapan keluarga</div></div>
+              <div class="row"><span class="time">08.00</span><div class="block blk-hobby">Memasak sarapan spesial / eksperimen resep baru</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Sholat Dhuha</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-keluarga">Jalan-jalan keluarga / liburan / wisata (jika ada rencana)</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Dzuhur</div></div>
+              <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Makan siang + tidur siang panjang (2 jam)</div></div>
+              <div class="row"><span class="time">14.00</span><div class="block blk-hobby">Hobi bebas: mancing / aquascape / tanaman / baca buku</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-olahraga">Olahraga ringan sore (jalan kaki / stretching)</div></div>
+              <div class="row"><span class="time">16.30</span><div class="block blk-hobby">Videografi / konten kreatif / review materi minggu depan</div></div>
+              <div class="row"><span class="time">17.30</span><div class="block blk-istirahat">Mandi + persiapan malam</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-toko">Cek toko Shopee — set target mingguan</div></div>
+              <div class="row"><span class="time">19.00</span><div class="block blk-keluarga">Makan malam keluarga + ngobrol santai</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-hobby">Me-time terakhir: baca / nulis / coding</div></div>
+              <div class="row"><span class="time">21.00</span><div class="block blk-tidur">Tidur lebih awal — besok Senin mulai kerja</div></div>
+            </div>
+          </div>
+
+        </div><!-- /col-body suami -->
+      </div><!-- /col-card suami -->
+
+      <!-- ===== KOLOM ISTRI ===== -->
+      <div class="col-card">
+        <div class="col-header istri">
+          <div class="avatar">I</div>
+          <div class="col-meta">
+            <div class="col-name">Istri — IRT Produktif</div>
+            <div class="col-sub">24 tahun · Gen Z · salmarket owner</div>
+          </div>
+        </div>
+
+        <div class="col-body">
+          <!-- Sub-tab istri -->
+          <div class="istri-tabs">
+            <button class="active" onclick="showIstri('kerja',this)">Senin–Jumat</button>
+            <button onclick="showIstri('weekend',this)">Sabtu–Minggu</button>
+          </div>
+
+          <!-- ISTRI: HARI KERJA -->
+          <div class="istri-panel active" id="istri-kerja">
+            <div class="col-day-label">Hari Kerja — Rutinitas Harian</div>
+            <div class="timeline">
+              <div class="row"><span class="time">05.00</span><div class="block blk-ibadah">Bangun — Subuh + Dzikir pagi</div></div>
+              <div class="row"><span class="time">05.30</span><div class="block blk-keluarga">Siapkan suami berangkat (sarapan, bekal jika perlu)</div></div>
+              <div class="row"><span class="time">06.00</span><div class="block blk-keluarga">Merawat & menyusui anak, aktivitas pagi bayi</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-istirahat">Sarapan + mandi pagi</div></div>
+              <div class="row"><span class="time">07.30</span><div class="block blk-toko">Cek toko Shopee salmarket — balas chat, proses pesanan</div></div>
+              <div class="row"><span class="time">08.30</span><div class="block blk-keluarga">Menemani & stimulasi anak (bermain, belajar motorik)</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-keluarga">Berangkat ke rumah ibu — bantu jaga toko offline</div></div>
+              <div class="row"><span class="time">11.00</span><div class="block blk-keluarga">Pulang ke rumah / anak tidur siang</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur</div></div>
+              <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Makan siang + istirahat / tidur siang bersama anak</div></div>
+              <div class="row"><span class="time">13.30</span><div class="block blk-toko">Kelola toko salmarket — update stok, foto produk, desain konten</div></div>
+              <div class="row"><span class="time">14.30</span><div class="block blk-olahraga">Workout IRT: yoga / pilates / senam ringan (20–30 menit)</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.15</span><div class="block blk-keluarga">Siapkan mandi anak sore + bermain sore</div></div>
+              <div class="row"><span class="time">16.00</span><div class="block blk-istirahat">Masak untuk makan malam keluarga</div></div>
+              <div class="row"><span class="time">17.00</span><div class="block blk-hobby">Me-time: konten kreatif / belajar hal baru online / skincare</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Sambut suami pulang — makan malam bersama</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-keluarga">Quality time: nonton bersama / ngobrol / skincare ritual</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur — menyesuaikan ritme anak</div></div>
+            </div>
+            <div class="note">💡 Waktu toko & me-time fleksibel mengikuti tidur siang anak. Jika anak tidak tidur siang, prioritaskan menemani anak dulu.</div>
+          </div>
+
+          <!-- ISTRI: WEEKEND -->
+          <div class="istri-panel" id="istri-weekend">
+            <div class="col-day-label">Sabtu & Minggu — Hari Keluarga</div>
+            <div class="timeline">
+              <div class="row"><span class="time">05.00</span><div class="block blk-ibadah">Subuh + Dzikir</div></div>
+              <div class="row"><span class="time">06.00</span><div class="block blk-olahraga">Workout pagi bersama suami (atau jalan pagi keluarga)</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-keluarga">Mandikan anak bersama suami</div></div>
+              <div class="row"><span class="time">08.00</span><div class="block blk-hobby">Masak sarapan / eksperimen resep / bersih rumah bersama</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-toko">Evaluasi mingguan toko salmarket — laporan & target</div></div>
+              <div class="row"><span class="time">10.00</span><div class="block blk-keluarga">Jalan-jalan keluarga / liburan bersama</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Dzuhur</div></div>
+              <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Makan siang + tidur siang (istirahat lebih panjang dari hari kerja)</div></div>
+              <div class="row"><span class="time">14.00</span><div class="block blk-hobby">Me-time: belajar skill baru / konten kreatif / skincare / baca</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-keluarga">Aktivitas sore bersama anak (taman / bermain di rumah)</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-hobby">Quality time / nonton / ngobrol santai</div></div>
+              <div class="row"><span class="time">22.00</span><div class="block blk-tidur">Tidur</div></div>
+            </div>
+          </div>
+
+        </div><!-- /col-body istri -->
+      </div><!-- /col-card istri -->
+
+    </div><!-- /dual-grid -->
+  </div><!-- /view-jadwal -->
+
+
+  <!-- ========== VIEW: MOMEN BERSAMA ========== -->
+  <div id="view-bersama" class="view-panel">
+    <div class="together-grid">
+
+      <div class="together-card">
+        <h3>🍽️ Rutinitas Harian Bersama</h3>
+        <div class="timeline">
+          <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama — setiap hari (setelah suami pulang)</div></div>
+          <div class="row"><span class="time">20.00</span><div class="block blk-keluarga">Quality time: nonton / ngobrol / bermain dengan anak</div></div>
+        </div>
+      </div>
+
+      <div class="together-card">
+        <h3>🏠 Pembagian Rumah Tangga</h3>
+        <div class="timeline">
+          <div class="row"><span class="time">Pagi</span><div class="block blk-istirahat"><b>Cuci baju</b> — istri tiap pagi hari kerja (07.00–07.30) atau mesin cuci timer malam</div></div>
+          <div class="row"><span class="time">Malam</span><div class="block blk-istirahat"><b>Lipat baju</b> — bersama setelah makan malam (Sen/Rab/Jum) atau Minggu sore sambil nonton</div></div>
+          <div class="row"><span class="time">16.00</span><div class="block blk-istirahat"><b>Masak malam</b> — istri Senin–Kamis. Jumat & weekend: bersama atau beli di luar</div></div>
+          <div class="row"><span class="time">Sabtu</span><div class="block blk-keluarga"><b>Bersih rumah</b> — bersama pagi Sabtu (08.30–09.30). Istri: dalam rumah. Suami: halaman & luar</div></div>
+        </div>
+      </div>
+
+      <div class="together-card">
+        <h3>📍 Keluar Bersama (Mingguan)</h3>
+        <div class="timeline">
+          <div class="row"><span class="time">Jum malam</span><div class="block blk-keluarga">Makan malam di luar / nongki berdua (tanpa atau bawa anak)</div></div>
+          <div class="row"><span class="time">Sab sore</span><div class="block blk-keluarga">Jalan-jalan keluarga bertiga — kuliner / taman / mall Kediri</div></div>
+          <div class="row"><span class="time">Min pagi</span><div class="block blk-keluarga">Sarapan di luar / car free day / pasar pagi bersama</div></div>
+        </div>
+      </div>
+
+      <div class="together-card">
+        <h3>✈️ Jadwal Liburan</h3>
+        <div class="timeline">
+          <div class="row"><span class="time">Sab–Min</span><div class="block blk-keluarga">Liburan keluar kota — 1–2× sebulan. Rencanakan H-7: destinasi Jawa Timur, pantai, gunung</div></div>
+          <div class="row"><span class="time">Libur panjang</span><div class="block blk-keluarga">Trip keluarga besar / wisata lebih jauh — manfaatkan libur nasional</div></div>
+        </div>
+        <div class="note">✨ Komunikasi malam sebelumnya tentang rencana esok hari. Update via chat keluarga untuk penyesuaian jadwal anak dan toko.</div>
+      </div>
+
+    </div>
+  </div><!-- /view-bersama -->
+
+</main>
+
+<footer class="site-footer">
+  Jadwal Keluarga · dibuat dengan ❤️ · diperbarui sesuai kebutuhan
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

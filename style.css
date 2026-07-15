@@ -1,0 +1,362 @@
+/* ============================================
+   JADWAL KELUARGA — style.css
+   Edit warna blok di bagian "Block Colors"
+   Edit layout di bagian "Layout & Grid"
+   ============================================ */
+
+/* === Reset & Base === */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --radius: 8px;
+
+  /* Surfaces */
+  --bg-page:    #f5f4f0;
+  --bg-card:    #ffffff;
+  --bg-header:  #1e1b2e;
+
+  /* Text */
+  --text-primary:   #1a1a1a;
+  --text-secondary: #555550;
+  --text-muted:     #999994;
+  --text-on-dark:   #ffffff;
+
+  /* Border */
+  --border:       rgba(0,0,0,0.08);
+  --border-strong: rgba(0,0,0,0.15);
+
+  /* Accent tabs */
+  --tab-active-bg:    #ede9fe;
+  --tab-active-color: #4c3d9e;
+  --tab-active-border:#7c6fd4;
+
+  /* Column header colors */
+  --col-suami-bg:  #1e1b2e;
+  --col-istri-bg:  #1a2e2a;
+}
+
+/* === Block Colors ===
+   Ubah warna di sini untuk tiap kategori aktivitas */
+.blk-ibadah    { background: #eaf3de; color: #27500a; border-color: #3b6d11; }
+.blk-olahraga  { background: #e6f1fb; color: #0c447c; border-color: #185fa5; }
+.blk-kerja     { background: #eeedfe; color: #3c3489; border-color: #534ab7; }
+.blk-istirahat { background: #f1efe8; color: #444441; border-color: #888780; }
+.blk-sosial    { background: #faeeda; color: #633806; border-color: #854f0b; }
+.blk-hobby     { background: #faece7; color: #712b13; border-color: #993c1d; }
+.blk-keluarga  { background: #fbeaf0; color: #72243e; border-color: #993556; }
+.blk-toko      { background: #e1f5ee; color: #085041; border-color: #0f6e56; }
+.blk-madin     { background: #ede9fe; color: #26215c; border-color: #534ab7; }
+.blk-tidur     { background: #f1efe8; color: #5f5e5a; border-color: #b4b2a9; }
+
+/* === Layout & Grid === */
+body {
+  font-family: var(--font);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* Header */
+.site-header {
+  background: var(--bg-header);
+  color: var(--text-on-dark);
+  padding: 1.25rem 1.5rem 0;
+}
+
+.site-header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.25rem;
+}
+
+.site-header p {
+  font-size: 12px;
+  opacity: 0.55;
+  margin-bottom: 1rem;
+}
+
+/* Tab bar inside header */
+.main-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.main-tabs button {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 6px 6px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.65);
+  transition: background 0.15s, color 0.15s;
+}
+
+.main-tabs button:hover {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+}
+
+.main-tabs button.active {
+  background: var(--bg-page);
+  color: var(--tab-active-color);
+  font-weight: 600;
+}
+
+/* Main content area */
+.main-content {
+  padding: 1.25rem 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Panels */
+.view-panel { display: none; }
+.view-panel.active { display: block; }
+
+/* === Two-column layout (Suami + Istri) === */
+.dual-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .dual-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Column card */
+.col-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 0.5px solid var(--border);
+}
+
+.col-header {
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.col-header.suami { background: var(--col-suami-bg); color: #fff; }
+.col-header.istri  { background: var(--col-istri-bg);  color: #fff; }
+
+.col-header .avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.col-header .col-meta { flex: 1; }
+.col-header .col-name { font-size: 14px; font-weight: 600; }
+.col-header .col-sub  { font-size: 11px; opacity: 0.6; margin-top: 1px; }
+
+.col-day-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.6rem 1rem 0.35rem;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.col-body {
+  padding: 0.75rem 1rem 1rem;
+}
+
+/* Inner tabs (hari) — inside suami column */
+.day-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 0.85rem;
+}
+
+.day-tabs button {
+  padding: 4px 11px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 0.5px solid var(--border-strong);
+  border-radius: 5px;
+  cursor: pointer;
+  background: var(--bg-page);
+  color: var(--text-secondary);
+  transition: all 0.12s;
+}
+
+.day-tabs button:hover { background: #ede9fe; color: #4c3d9e; }
+
+.day-tabs button.active {
+  background: var(--tab-active-bg);
+  color: var(--tab-active-color);
+  border-color: var(--tab-active-border);
+}
+
+/* Inner day panels (suami) */
+.day-panel { display: none; }
+.day-panel.active { display: block; }
+
+/* Istri sub-tabs (hari kerja / weekend) */
+.istri-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 0.85rem;
+}
+
+.istri-tabs button {
+  flex: 1;
+  padding: 5px 0;
+  font-size: 12px;
+  font-weight: 500;
+  border: 0.5px solid var(--border-strong);
+  border-radius: 5px;
+  cursor: pointer;
+  background: var(--bg-page);
+  color: var(--text-secondary);
+  transition: all 0.12s;
+}
+
+.istri-tabs button.active {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+
+.istri-panel { display: none; }
+.istri-panel.active { display: block; }
+
+/* === Timeline rows === */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 8px;
+  align-items: start;
+  min-height: 28px;
+}
+
+.time {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding-top: 6px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.block {
+  border-radius: 5px;
+  padding: 5px 9px;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.4;
+  border-left: 3px solid transparent;
+}
+
+/* === Section dividers (Momen Bersama) === */
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 1.1rem 0 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+/* === Note box === */
+.note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-page);
+  border-radius: var(--radius);
+  padding: 0.55rem 0.8rem;
+  margin-top: 0.75rem;
+  border: 0.5px solid var(--border-strong);
+}
+
+/* === Legend === */
+.legend-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0.6rem 1.5rem;
+  background: #fff;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.leg {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.leg-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* === Momen Bersama full-width panel === */
+.together-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .together-grid { grid-template-columns: 1fr; }
+}
+
+.together-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 0.5px solid var(--border);
+  padding: 1rem;
+}
+
+.together-card h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 0.5px solid var(--border);
+}
+
+/* === Footer === */
+.site-footer {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 1.5rem;
+  margin-top: 1rem;
+}

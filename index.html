@@ -329,6 +329,63 @@
       </div><!-- /col-card istri -->
 
     </div><!-- /dual-grid -->
+
+    <!-- ========== TO-DO LIST PANEL ========== -->
+    <div class="todo-panel">
+      <div class="todo-header">
+        <div class="todo-title">
+          <span class="todo-icon">✅</span>
+          <div>
+            <div class="todo-title-text">To-Do Keluarga</div>
+            <div class="todo-title-sub">Rencana bersama — centang kalau sudah selesai</div>
+          </div>
+        </div>
+        <div class="todo-date-badge" id="todo-date-badge"></div>
+      </div>
+
+      <!-- Input area -->
+      <div class="todo-input-area">
+        <div class="todo-who-select">
+          <button class="who-btn active" data-who="suami" onclick="setWho('suami',this)">👨 Fathir</button>
+          <button class="who-btn" data-who="istri" onclick="setWho('istri',this)">👩 Salma</button>
+          <button class="who-btn" data-who="bersama" onclick="setWho('bersama',this)">👨‍👩‍👦 Bersama</button>
+        </div>
+        <div class="todo-input-row">
+          <input
+            type="text"
+            id="todo-input"
+            class="todo-input"
+            placeholder="Tulis rencana atau tugas..."
+            maxlength="120"
+            onkeydown="if(event.key==='Enter') addTodo()"
+          />
+          <button class="todo-add-btn" onclick="addTodo()">+ Tambah</button>
+        </div>
+      </div>
+
+      <!-- Filter tabs -->
+      <div class="todo-filters">
+        <button class="filter-btn active" onclick="setFilter('semua',this)">Semua</button>
+        <button class="filter-btn" onclick="setFilter('suami',this)">👨 Fathir</button>
+        <button class="filter-btn" onclick="setFilter('istri',this)">👩 Salma</button>
+        <button class="filter-btn" onclick="setFilter('bersama',this)">👨‍👩‍👦 Bersama</button>
+        <button class="filter-btn" onclick="setFilter('selesai',this)">✅ Selesai</button>
+        <button class="todo-clear-btn" onclick="clearDone()">Hapus yang selesai</button>
+      </div>
+
+      <!-- List -->
+      <div class="todo-list" id="todo-list">
+        <div class="todo-empty" id="todo-empty">
+          <div class="todo-empty-icon">📋</div>
+          <div>Belum ada rencana. Yuk tambahkan!</div>
+        </div>
+      </div>
+
+      <div class="todo-footer-info">
+        To-do hari ini otomatis kosong besok · data tersimpan di browser masing-masing
+      </div>
+    </div>
+
   </div><!-- /view-jadwal -->
 
 
@@ -347,9 +404,9 @@
       <div class="together-card">
         <h3>🏠 Pembagian Rumah Tangga</h3>
         <div class="timeline">
-          <div class="row"><span class="time">Pagi</span><div class="block blk-istirahat"><b>Cuci baju</b> — istri atau suami tiap pagi hari kerja (05.00) atau mesin cuci timer malam</div></div>
+          <div class="row"><span class="time">Pagi</span><div class="block blk-istirahat"><b>Cuci baju</b> — istri tiap pagi hari kerja (07.00–07.30) atau mesin cuci timer malam</div></div>
           <div class="row"><span class="time">Malam</span><div class="block blk-istirahat"><b>Lipat baju</b> — bersama setelah makan malam (Sen/Rab/Jum) atau Minggu sore sambil nonton</div></div>
-          <div class="row"><span class="time">16.00</span><div class="block blk-istirahat"><b>Masak malam</b> — kondisional Senin–Kamis. Jumat & weekend: bersama atau beli di luar</div></div>
+          <div class="row"><span class="time">16.00</span><div class="block blk-istirahat"><b>Masak malam</b> — istri Senin–Kamis. Jumat & weekend: bersama atau beli di luar</div></div>
           <div class="row"><span class="time">Sabtu</span><div class="block blk-keluarga"><b>Bersih rumah</b> — bersama pagi Sabtu (08.30–09.30). Istri: dalam rumah. Suami: halaman & luar</div></div>
         </div>
       </div>

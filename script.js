@@ -13,7 +13,7 @@
 
    ============================================ */
 
-const DATABASE_URL = 'GANTI_DENGAN_URL_DATABASE_FIREBASE_KAMU';
+const DATABASE_URL = 'https://jadwal-keluarga-17b86-default-rtdb.asia-southeast1.firebasedatabase.app/';
 // Contoh: 'https://jadwal-keluarga-abc12-default-rtdb.asia-southeast1.firebasedatabase.app'
 
 /* ─── Firebase init ─── */

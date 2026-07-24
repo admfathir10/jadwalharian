@@ -1046,3 +1046,34 @@ body {
   .todo-deadline-wrap { width: 100%; }
   .todo-deadline { width: 100%; }
 }
+
+/* ── Sync status (Firebase) ── */
+.todo-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.todo-sync-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.6);
+}
+
+.sync-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #888;
+  flex-shrink: 0;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.sync-dot.connected    { background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,0.55); }
+.sync-dot.offline      { background: #fb923c; }
+.sync-dot.error        { background: #f87171; }

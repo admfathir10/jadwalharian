@@ -359,6 +359,10 @@
             maxlength="120"
             onkeydown="if(event.key==='Enter') addTodo()"
           />
+          <div class="todo-deadline-wrap">
+            <label class="deadline-label">Target</label>
+            <input type="date" id="todo-deadline" class="todo-deadline" />
+          </div>
           <button class="todo-add-btn" onclick="addTodo()">+ Tambah</button>
         </div>
       </div>
@@ -366,6 +370,8 @@
       <!-- Filter tabs -->
       <div class="todo-filters">
         <button class="filter-btn active" onclick="setFilter('semua',this)">Semua</button>
+        <button class="filter-btn" onclick="setFilter('hari-ini',this)">📅 Hari ini</button>
+        <button class="filter-btn" onclick="setFilter('terlambat',this)">🔴 Terlambat</button>
         <button class="filter-btn" onclick="setFilter('suami',this)">👨 Fathir</button>
         <button class="filter-btn" onclick="setFilter('istri',this)">👩 Salma</button>
         <button class="filter-btn" onclick="setFilter('bersama',this)">👨‍👩‍👦 Bersama</button>
@@ -382,7 +388,7 @@
       </div>
 
       <div class="todo-footer-info">
-        To-do hari ini otomatis kosong besok · data tersimpan di browser masing-masing
+        Data tersimpan permanen · tugas belum selesai tetap muncul sampai dicentang atau dihapus
       </div>
     </div>
 

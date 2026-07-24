@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jadwal Keluarga — Fathir & Salma</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -43,7 +46,7 @@
           <div class="avatar">S</div>
           <div class="col-meta">
             <div class="col-name">Suami — Guru PPPK</div>
-            <div class="col-sub">SMAN 8 Kediri - Artilerianstore Owner - Aruma Studio Owner</div>
+            <div class="col-sub">SMAN 8 Kediri - Artilerianstore Owner- Aruma Studio Owner</div>
           </div>
         </div>
 
@@ -340,7 +343,13 @@
             <div class="todo-title-sub">Rencana bersama — centang kalau sudah selesai</div>
           </div>
         </div>
-        <div class="todo-date-badge" id="todo-date-badge"></div>
+        <div class="todo-header-right">
+          <div class="todo-sync-status" id="todo-sync-status">
+            <span class="sync-dot" id="sync-dot"></span>
+            <span id="sync-text">Menghubungkan...</span>
+          </div>
+          <div class="todo-date-badge" id="todo-date-badge"></div>
+        </div>
       </div>
 
       <!-- Input area -->

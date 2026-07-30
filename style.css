@@ -428,6 +428,13 @@ body {
   box-shadow: 0 1px 4px rgba(0,0,0,0.12);
 }
 
+/* Tab puasa istri — warna bulan emas */
+.istri-tabs button[onclick*="puasa"].active {
+  background: linear-gradient(135deg, #1a1328, #3b2160);
+  color: #fde68a;
+  box-shadow: 0 1px 6px rgba(59,33,96,0.4);
+}
+
 .istri-panel { display: none; }
 .istri-panel.active { display: block; }
 

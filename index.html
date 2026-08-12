@@ -5,6 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jadwal Keluarga — Fathir & Salma</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- Override todo-section layout — bypass CDN cache -->
+  <style>
+    .todo-section {
+      /* Identik dengan .main-content agar tepi sejajar card suami & istri */
+      max-width: 1240px !important;
+      width: 100% !important;
+      margin: 0 auto !important;
+      padding: 1.1rem 1.75rem 0 !important;
+      box-sizing: border-box !important;
+    }
+    .todo-section .todo-panel {
+      margin-top: 0 !important;
+      width: 100% !important;
+    }
+    .todo-section .todo-list {
+      max-height: 260px !important;
+    }
+    .main-content {
+      padding-top: 1rem !important;
+    }
+    /* Mobile — padding sama dengan main-content di HP */
+    @media (max-width: 600px) {
+      .todo-section {
+        padding: 0.85rem 1rem 0 !important;
+      }
+    }
+  </style>
+
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>

@@ -1089,25 +1089,22 @@ body {
    TODO SECTION — posisi di atas jadwal
    ================================================ */
 
-/* Wrapper section todo (di luar main-content) */
 .todo-section {
-  max-width: 680px;
+  /* Beri ruang kiri-kanan dengan padding besar agar panel tidak mentok tepi */
+  padding: 1.1rem 15vw 0;
+  /* Tetap punya batas maksimal agar tidak terlalu sempit di layar lebar */
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 1.1rem 1.75rem 0;
+  box-sizing: border-box;
 }
 
-/* Di posisi atas, panel lebih compact — max height list diperkecil */
 .todo-section .todo-panel {
-  /* tampilan identik, cukup batasi tinggi list agar tidak terlalu panjang */
+  margin-top: 0;
+  width: 100%;
 }
 
 .todo-section .todo-list {
   max-height: 260px;
-}
-
-/* Kurangi margin-top karena sudah ada padding section */
-.todo-section .todo-panel {
-  margin-top: 0;
 }
 
 /* Jadwal sekarang langsung setelah todo, beri jarak atas */
@@ -1115,8 +1112,15 @@ body {
   padding-top: 1rem;
 }
 
-/* Mobile: padding section lebih kecil */
-@media (max-width: 820px) {
+/* Tablet: kurangi padding */
+@media (max-width: 1024px) {
+  .todo-section {
+    padding: 1rem 8vw 0;
+  }
+}
+
+/* Mobile: full width wajar */
+@media (max-width: 600px) {
   .todo-section {
     padding: 0.85rem 1rem 0;
   }

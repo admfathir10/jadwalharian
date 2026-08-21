@@ -501,9 +501,9 @@ const DAFTAR_MENU = [
 
 const DAFTAR_BAHAN = {
   "🍚 Bahan Pokok": [
-    "Beras","Telur ayam","Tempe","Tahu","Ayam","Daging sapi",
+    "Beras","Telur","Tempe","Tahu","Ayam","Daging sapi",
     "Lele","Udang","Ikan pindang","Sardine kaleng","Jagung",
-    "Tepung terigu","Tepung tapioka","Tepung beras","Mendoan"
+    "Tepung terigu","Tepung tapioka","Tepung beras"
   ],
   "🥬 Sayuran": [
     "Kangkung","Bayam","Wortel","Kol/Kubis","Brokoli","Labu siam",
@@ -511,14 +511,14 @@ const DAFTAR_BAHAN = {
     "Kacang panjang","Tauge","Buncis","Sawi","Kentang","Daun melinjo","Daun singkong"
   ],
   "🧄 Bumbu Dasar": [
-    "Bawang merah","Bawang putih","Cabai merah","Cabai rawit","Kemiri",
+    "Bawang merah","Bawang putih","Bawang bombay","Cabai kecil","Cabai merah","Cabai rawit","Kemiri",
     "Ketumbar","Merica/Lada","Kunyit","Jahe","Lengkuas","Kencur",
-    "Serai","Daun salam","Daun jeruk","Daun kunyit",
+    "Serai","Daun salam","Daun jeruk","Daun kunyit","Daun bawang",
     "Garam","Gula pasir","Gula merah","Kaldu bubuk","Minyak goreng"
   ],
   "🥣 Bahan Pelengkap": [
-    "Kecap manis","Saus tiram","Santan","Air asam jawa","Asam jawa",
-    "Terasi","Tepung bumbu","Tepung panir","Jeruk nipis","Jeruk limau","Minyak wijen"
+    "Kecap manis","Saus tiram","Santan","Air asam jawa","Asam jawa","Saus tomat",
+    "Terasi","Tepung bumbu","Tepung panir","Jeruk nipis","Jeruk limau","Minyak goreng"
   ]
 };
 

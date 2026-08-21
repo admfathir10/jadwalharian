@@ -55,7 +55,8 @@ function initFirebase() {
     });
 
     isFirebaseReady = true;
-    initMenuFirebase(); // sambungkan menu & bahan ke Firebase
+    // Panggil setelah db siap — pakai setTimeout 0 agar tidak race condition
+    setTimeout(initMenuFirebase, 0);
 
   } catch (e) {
     setSyncStatus('error', 'Error Firebase');
@@ -533,31 +534,48 @@ let menuData   = {};   // { "2026-07-14": { sarapan:"Nasi Goreng", siang:"", mal
 let bahanData  = {};   // { "Beras": true/false/undefined }
 let activeSlot = null;
 
-/* Firebase refs untuk menu & bahan (pakai db yang sudah init di initFirebase) */
+/* Firebase refs untuk menu & bahan */
 let menuRef  = null;
 let bahanRef = null;
 let menuFirebaseReady = false;
 
-/* Dipanggil setelah Firebase db siap (dari initFirebase) */
+/* Encode nama bahan jadi Firebase-safe key — konsisten saat simpan & baca */
+function encodeBahanKey(nama) {
+  return nama
+    .replace(/\./g,  '__dot__')
+    .replace(/\//g,  '__sl__')
+    .replace(/\[/g,  '__lb__')
+    .replace(/\]/g,  '__rb__')
+    .replace(/\#/g,  '__hash__')
+    .replace(/\$/g,  '__dol__')
+    .replace(/\s+/g, '_');
+}
+
+/* Dipanggil setelah Firebase db siap */
 function initMenuFirebase() {
   if (!db) { initMenuLocal(); return; }
   try {
     menuRef  = db.ref('menu');
     bahanRef = db.ref('bahan');
 
-    /* Listen menu realtime */
+    /* Listen menu realtime — format: { "2026-07-14": { sarapan:"...", siang:"...", malam:"..." } } */
     menuRef.on('value', snap => {
       menuData = snap.val() || {};
       renderMenuGrid();
-    });
+    }, () => initMenuLocal());
 
-    /* Listen bahan realtime */
+    /* Listen bahan realtime — format: { "Beras": true/false/null } dengan key encoded */
     bahanRef.on('value', snap => {
       const raw = snap.val() || {};
-      /* Firebase menyimpan null untuk undefined — normalize */
-      bahanData = raw;
+      /* Decode balik: key encoded → nama asli */
+      bahanData = {};
+      /* Simpan dengan nama asli sebagai key untuk lookup mudah */
+      Object.values(DAFTAR_BAHAN).flat().forEach(nama => {
+        const k = encodeBahanKey(nama);
+        if (raw[k] !== undefined) bahanData[nama] = raw[k];
+      });
       renderBahanGrid();
-    });
+    }, () => initMenuLocal());
 
     menuFirebaseReady = true;
   } catch(e) {
@@ -573,12 +591,12 @@ function initMenuLocal() {
   renderBahanGrid();
 }
 
-/* Save helpers — tulis ke Firebase, fallback localStorage */
+/* Save helpers */
 function saveMenuSlot(dk, slot, value) {
   if (!menuData[dk]) menuData[dk] = {};
   menuData[dk][slot] = value;
   if (menuFirebaseReady && menuRef) {
-    menuRef.child(dk).child(slot).set(value);
+    menuRef.child(dk).child(slot).set(value || null);
   } else {
     localStorage.setItem('menu_mingguan_v2', JSON.stringify(menuData));
   }
@@ -586,9 +604,9 @@ function saveMenuSlot(dk, slot, value) {
 
 function saveBahanItem(nama, value) {
   bahanData[nama] = value;
+  const key = encodeBahanKey(nama);
   if (menuFirebaseReady && bahanRef) {
-    /* simpan sebagai boolean atau null */
-    bahanRef.child(nama.replace(/\//g,'_').replace(/\s/g,'_')).set(value === undefined ? null : value);
+    bahanRef.child(key).set(value === undefined ? null : value);
   } else {
     localStorage.setItem('stok_bahan_v2', JSON.stringify(bahanData));
   }
@@ -599,7 +617,7 @@ function saveAllBahan(status) {
   all.forEach(n => { bahanData[n] = status; });
   if (menuFirebaseReady && bahanRef) {
     const updates = {};
-    all.forEach(n => { updates[n.replace(/\//g,'_').replace(/\s/g,'_')] = status; });
+    all.forEach(n => { updates[encodeBahanKey(n)] = status; });
     bahanRef.update(updates);
   } else {
     localStorage.setItem('stok_bahan_v2', JSON.stringify(bahanData));
@@ -744,11 +762,10 @@ function renderBahanGrid() {
 
     const cont = grp.querySelector('.bahan-items');
     items.forEach(nama => {
-      /* Firebase menyimpan dengan key yang di-sanitize */
-      const fbKey = nama.replace(/\//g,'_').replace(/\s/g,'_');
-      const raw   = bahanData[nama] !== undefined ? bahanData[nama] : bahanData[fbKey];
-      const cls   = raw === true ? 'ada' : raw === false ? 'habis' : '';
-      const pill  = document.createElement('div');
+      /* bahanData selalu pakai nama asli sebagai key (decode sudah dilakukan saat listen) */
+      const val = bahanData[nama];
+      const cls = val === true ? 'ada' : val === false ? 'habis' : '';
+      const pill = document.createElement('div');
       pill.className = `bahan-pill ${cls}`;
       pill.innerHTML = `<span class="bahan-pill-dot"></span>${nama}`;
       pill.onclick   = () => toggleBahan(nama, pill);
@@ -758,14 +775,12 @@ function renderBahanGrid() {
 }
 
 function toggleBahan(nama, el) {
-  const fbKey = nama.replace(/\//g,'_').replace(/\s/g,'_');
-  const cur   = bahanData[nama] !== undefined ? bahanData[nama] : bahanData[fbKey];
+  const cur = bahanData[nama];
   let next;
   if (cur === undefined || cur === null) { next = true;      el.className = 'bahan-pill ada';   }
   else if (cur === true)                 { next = false;     el.className = 'bahan-pill habis'; }
   else                                   { next = undefined; el.className = 'bahan-pill';       }
-  bahanData[nama]  = next;
-  bahanData[fbKey] = next;
+  bahanData[nama] = next;
   saveBahanItem(nama, next);
 }
 

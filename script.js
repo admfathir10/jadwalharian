@@ -482,3 +482,285 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(updateClock, 1000);
   setInterval(highlightLiveBlocks, 30000);
 });
+
+/* ================================================
+   MENU MASAKAN — Week planner + Stok Bahan
+   ================================================ */
+
+const DAFTAR_MENU = [
+  "Pecel","Telur Dadar","Telur Rebus","Sayur Sop","Ayam Goreng",
+  "Oseng Tempe","Sayur Asem","Pindang Goreng","Capjay Kuah","Mendoan",
+  "Sayur Bening","Lele Goreng","Sop Daging","Nasi Goreng","Sop Ayam",
+  "Tahu Goreng","Ca Kangkung","Capjay","Ayam Kecap","Oseng Tahu",
+  "Sardine","Dadar Jagung","Nasi Sayur Bobor","Telur Balado",
+  "Oseng Daun Pepaya","Udang Goreng","Ayam Kentacky","Tumis Brokoli",
+  "Tumis Kubis","Oseng Terong","Sambal Terasi","Sambal Teri",
+  "Sambal Matah","Sambal Orek","Bergedel Kentang","Tumis Sawi Kecambah",
+  "Tumis Kecambah","Orak Arik Tahu Telor","Sop Pakchoy Tahu"
+].sort();
+
+const DAFTAR_BAHAN = {
+  "🍚 Bahan Pokok": [
+    "Beras","Telur ayam","Tempe","Tahu","Ayam","Daging sapi",
+    "Lele","Udang","Ikan pindang","Sardine kaleng","Jagung",
+    "Tepung terigu","Tepung tapioka","Tepung beras","Mendoan"
+  ],
+  "🥬 Sayuran": [
+    "Kangkung","Bayam","Wortel","Kol/Kubis","Brokoli","Labu siam",
+    "Daun pepaya","Terong","Daun bawang","Seledri","Tomat","Timun",
+    "Kacang panjang","Tauge","Buncis","Sawi","Kentang","Daun melinjo","Daun singkong"
+  ],
+  "🧄 Bumbu Dasar": [
+    "Bawang merah","Bawang putih","Cabai merah","Cabai rawit","Kemiri",
+    "Ketumbar","Merica/Lada","Kunyit","Jahe","Lengkuas","Kencur",
+    "Serai","Daun salam","Daun jeruk","Daun kunyit",
+    "Garam","Gula pasir","Gula merah","Kaldu bubuk","Minyak goreng"
+  ],
+  "🥣 Bahan Pelengkap": [
+    "Kecap manis","Saus tiram","Santan","Air asam jawa","Asam jawa",
+    "Terasi","Tepung bumbu","Tepung panir","Jeruk nipis","Jeruk limau","Minyak wijen"
+  ]
+};
+
+const MENU_KEY  = 'menu_mingguan_v2';
+const BAHAN_KEY = 'stok_bahan_v2';
+const SLOTS     = ['sarapan','siang','malam'];
+const SLOT_LABEL= { sarapan:'🌅 Sarapan', siang:'☀️ Makan Siang', malam:'🌙 Makan Malam' };
+const HARI_ID   = ['minggu','senin','selasa','rabu','kamis','jumat','sabtu'];
+const HARI_LONG = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+
+/* State */
+let weekOffset   = 0;   // 0 = minggu ini, -1 = minggu lalu, dst
+let menuData     = {};  // { "2026-07-14": { sarapan:"Nasi Goreng", siang:"", malam:"" } }
+let bahanData    = {};  // { "Beras": true/false }
+let activeSlot   = null; // { dateKey, slot }
+
+/* ── Storage ── */
+function loadMenuData()  { try { return JSON.parse(localStorage.getItem(MENU_KEY)  || '{}'); } catch { return {}; } }
+function saveMenuData()  { localStorage.setItem(MENU_KEY,  JSON.stringify(menuData));  }
+function loadBahanData() { try { return JSON.parse(localStorage.getItem(BAHAN_KEY) || '{}'); } catch { return {}; } }
+function saveBahanData() { localStorage.setItem(BAHAN_KEY, JSON.stringify(bahanData)); }
+
+/* ── Week helpers ── */
+function getMondayOf(offset) {
+  const d = new Date();
+  const day = d.getDay(); // 0=sun
+  const diff = (day === 0 ? -6 : 1 - day); // ke Senin
+  d.setDate(d.getDate() + diff + offset * 7);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function dateKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function todayKey2() { return dateKey(new Date()); }
+
+function getWeekDays(offset) {
+  const mon = getMondayOf(offset);
+  return Array.from({length:7}, (_,i) => {
+    const d = new Date(mon);
+    d.setDate(mon.getDate() + i);
+    return d;
+  });
+}
+
+/* ── Week label ── */
+function updateWeekLabel() {
+  const days = getWeekDays(weekOffset);
+  const first = days[0], last = days[6];
+  const bln = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+  const f = `${first.getDate()} ${bln[first.getMonth()]}`;
+  const l = `${last.getDate()} ${bln[last.getMonth()]} ${last.getFullYear()}`;
+  const lbl = document.getElementById('week-label');
+  if (lbl) lbl.textContent = weekOffset === 0 ? `Minggu ini · ${f} – ${l}` : `${f} – ${l}`;
+}
+
+window.shiftWeek = function(dir) { weekOffset += dir; renderMenuGrid(); };
+window.resetWeek = function()    { weekOffset = 0;    renderMenuGrid(); };
+
+/* ── Render 7 kolom ── */
+function renderMenuGrid() {
+  updateWeekLabel();
+  const grid = document.getElementById('menu-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const today  = todayKey2();
+  const days   = getWeekDays(weekOffset);
+
+  // Urutan: Senin(idx1)..Minggu(idx0)
+  const ordered = [days[0],days[1],days[2],days[3],days[4],days[5],days[6]];
+  // hari senin=idx0 dalam array getWeekDays
+
+  ordered.forEach((d, i) => {
+    const dk    = dateKey(d);
+    const dayIdx = (d.getDay() === 0 ? 6 : d.getDay() - 1); // 0=Sen..6=Min
+    const isToday = dk === today;
+    const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+
+    const card = document.createElement('div');
+    card.className = 'menu-day-card' + (isToday ? ' today' : '');
+    card.innerHTML = `
+      <div class="menu-day-label">
+        ${dayNames[dayIdx]}
+        <span class="menu-day-date">${d.getDate()}/${d.getMonth()+1}</span>
+      </div>
+      <div class="menu-slots">
+        ${SLOTS.map(slot => buildSlotHTML(dk, slot)).join('')}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function buildSlotHTML(dk, slot) {
+  const val = menuData[dk]?.[slot] || '';
+  const filled = val !== '';
+  return `
+    <div class="menu-slot ${filled ? 'filled' : ''}" onclick="openMenuModal('${dk}','${slot}')">
+      <div class="slot-label ${slot}">${SLOT_LABEL[slot]}</div>
+      ${filled
+        ? `<div class="slot-menu">${escMenuHtml(val)}</div>`
+        : `<div class="slot-empty">+ pilih menu</div>`
+      }
+      <span class="slot-edit-icon">✏️</span>
+    </div>`;
+}
+
+function escMenuHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ── Modal ── */
+window.openMenuModal = function(dk, slot) {
+  activeSlot = { dk, slot };
+  const overlay = document.getElementById('menu-modal');
+  const title   = document.getElementById('modal-title');
+  const search  = document.getElementById('modal-search');
+  if (!overlay) return;
+
+  const slotNames = { sarapan:'Sarapan', siang:'Makan Siang', malam:'Makan Malam' };
+  const d = new Date(dk + 'T00:00:00');
+  const bln = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+  title.textContent = `${slotNames[slot]} · ${d.getDate()} ${bln[d.getMonth()]}`;
+
+  search.value = '';
+  overlay.classList.add('open');
+  search.focus();
+  renderModalList('');
+};
+
+window.closeMenuModal = function(e) {
+  if (!e || e.target === document.getElementById('menu-modal')) {
+    document.getElementById('menu-modal').classList.remove('open');
+    activeSlot = null;
+  }
+};
+
+window.filterMenuModal = function() {
+  renderModalList(document.getElementById('modal-search').value);
+};
+
+function renderModalList(q) {
+  const list    = document.getElementById('modal-list');
+  const current = activeSlot ? (menuData[activeSlot.dk]?.[activeSlot.slot] || '') : '';
+  const filtered = DAFTAR_MENU.filter(m => m.toLowerCase().includes(q.toLowerCase()));
+
+  list.innerHTML = filtered.map(m => `
+    <div class="menu-option ${m === current ? 'selected' : ''}" onclick="selectMenu('${escMenuHtml(m)}')">
+      ${escMenuHtml(m)}
+    </div>`).join('');
+}
+
+window.selectMenu = function(menu) {
+  if (!activeSlot) return;
+  const { dk, slot } = activeSlot;
+  if (!menuData[dk]) menuData[dk] = {};
+  menuData[dk][slot] = menu;
+  saveMenuData();
+  renderMenuGrid();
+  document.getElementById('menu-modal').classList.remove('open');
+  activeSlot = null;
+};
+
+window.clearSlot = function() {
+  if (!activeSlot) return;
+  const { dk, slot } = activeSlot;
+  if (menuData[dk]) menuData[dk][slot] = '';
+  saveMenuData();
+  renderMenuGrid();
+  document.getElementById('menu-modal').classList.remove('open');
+  activeSlot = null;
+};
+
+/* Keyboard: Esc tutup modal */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('menu-modal')?.classList.remove('open');
+    activeSlot = null;
+  }
+});
+
+/* ── Bahan stok ── */
+function renderBahanGrid() {
+  const grid = document.getElementById('bahan-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  Object.entries(DAFTAR_BAHAN).forEach(([kategori, items]) => {
+    const group = document.createElement('div');
+    group.className = 'bahan-group';
+    group.innerHTML = `<div class="bahan-group-label">${kategori}</div><div class="bahan-items" id="bahan-items-${kategori.replace(/\s/g,'_')}"></div>`;
+    grid.appendChild(group);
+
+    const container = group.querySelector('.bahan-items');
+    items.forEach(nama => {
+      const status = bahanData[nama]; // true=ada, false=habis, undefined=belum dicek
+      const cls = status === true ? 'ada' : status === false ? 'habis' : '';
+      const pill = document.createElement('div');
+      pill.className = `bahan-pill ${cls}`;
+      pill.setAttribute('data-nama', nama);
+      pill.innerHTML = `<span class="bahan-pill-dot"></span>${nama}`;
+      pill.onclick = () => toggleBahan(nama, pill);
+      container.appendChild(pill);
+    });
+  });
+}
+
+function toggleBahan(nama, el) {
+  const cur = bahanData[nama];
+  // undefined → ada → habis → undefined (cycle)
+  if (cur === undefined || cur === null) {
+    bahanData[nama] = true;
+    el.className = 'bahan-pill ada';
+  } else if (cur === true) {
+    bahanData[nama] = false;
+    el.className = 'bahan-pill habis';
+  } else {
+    bahanData[nama] = undefined;
+    el.className = 'bahan-pill';
+  }
+  saveBahanData();
+}
+
+window.setAllBahan = function(status) {
+  Object.values(DAFTAR_BAHAN).flat().forEach(n => { bahanData[n] = status; });
+  saveBahanData();
+  renderBahanGrid();
+};
+
+/* ── Init menu ── */
+function initMenu() {
+  menuData  = loadMenuData();
+  bahanData = loadBahanData();
+  renderMenuGrid();
+  renderBahanGrid();
+}
+
+/* Panggil initMenu saat view-menu dibuka */
+const _origShowView = window.showView;
+window.showView = function(id) {
+  _origShowView(id);
+  if (id === 'menu') initMenu();
+};

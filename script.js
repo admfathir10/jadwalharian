@@ -504,9 +504,9 @@ const DAFTAR_MENU = [
 
 const DAFTAR_BAHAN = {
   "\uD83C\uDF5A Bahan Pokok": [
-    "Beras","Telur ayam","Tempe","Tahu","Ayam","Daging sapi",
+    "Beras","Telur","Tempe","Tahu","Ayam","Daging sapi",
     "Lele","Udang","Ikan pindang","Sardine kaleng","Jagung",
-    "Tepung terigu","Tepung tapioka","Tepung beras","Mendoan"
+    "Tepung terigu","Tepung tapioka","Tepung beras"
   ],
   "\uD83E\uDD6C Sayuran": [
     "Kangkung","Bayam","Wortel","Kol/Kubis","Brokoli","Labu siam",
@@ -516,7 +516,7 @@ const DAFTAR_BAHAN = {
   "\uD83E\uDDC4 Bumbu Dasar": [
     "Bawang merah","Bawang putih","Cabai merah","Cabai rawit","Kemiri",
     "Ketumbar","Merica/Lada","Kunyit","Jahe","Lengkuas","Kencur",
-    "Serai","Daun salam","Daun jeruk","Daun kunyit",
+    "Serai","Daun salam","Daun jeruk","Daun kunyit","Daun bawang","seledri",
     "Garam","Gula pasir","Gula merah","Kaldu bubuk","Minyak goreng"
   ],
   "\uD83E\uDD63 Bahan Pelengkap": [

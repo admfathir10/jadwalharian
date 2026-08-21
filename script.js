@@ -527,12 +527,13 @@ const DAFTAR_BAHAN = {
 
 const SLOTS      = ['sarapan','siang','malam'];
 const SLOT_LABEL = { sarapan:'\uD83C\uDF05 Sarapan', siang:'\u2600\uFE0F Makan Siang', malam:'\uD83C\uDF19 Makan Malam' };
+const MAX_MENU_PER_SLOT = 3;
 
 /* State */
 let weekOffset = 0;
-let menuData   = {};   // { "2026-07-14": { sarapan:"Nasi Goreng", siang:"", malam:"" } }
+let menuData   = {};   // { "2026-07-14": { sarapan:["Nasi Goreng","Telur Dadar"], siang:[], malam:[] } }
 let bahanData  = {};   // { "Beras": true/false/undefined }
-let activeSlot = null;
+let activeSlot = null; // { dk, slot, menuIndex } — menuIndex = index dalam array menu (0/1/2)
 
 /* Firebase refs untuk menu & bahan */
 let menuRef  = null;
@@ -558,9 +559,21 @@ function initMenuFirebase() {
     menuRef  = db.ref('menu');
     bahanRef = db.ref('bahan');
 
-    /* Listen menu realtime — format: { "2026-07-14": { sarapan:"...", siang:"...", malam:"..." } } */
+    /* Listen menu realtime — format: { "2026-07-14": { sarapan:["Menu1","Menu2"], siang:[], malam:[] } }
+       Migrasi otomatis dari format string lama ke array */
     menuRef.on('value', snap => {
-      menuData = snap.val() || {};
+      const raw = snap.val() || {};
+      menuData = {};
+      Object.entries(raw).forEach(([dk, slots]) => {
+        menuData[dk] = {};
+        SLOTS.forEach(s => {
+          const v = slots[s];
+          if (!v) menuData[dk][s] = [];
+          else if (Array.isArray(v)) menuData[dk][s] = v.filter(Boolean);
+          else if (typeof v === 'string' && v !== '') menuData[dk][s] = [v]; // format lama
+          else menuData[dk][s] = [];
+        });
+      });
       renderMenuGrid();
     }, () => initMenuLocal());
 
@@ -585,21 +598,66 @@ function initMenuFirebase() {
 }
 
 function initMenuLocal() {
-  try { menuData  = JSON.parse(localStorage.getItem('menu_mingguan_v2')  || '{}'); } catch { menuData  = {}; }
+  try {
+    const raw = JSON.parse(localStorage.getItem('menu_mingguan_v2') || '{}');
+    // Migrasi format string lama → array
+    menuData = {};
+    Object.entries(raw).forEach(([dk, slots]) => {
+      menuData[dk] = {};
+      SLOTS.forEach(s => {
+        const v = slots[s];
+        if (!v) menuData[dk][s] = [];
+        else if (Array.isArray(v)) menuData[dk][s] = v.filter(Boolean);
+        else if (typeof v === 'string' && v !== '') menuData[dk][s] = [v];
+        else menuData[dk][s] = [];
+      });
+    });
+  } catch { menuData = {}; }
   try { bahanData = JSON.parse(localStorage.getItem('stok_bahan_v2') || '{}'); } catch { bahanData = {}; }
   renderMenuGrid();
   renderBahanGrid();
 }
 
 /* Save helpers */
-function saveMenuSlot(dk, slot, value) {
+/* Ambil array menu untuk slot (selalu array, max 3) */
+function getMenuArray(dk, slot) {
+  const val = menuData[dk]?.[slot];
+  if (!val) return [];
+  if (Array.isArray(val)) return val.filter(v => v && v !== '');
+  if (typeof val === 'string' && val !== '') return [val]; // migrasi format lama
+  return [];
+}
+
+function saveMenuSlot(dk, slot, arr) {
   if (!menuData[dk]) menuData[dk] = {};
-  menuData[dk][slot] = value;
+  menuData[dk][slot] = arr;
   if (menuFirebaseReady && menuRef) {
-    menuRef.child(dk).child(slot).set(value || null);
+    menuRef.child(dk).child(slot).set(arr.length ? arr : null);
   } else {
     localStorage.setItem('menu_mingguan_v2', JSON.stringify(menuData));
   }
+}
+
+/* Tambah satu menu ke slot */
+function addMenuToSlot(dk, slot, menu) {
+  const arr = getMenuArray(dk, slot);
+  if (arr.length >= MAX_MENU_PER_SLOT) return;
+  if (!arr.includes(menu)) arr.push(menu);
+  saveMenuSlot(dk, slot, arr);
+}
+
+/* Hapus menu pada index tertentu dari slot */
+function removeMenuFromSlot(dk, slot, idx) {
+  const arr = getMenuArray(dk, slot);
+  arr.splice(idx, 1);
+  saveMenuSlot(dk, slot, arr);
+}
+
+/* Ganti menu pada index tertentu */
+function replaceMenuInSlot(dk, slot, idx, menu) {
+  const arr = getMenuArray(dk, slot);
+  arr[idx] = menu;
+  saveMenuSlot(dk, slot, arr);
 }
 
 function saveBahanItem(nama, value) {
@@ -684,25 +742,41 @@ function renderMenuGrid() {
 }
 
 function buildSlotHTML(dk, slot) {
-  const val    = menuData[dk]?.[slot] || '';
-  const filled = val !== '';
+  const arr    = getMenuArray(dk, slot);
+  const filled = arr.length > 0;
+  const canAdd = arr.length < MAX_MENU_PER_SLOT;
+
+  const menuItems = arr.map((m, i) => `
+    <div class="slot-menu-item">
+      <span class="slot-menu-text" onclick="openMenuModal('${dk}','${slot}',${i})">${escMH(m)}</span>
+      <button class="slot-menu-remove" onclick="event.stopPropagation();removeMenuSlotItem('${dk}','${slot}',${i})" title="Hapus menu ini">✕</button>
+    </div>`).join('');
+
   return `
-    <div class="menu-slot ${filled ? 'filled' : ''}" onclick="openMenuModal('${dk}','${slot}')">
+    <div class="menu-slot ${filled ? 'filled' : ''}">
       <div class="slot-label ${slot}">${SLOT_LABEL[slot]}</div>
-      ${filled ? `<div class="slot-menu">${escMH(val)}</div>` : `<div class="slot-empty">+ pilih menu</div>`}
-      <span class="slot-edit-icon">\u270F\uFE0F</span>
+      ${filled ? `<div class="slot-menu-list">${menuItems}</div>` : ''}
+      ${canAdd ? `<div class="slot-empty" onclick="openMenuModal('${dk}','${slot}',${arr.length})">+ ${filled ? 'tambah menu' : 'pilih menu'}</div>` : ''}
     </div>`;
 }
 function escMH(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+window.removeMenuSlotItem = function(dk, slot, idx) {
+  removeMenuFromSlot(dk, slot, idx);
+  renderMenuGrid();
+};
+
 /* ── Modal ── */
-window.openMenuModal = function(dk, slot) {
-  activeSlot = { dk, slot };
+window.openMenuModal = function(dk, slot, menuIndex) {
+  activeSlot = { dk, slot, menuIndex: menuIndex ?? 0 };
   const ov   = document.getElementById('menu-modal');
   const bln  = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
   const d    = new Date(dk+'T00:00:00');
   const names= { sarapan:'Sarapan', siang:'Makan Siang', malam:'Makan Malam' };
-  document.getElementById('modal-title').textContent = `${names[slot]} \xb7 ${d.getDate()} ${bln[d.getMonth()]}`;
+  const arr  = getMenuArray(dk, slot);
+  const isEdit = menuIndex < arr.length;
+  const menuNum = arr.length > 0 ? ` (Menu ${(menuIndex ?? arr.length) + 1})` : '';
+  document.getElementById('modal-title').textContent = `${names[slot]}${menuNum} \xb7 ${d.getDate()} ${bln[d.getMonth()]}`;
   document.getElementById('modal-search').value = '';
   ov.classList.add('open');
   document.getElementById('modal-search').focus();
@@ -718,16 +792,27 @@ window.closeMenuModal = function(e) {
 window.filterMenuModal = function() { renderModalList(document.getElementById('modal-search').value); };
 
 function renderModalList(q) {
-  const cur      = activeSlot ? (menuData[activeSlot.dk]?.[activeSlot.slot] || '') : '';
+  const arr = activeSlot ? getMenuArray(activeSlot.dk, activeSlot.slot) : [];
+  const curMenu = activeSlot && activeSlot.menuIndex < arr.length ? arr[activeSlot.menuIndex] : '';
   const filtered = DAFTAR_MENU.filter(m => m.toLowerCase().includes(q.toLowerCase()));
-  document.getElementById('modal-list').innerHTML = filtered.map(m =>
-    `<div class="menu-option ${m===cur?'selected':''}" onclick="selectMenu('${escMH(m)}')">${escMH(m)}</div>`
-  ).join('');
+  document.getElementById('modal-list').innerHTML = filtered.map(m => {
+    const isCur = m === curMenu;
+    const isOther = arr.includes(m) && !isCur;
+    return `<div class="menu-option ${isCur?'selected':''} ${isOther?'already-picked':''}" onclick="selectMenu('${escMH(m)}')">${escMH(m)}${isOther?' ✓':''}</div>`;
+  }).join('');
 }
 
 window.selectMenu = function(menu) {
   if (!activeSlot) return;
-  saveMenuSlot(activeSlot.dk, activeSlot.slot, menu);
+  const { dk, slot, menuIndex } = activeSlot;
+  const arr = getMenuArray(dk, slot);
+  if (menuIndex < arr.length) {
+    // Edit menu yang sudah ada
+    replaceMenuInSlot(dk, slot, menuIndex, menu);
+  } else {
+    // Tambah menu baru
+    addMenuToSlot(dk, slot, menu);
+  }
   renderMenuGrid();
   document.getElementById('menu-modal').classList.remove('open');
   activeSlot = null;
@@ -735,7 +820,15 @@ window.selectMenu = function(menu) {
 
 window.clearSlot = function() {
   if (!activeSlot) return;
-  saveMenuSlot(activeSlot.dk, activeSlot.slot, '');
+  const { dk, slot, menuIndex } = activeSlot;
+  const arr = getMenuArray(dk, slot);
+  if (menuIndex < arr.length) {
+    // Hapus hanya menu pada index ini
+    removeMenuFromSlot(dk, slot, menuIndex);
+  } else {
+    // Kosongkan semua
+    saveMenuSlot(dk, slot, []);
+  }
   renderMenuGrid();
   document.getElementById('menu-modal').classList.remove('open');
   activeSlot = null;

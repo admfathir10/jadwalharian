@@ -514,9 +514,9 @@ const DAFTAR_BAHAN = {
     "Kacang panjang","Tauge","Buncis","Sawi","Kentang","Daun melinjo","Daun singkong"
   ],
   "\uD83E\uDDC4 Bumbu Dasar": [
-    "Bawang merah","Bawang putih","Cabai merah","Cabai rawit","Kemiri",
+    "Bawang merah","Bawang putih","Cabai kecil","Cabai merah","Cabai rawit","Kemiri",
     "Ketumbar","Merica/Lada","Kunyit","Jahe","Lengkuas","Kencur",
-    "Serai","Daun salam","Daun jeruk","Daun kunyit","Daun bawang","seledri",
+    "Serai","Daun salam","Daun jeruk","Daun kunyit","Daun bawang","Seledri",
     "Garam","Gula pasir","Gula merah","Kaldu bubuk","Minyak goreng"
   ],
   "\uD83E\uDD63 Bahan Pelengkap": [

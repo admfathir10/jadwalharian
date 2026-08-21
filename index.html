@@ -46,6 +46,7 @@
   <nav class="main-tabs">
     <button id="mtab-jadwal" class="active" onclick="showView('jadwal')">Jadwal Harian</button>
     <button id="mtab-bersama" onclick="showView('bersama')">🤝 Momen Bersama</button>
+    <button id="mtab-menu" onclick="showView('menu')">🍳 Menu Masakan</button>
   </nav>
 </header>
 
@@ -525,6 +526,58 @@
   </div><!-- /view-bersama -->
 
 </main>
+
+
+  <!-- ========== VIEW: MENU MASAKAN ========== -->
+  <div id="view-menu" class="view-panel">
+  <div class="main-content" style="padding-bottom:2rem;">
+
+    <!-- ── Minggu selector ── -->
+    <div class="menu-week-header" style="max-width:100%;padding:0 0 1rem;">
+      <button class="week-nav-btn" onclick="shiftWeek(-1)">&#8249;</button>
+      <div class="week-label" id="week-label">Minggu ini</div>
+      <button class="week-nav-btn" onclick="shiftWeek(1)">&#8250;</button>
+      <button class="week-reset-btn" onclick="resetWeek()">Hari ini</button>
+    </div>
+
+    <!-- ── 7 kolom hari ── -->
+    <div class="menu-grid" id="menu-grid"></div>
+
+    <!-- ── Bahan & Bumbu ── -->
+    <div class="bahan-section">
+      <div class="bahan-header">
+        <div class="bahan-title">
+          <span>🧺</span>
+          <div>
+            <div class="bahan-title-text">Stok Bahan & Bumbu</div>
+            <div class="bahan-title-sub">Centang yang tersedia — merah berarti perlu dibeli</div>
+          </div>
+        </div>
+        <div class="bahan-actions">
+          <button class="bahan-act-btn all-ada" onclick="setAllBahan(true)">✓ Semua Ada</button>
+          <button class="bahan-act-btn all-habis" onclick="setAllBahan(false)">✕ Semua Habis</button>
+        </div>
+      </div>
+      <div class="bahan-grid" id="bahan-grid"></div>
+    </div>
+
+    <!-- ── Modal picker menu ── -->
+    <div class="menu-modal-overlay" id="menu-modal" onclick="closeMenuModal(event)">
+      <div class="menu-modal">
+        <div class="menu-modal-header">
+          <div id="modal-title">Pilih Menu</div>
+          <button class="menu-modal-close" onclick="closeMenuModal()">✕</button>
+        </div>
+        <input type="text" id="modal-search" class="menu-modal-search" placeholder="🔍 Cari menu..." oninput="filterMenuModal()" />
+        <div class="menu-modal-list" id="modal-list"></div>
+        <div class="menu-modal-footer">
+          <button class="menu-modal-clear" onclick="clearSlot()">Kosongkan slot ini</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content inner -->
+  </div><!-- /view-menu -->
 
 <footer class="site-footer">
   Jadwal Keluarga · dibuat dengan ❤️ · diperbarui sesuai kebutuhan

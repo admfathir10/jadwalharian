@@ -55,6 +55,7 @@ function initFirebase() {
     });
 
     isFirebaseReady = true;
+    initMenuFirebase(); // sambungkan menu & bahan ke Firebase
 
   } catch (e) {
     setSyncStatus('error', 'Error Firebase');
@@ -485,6 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ================================================
    MENU MASAKAN — Week planner + Stok Bahan
+   Firebase realtime sync (pakai db yang sama dengan Todo)
    ================================================ */
 
 const DAFTAR_MENU = [
@@ -500,154 +502,192 @@ const DAFTAR_MENU = [
 ].sort();
 
 const DAFTAR_BAHAN = {
-  "🍚 Bahan Pokok": [
-    "Beras","Telur","Tempe","Tahu","Ayam","Daging sapi",
+  "\uD83C\uDF5A Bahan Pokok": [
+    "Beras","Telur ayam","Tempe","Tahu","Ayam","Daging sapi",
     "Lele","Udang","Ikan pindang","Sardine kaleng","Jagung",
-    "Tepung terigu","Tepung tapioka","Tepung beras"
+    "Tepung terigu","Tepung tapioka","Tepung beras","Mendoan"
   ],
-  "🥬 Sayuran": [
+  "\uD83E\uDD6C Sayuran": [
     "Kangkung","Bayam","Wortel","Kol/Kubis","Brokoli","Labu siam",
     "Daun pepaya","Terong","Daun bawang","Seledri","Tomat","Timun",
     "Kacang panjang","Tauge","Buncis","Sawi","Kentang","Daun melinjo","Daun singkong"
   ],
-  "🧄 Bumbu Dasar": [
-    "Bawang merah","Bawang putih","Bawang bombay","Cabai kecil","Cabai merah","Cabai rawit","Kemiri",
+  "\uD83E\uDDC4 Bumbu Dasar": [
+    "Bawang merah","Bawang putih","Cabai merah","Cabai rawit","Kemiri",
     "Ketumbar","Merica/Lada","Kunyit","Jahe","Lengkuas","Kencur",
-    "Serai","Daun salam","Daun jeruk","Daun kunyit","Daun bawang",
+    "Serai","Daun salam","Daun jeruk","Daun kunyit",
     "Garam","Gula pasir","Gula merah","Kaldu bubuk","Minyak goreng"
   ],
-  "🥣 Bahan Pelengkap": [
-    "Kecap manis","Saus tiram","Santan","Air asam jawa","Asam jawa","Saus tomat",
-    "Terasi","Tepung bumbu","Tepung panir","Jeruk nipis","Jeruk limau","Minyak goreng"
+  "\uD83E\uDD63 Bahan Pelengkap": [
+    "Kecap manis","Saus tiram","Santan","Air asam jawa","Asam jawa",
+    "Terasi","Tepung bumbu","Tepung panir","Jeruk nipis","Jeruk limau","Minyak wijen"
   ]
 };
 
-const MENU_KEY  = 'menu_mingguan_v2';
-const BAHAN_KEY = 'stok_bahan_v2';
-const SLOTS     = ['sarapan','siang','malam'];
-const SLOT_LABEL= { sarapan:'🌅 Sarapan', siang:'☀️ Makan Siang', malam:'🌙 Makan Malam' };
-const HARI_ID   = ['minggu','senin','selasa','rabu','kamis','jumat','sabtu'];
-const HARI_LONG = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const SLOTS      = ['sarapan','siang','malam'];
+const SLOT_LABEL = { sarapan:'\uD83C\uDF05 Sarapan', siang:'\u2600\uFE0F Makan Siang', malam:'\uD83C\uDF19 Makan Malam' };
 
 /* State */
-let weekOffset   = 0;   // 0 = minggu ini, -1 = minggu lalu, dst
-let menuData     = {};  // { "2026-07-14": { sarapan:"Nasi Goreng", siang:"", malam:"" } }
-let bahanData    = {};  // { "Beras": true/false }
-let activeSlot   = null; // { dateKey, slot }
+let weekOffset = 0;
+let menuData   = {};   // { "2026-07-14": { sarapan:"Nasi Goreng", siang:"", malam:"" } }
+let bahanData  = {};   // { "Beras": true/false/undefined }
+let activeSlot = null;
 
-/* ── Storage ── */
-function loadMenuData()  { try { return JSON.parse(localStorage.getItem(MENU_KEY)  || '{}'); } catch { return {}; } }
-function saveMenuData()  { localStorage.setItem(MENU_KEY,  JSON.stringify(menuData));  }
-function loadBahanData() { try { return JSON.parse(localStorage.getItem(BAHAN_KEY) || '{}'); } catch { return {}; } }
-function saveBahanData() { localStorage.setItem(BAHAN_KEY, JSON.stringify(bahanData)); }
+/* Firebase refs untuk menu & bahan (pakai db yang sudah init di initFirebase) */
+let menuRef  = null;
+let bahanRef = null;
+let menuFirebaseReady = false;
+
+/* Dipanggil setelah Firebase db siap (dari initFirebase) */
+function initMenuFirebase() {
+  if (!db) { initMenuLocal(); return; }
+  try {
+    menuRef  = db.ref('menu');
+    bahanRef = db.ref('bahan');
+
+    /* Listen menu realtime */
+    menuRef.on('value', snap => {
+      menuData = snap.val() || {};
+      renderMenuGrid();
+    });
+
+    /* Listen bahan realtime */
+    bahanRef.on('value', snap => {
+      const raw = snap.val() || {};
+      /* Firebase menyimpan null untuk undefined — normalize */
+      bahanData = raw;
+      renderBahanGrid();
+    });
+
+    menuFirebaseReady = true;
+  } catch(e) {
+    console.error('Menu Firebase error:', e);
+    initMenuLocal();
+  }
+}
+
+function initMenuLocal() {
+  try { menuData  = JSON.parse(localStorage.getItem('menu_mingguan_v2')  || '{}'); } catch { menuData  = {}; }
+  try { bahanData = JSON.parse(localStorage.getItem('stok_bahan_v2') || '{}'); } catch { bahanData = {}; }
+  renderMenuGrid();
+  renderBahanGrid();
+}
+
+/* Save helpers — tulis ke Firebase, fallback localStorage */
+function saveMenuSlot(dk, slot, value) {
+  if (!menuData[dk]) menuData[dk] = {};
+  menuData[dk][slot] = value;
+  if (menuFirebaseReady && menuRef) {
+    menuRef.child(dk).child(slot).set(value);
+  } else {
+    localStorage.setItem('menu_mingguan_v2', JSON.stringify(menuData));
+  }
+}
+
+function saveBahanItem(nama, value) {
+  bahanData[nama] = value;
+  if (menuFirebaseReady && bahanRef) {
+    /* simpan sebagai boolean atau null */
+    bahanRef.child(nama.replace(/\//g,'_').replace(/\s/g,'_')).set(value === undefined ? null : value);
+  } else {
+    localStorage.setItem('stok_bahan_v2', JSON.stringify(bahanData));
+  }
+}
+
+function saveAllBahan(status) {
+  const all = Object.values(DAFTAR_BAHAN).flat();
+  all.forEach(n => { bahanData[n] = status; });
+  if (menuFirebaseReady && bahanRef) {
+    const updates = {};
+    all.forEach(n => { updates[n.replace(/\//g,'_').replace(/\s/g,'_')] = status; });
+    bahanRef.update(updates);
+  } else {
+    localStorage.setItem('stok_bahan_v2', JSON.stringify(bahanData));
+    renderBahanGrid();
+  }
+}
 
 /* ── Week helpers ── */
 function getMondayOf(offset) {
   const d = new Date();
-  const day = d.getDay(); // 0=sun
-  const diff = (day === 0 ? -6 : 1 - day); // ke Senin
+  const day = d.getDay();
+  const diff = (day === 0 ? -6 : 1 - day);
   d.setDate(d.getDate() + diff + offset * 7);
   d.setHours(0,0,0,0);
   return d;
 }
-
 function dateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
-
 function todayKey2() { return dateKey(new Date()); }
-
 function getWeekDays(offset) {
   const mon = getMondayOf(offset);
   return Array.from({length:7}, (_,i) => {
-    const d = new Date(mon);
-    d.setDate(mon.getDate() + i);
-    return d;
+    const d = new Date(mon); d.setDate(mon.getDate()+i); return d;
   });
 }
 
-/* ── Week label ── */
 function updateWeekLabel() {
   const days = getWeekDays(weekOffset);
-  const first = days[0], last = days[6];
-  const bln = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
-  const f = `${first.getDate()} ${bln[first.getMonth()]}`;
-  const l = `${last.getDate()} ${bln[last.getMonth()]} ${last.getFullYear()}`;
-  const lbl = document.getElementById('week-label');
-  if (lbl) lbl.textContent = weekOffset === 0 ? `Minggu ini · ${f} – ${l}` : `${f} – ${l}`;
+  const bln  = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+  const f = `${days[0].getDate()} ${bln[days[0].getMonth()]}`;
+  const l = `${days[6].getDate()} ${bln[days[6].getMonth()]} ${days[6].getFullYear()}`;
+  const el = document.getElementById('week-label');
+  if (el) el.textContent = weekOffset === 0 ? `Minggu ini \xb7 ${f} \u2013 ${l}` : `${f} \u2013 ${l}`;
 }
 
 window.shiftWeek = function(dir) { weekOffset += dir; renderMenuGrid(); };
-window.resetWeek = function()    { weekOffset = 0;    renderMenuGrid(); };
+window.resetWeek = function()    { weekOffset  = 0;   renderMenuGrid(); };
 
-/* ── Render 7 kolom ── */
+/* ── Render grid ── */
 function renderMenuGrid() {
   updateWeekLabel();
   const grid = document.getElementById('menu-grid');
   if (!grid) return;
   grid.innerHTML = '';
-  const today  = todayKey2();
-  const days   = getWeekDays(weekOffset);
+  const today = todayKey2();
+  const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
 
-  // Urutan: Senin(idx1)..Minggu(idx0)
-  const ordered = [days[0],days[1],days[2],days[3],days[4],days[5],days[6]];
-  // hari senin=idx0 dalam array getWeekDays
-
-  ordered.forEach((d, i) => {
-    const dk    = dateKey(d);
-    const dayIdx = (d.getDay() === 0 ? 6 : d.getDay() - 1); // 0=Sen..6=Min
-    const isToday = dk === today;
-    const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
-
-    const card = document.createElement('div');
-    card.className = 'menu-day-card' + (isToday ? ' today' : '');
+  getWeekDays(weekOffset).forEach(d => {
+    const dk     = dateKey(d);
+    const idx    = d.getDay() === 0 ? 6 : d.getDay()-1;
+    const card   = document.createElement('div');
+    card.className = 'menu-day-card' + (dk === today ? ' today' : '');
     card.innerHTML = `
       <div class="menu-day-label">
-        ${dayNames[dayIdx]}
+        ${dayNames[idx]}
         <span class="menu-day-date">${d.getDate()}/${d.getMonth()+1}</span>
       </div>
       <div class="menu-slots">
-        ${SLOTS.map(slot => buildSlotHTML(dk, slot)).join('')}
-      </div>
-    `;
+        ${SLOTS.map(s => buildSlotHTML(dk, s)).join('')}
+      </div>`;
     grid.appendChild(card);
   });
 }
 
 function buildSlotHTML(dk, slot) {
-  const val = menuData[dk]?.[slot] || '';
+  const val    = menuData[dk]?.[slot] || '';
   const filled = val !== '';
   return `
     <div class="menu-slot ${filled ? 'filled' : ''}" onclick="openMenuModal('${dk}','${slot}')">
       <div class="slot-label ${slot}">${SLOT_LABEL[slot]}</div>
-      ${filled
-        ? `<div class="slot-menu">${escMenuHtml(val)}</div>`
-        : `<div class="slot-empty">+ pilih menu</div>`
-      }
-      <span class="slot-edit-icon">✏️</span>
+      ${filled ? `<div class="slot-menu">${escMH(val)}</div>` : `<div class="slot-empty">+ pilih menu</div>`}
+      <span class="slot-edit-icon">\u270F\uFE0F</span>
     </div>`;
 }
-
-function escMenuHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+function escMH(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 /* ── Modal ── */
 window.openMenuModal = function(dk, slot) {
   activeSlot = { dk, slot };
-  const overlay = document.getElementById('menu-modal');
-  const title   = document.getElementById('modal-title');
-  const search  = document.getElementById('modal-search');
-  if (!overlay) return;
-
-  const slotNames = { sarapan:'Sarapan', siang:'Makan Siang', malam:'Makan Malam' };
-  const d = new Date(dk + 'T00:00:00');
-  const bln = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
-  title.textContent = `${slotNames[slot]} · ${d.getDate()} ${bln[d.getMonth()]}`;
-
-  search.value = '';
-  overlay.classList.add('open');
-  search.focus();
+  const ov   = document.getElementById('menu-modal');
+  const bln  = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+  const d    = new Date(dk+'T00:00:00');
+  const names= { sarapan:'Sarapan', siang:'Makan Siang', malam:'Makan Malam' };
+  document.getElementById('modal-title').textContent = `${names[slot]} \xb7 ${d.getDate()} ${bln[d.getMonth()]}`;
+  document.getElementById('modal-search').value = '';
+  ov.classList.add('open');
+  document.getElementById('modal-search').focus();
   renderModalList('');
 };
 
@@ -657,28 +697,19 @@ window.closeMenuModal = function(e) {
     activeSlot = null;
   }
 };
-
-window.filterMenuModal = function() {
-  renderModalList(document.getElementById('modal-search').value);
-};
+window.filterMenuModal = function() { renderModalList(document.getElementById('modal-search').value); };
 
 function renderModalList(q) {
-  const list    = document.getElementById('modal-list');
-  const current = activeSlot ? (menuData[activeSlot.dk]?.[activeSlot.slot] || '') : '';
+  const cur      = activeSlot ? (menuData[activeSlot.dk]?.[activeSlot.slot] || '') : '';
   const filtered = DAFTAR_MENU.filter(m => m.toLowerCase().includes(q.toLowerCase()));
-
-  list.innerHTML = filtered.map(m => `
-    <div class="menu-option ${m === current ? 'selected' : ''}" onclick="selectMenu('${escMenuHtml(m)}')">
-      ${escMenuHtml(m)}
-    </div>`).join('');
+  document.getElementById('modal-list').innerHTML = filtered.map(m =>
+    `<div class="menu-option ${m===cur?'selected':''}" onclick="selectMenu('${escMH(m)}')">${escMH(m)}</div>`
+  ).join('');
 }
 
 window.selectMenu = function(menu) {
   if (!activeSlot) return;
-  const { dk, slot } = activeSlot;
-  if (!menuData[dk]) menuData[dk] = {};
-  menuData[dk][slot] = menu;
-  saveMenuData();
+  saveMenuSlot(activeSlot.dk, activeSlot.slot, menu);
   renderMenuGrid();
   document.getElementById('menu-modal').classList.remove('open');
   activeSlot = null;
@@ -686,15 +717,12 @@ window.selectMenu = function(menu) {
 
 window.clearSlot = function() {
   if (!activeSlot) return;
-  const { dk, slot } = activeSlot;
-  if (menuData[dk]) menuData[dk][slot] = '';
-  saveMenuData();
+  saveMenuSlot(activeSlot.dk, activeSlot.slot, '');
   renderMenuGrid();
   document.getElementById('menu-modal').classList.remove('open');
   activeSlot = null;
 };
 
-/* Keyboard: Esc tutup modal */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     document.getElementById('menu-modal')?.classList.remove('open');
@@ -708,57 +736,53 @@ function renderBahanGrid() {
   if (!grid) return;
   grid.innerHTML = '';
 
-  Object.entries(DAFTAR_BAHAN).forEach(([kategori, items]) => {
-    const group = document.createElement('div');
-    group.className = 'bahan-group';
-    group.innerHTML = `<div class="bahan-group-label">${kategori}</div><div class="bahan-items" id="bahan-items-${kategori.replace(/\s/g,'_')}"></div>`;
-    grid.appendChild(group);
+  Object.entries(DAFTAR_BAHAN).forEach(([kat, items]) => {
+    const grp = document.createElement('div');
+    grp.className = 'bahan-group';
+    grp.innerHTML = `<div class="bahan-group-label">${kat}</div><div class="bahan-items"></div>`;
+    grid.appendChild(grp);
 
-    const container = group.querySelector('.bahan-items');
+    const cont = grp.querySelector('.bahan-items');
     items.forEach(nama => {
-      const status = bahanData[nama]; // true=ada, false=habis, undefined=belum dicek
-      const cls = status === true ? 'ada' : status === false ? 'habis' : '';
-      const pill = document.createElement('div');
+      /* Firebase menyimpan dengan key yang di-sanitize */
+      const fbKey = nama.replace(/\//g,'_').replace(/\s/g,'_');
+      const raw   = bahanData[nama] !== undefined ? bahanData[nama] : bahanData[fbKey];
+      const cls   = raw === true ? 'ada' : raw === false ? 'habis' : '';
+      const pill  = document.createElement('div');
       pill.className = `bahan-pill ${cls}`;
-      pill.setAttribute('data-nama', nama);
       pill.innerHTML = `<span class="bahan-pill-dot"></span>${nama}`;
-      pill.onclick = () => toggleBahan(nama, pill);
-      container.appendChild(pill);
+      pill.onclick   = () => toggleBahan(nama, pill);
+      cont.appendChild(pill);
     });
   });
 }
 
 function toggleBahan(nama, el) {
-  const cur = bahanData[nama];
-  // undefined → ada → habis → undefined (cycle)
-  if (cur === undefined || cur === null) {
-    bahanData[nama] = true;
-    el.className = 'bahan-pill ada';
-  } else if (cur === true) {
-    bahanData[nama] = false;
-    el.className = 'bahan-pill habis';
-  } else {
-    bahanData[nama] = undefined;
-    el.className = 'bahan-pill';
-  }
-  saveBahanData();
+  const fbKey = nama.replace(/\//g,'_').replace(/\s/g,'_');
+  const cur   = bahanData[nama] !== undefined ? bahanData[nama] : bahanData[fbKey];
+  let next;
+  if (cur === undefined || cur === null) { next = true;      el.className = 'bahan-pill ada';   }
+  else if (cur === true)                 { next = false;     el.className = 'bahan-pill habis'; }
+  else                                   { next = undefined; el.className = 'bahan-pill';       }
+  bahanData[nama]  = next;
+  bahanData[fbKey] = next;
+  saveBahanItem(nama, next);
 }
 
-window.setAllBahan = function(status) {
-  Object.values(DAFTAR_BAHAN).flat().forEach(n => { bahanData[n] = status; });
-  saveBahanData();
-  renderBahanGrid();
-};
+window.setAllBahan = function(status) { saveAllBahan(status); };
 
-/* ── Init menu ── */
+/* ── Init ── */
 function initMenu() {
-  menuData  = loadMenuData();
-  bahanData = loadBahanData();
-  renderMenuGrid();
-  renderBahanGrid();
+  if (menuFirebaseReady) {
+    /* sudah listen realtime, render ulang saja */
+    renderMenuGrid();
+    renderBahanGrid();
+  } else {
+    initMenuLocal();
+  }
 }
 
-/* Panggil initMenu saat view-menu dibuka */
+/* Override showView untuk trigger initMenu */
 const _origShowView = window.showView;
 window.showView = function(id) {
   _origShowView(id);

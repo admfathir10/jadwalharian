@@ -8,7 +8,9 @@
   <!-- Override todo-section layout — bypass CDN cache -->
   <style>
     .todo-section {
-      /* Identik dengan .main-content agar tepi sejajar card suami & istri */
+      /* Padding kiri-kanan SELALU sama persis dengan .main-content (1.75rem)
+         di semua ukuran layar, supaya lebar box To-Do identik dengan
+         card Jadwal Suami/Istri — tidak ada breakpoint terpisah lagi. */
       max-width: 1240px !important;
       width: 100% !important;
       margin: 0 auto !important;
@@ -24,13 +26,6 @@
     }
     .main-content {
       padding-top: 1rem !important;
-    }
-    /* Mobile — padding sama dengan main-content di HP, agar lebar box To-Do
-       identik dengan lebar card Jadwal Suami/Istri */
-    @media (max-width: 600px) {
-      .todo-section {
-        padding: 0.85rem 1.75rem 0 !important;
-      }
     }
   </style>
 

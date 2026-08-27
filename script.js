@@ -3,7 +3,7 @@
    Ganti PIN_CORRECT di bawah dengan PIN yang kamu inginkan
    ================================================ */
 
-const PIN_CORRECT  = '111213';   // ← GANTI PIN DI SINI
+const PIN_CORRECT  = '123456';   // ← GANTI PIN DI SINI
 const PIN_STORAGE  = 'jadwal_unlocked';
 const PIN_DURATION = 12 * 60 * 60 * 1000; // 12 jam — tidak perlu login ulang seharian
 
@@ -629,7 +629,7 @@ function injectDateBadge() {
    Init
    ======================== */
 document.addEventListener('DOMContentLoaded', () => {
-  initPinScreen();
+  // PIN dihandle inline di index.html
   injectClock();
   injectDateBadge();
   autoSelectDay();

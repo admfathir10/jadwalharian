@@ -39,6 +39,43 @@
 </head>
 <body>
 
+<!-- ===================== PIN SCREEN ===================== -->
+<div id="pin-screen">
+  <div class="pin-card">
+    <div class="pin-logo">📅</div>
+    <div class="pin-title">Jadwal Keluarga</div>
+    <div class="pin-subtitle">Fathir & Salma</div>
+    <div class="pin-dots" id="pin-dots">
+      <span class="pin-dot" id="d0"></span>
+      <span class="pin-dot" id="d1"></span>
+      <span class="pin-dot" id="d2"></span>
+      <span class="pin-dot" id="d3"></span>
+      <span class="pin-dot" id="d4"></span>
+      <span class="pin-dot" id="d5"></span>
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+    <div class="pin-pad">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn pin-btn-empty"></button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn pin-btn-del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="pin-hint">Masukkan PIN 6 digit</div>
+  </div>
+</div>
+
+<!-- Semua konten utama — tersembunyi sampai PIN benar -->
+<div id="app-content" style="display:none">
+
+
 <!-- ===================== HEADER + MAIN TABS ===================== -->
 <header class="site-header">
   <h1>📅 Jadwal Keluarga</h1>
@@ -583,6 +620,7 @@
   Jadwal Keluarga · dibuat dengan ❤️ · diperbarui sesuai kebutuhan
 </footer>
 
+</div><!-- /app-content -->
 <script src="script.js"></script>
 </body>
 </html>

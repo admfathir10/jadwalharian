@@ -1090,9 +1090,10 @@ body {
    ================================================ */
 
 .todo-section {
-  /* Beri ruang kiri-kanan dengan padding besar agar panel tidak mentok tepi */
-  padding: 1.1rem 15vw 0;
-  /* Tetap punya batas maksimal agar tidak terlalu sempit di layar lebar */
+  /* Padding kiri-kanan SELALU identik dengan .main-content (1.75rem)
+     di semua ukuran layar (tanpa breakpoint terpisah), supaya lebar
+     box To-Do selalu sama persis dengan card Jadwal Suami/Istri. */
+  padding: 1.1rem 1.75rem 0;
   max-width: 1240px;
   margin: 0 auto;
   box-sizing: border-box;
@@ -1110,21 +1111,6 @@ body {
 /* Jadwal sekarang langsung setelah todo, beri jarak atas */
 .main-content {
   padding-top: 1rem;
-}
-
-/* Tablet: kurangi padding */
-@media (max-width: 1024px) {
-  .todo-section {
-    padding: 1rem 8vw 0;
-  }
-}
-
-/* Mobile: samakan dengan padding .main-content agar lebar box To-Do
-   sejajar dengan card Jadwal Suami/Istri */
-@media (max-width: 600px) {
-  .todo-section {
-    padding: 0.85rem 1.75rem 0;
-  }
 }
 
 /* ================================================

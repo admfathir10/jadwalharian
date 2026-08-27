@@ -11,6 +11,12 @@ let pinBuffer = '';
 let pinLocked = true;
 
 function initPinScreen() {
+  const screen  = document.getElementById('pin-screen');
+  const content = document.getElementById('app-content');
+
+  // Pastikan konten tersembunyi dulu
+  content.style.display = 'none';
+
   // Cek apakah sudah unlock dalam 12 jam terakhir
   try {
     const saved = localStorage.getItem(PIN_STORAGE);
@@ -23,9 +29,8 @@ function initPinScreen() {
     }
   } catch {}
 
-  // Tampilkan PIN screen
-  document.getElementById('pin-screen').style.display = 'flex';
-  document.getElementById('app-content').style.display = 'none';
+  // Tampilkan PIN screen pakai class .visible
+  screen.classList.add('visible');
 
   // Keyboard support (laptop)
   document.addEventListener('keydown', handlePinKey);
@@ -97,13 +102,17 @@ function unlockApp(instant) {
   const screen  = document.getElementById('pin-screen');
   const content = document.getElementById('app-content');
 
+  content.style.display = 'block';
+
   if (instant) {
-    screen.style.display  = 'none';
-    content.style.display = 'block';
+    screen.classList.remove('visible');
+    screen.style.display = 'none';
   } else {
     screen.classList.add('unlocked');
-    content.style.display = 'block';
-    setTimeout(() => { screen.style.display = 'none'; }, 400);
+    setTimeout(() => {
+      screen.classList.remove('visible');
+      screen.style.display = 'none';
+    }, 400);
   }
 }
 

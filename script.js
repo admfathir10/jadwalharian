@@ -1,3 +1,112 @@
+/* ================================================
+   PIN SCREEN — 6 digit
+   Ganti PIN_CORRECT di bawah dengan PIN yang kamu inginkan
+   ================================================ */
+
+const PIN_CORRECT  = '111213';   // ← GANTI PIN DI SINI
+const PIN_STORAGE  = 'jadwal_unlocked';
+const PIN_DURATION = 12 * 60 * 60 * 1000; // 12 jam — tidak perlu login ulang seharian
+
+let pinBuffer = '';
+let pinLocked = true;
+
+function initPinScreen() {
+  // Cek apakah sudah unlock dalam 12 jam terakhir
+  try {
+    const saved = localStorage.getItem(PIN_STORAGE);
+    if (saved) {
+      const { ts } = JSON.parse(saved);
+      if (Date.now() - ts < PIN_DURATION) {
+        unlockApp(true); // langsung buka tanpa animasi
+        return;
+      }
+    }
+  } catch {}
+
+  // Tampilkan PIN screen
+  document.getElementById('pin-screen').style.display = 'flex';
+  document.getElementById('app-content').style.display = 'none';
+
+  // Keyboard support (laptop)
+  document.addEventListener('keydown', handlePinKey);
+}
+
+function handlePinKey(e) {
+  if (!pinLocked) return;
+  if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+  else if (e.key === 'Backspace') pinDel();
+}
+
+window.pinPress = function(digit) {
+  if (!pinLocked) return;
+  if (pinBuffer.length >= 6) return;
+
+  pinBuffer += digit;
+  updatePinDots();
+
+  if (pinBuffer.length === 6) {
+    setTimeout(checkPin, 120); // delay kecil agar dot ke-6 terlihat terisi
+  }
+};
+
+window.pinDel = function() {
+  if (!pinLocked) return;
+  pinBuffer = pinBuffer.slice(0, -1);
+  updatePinDots();
+  clearError();
+};
+
+function updatePinDots() {
+  for (let i = 0; i < 6; i++) {
+    const dot = document.getElementById('d' + i);
+    dot.classList.toggle('filled', i < pinBuffer.length);
+    dot.classList.remove('error');
+  }
+}
+
+function checkPin() {
+  if (pinBuffer === PIN_CORRECT) {
+    // Simpan timestamp unlock
+    localStorage.setItem(PIN_STORAGE, JSON.stringify({ ts: Date.now() }));
+    unlockApp(false);
+  } else {
+    // Shake + error
+    const dots = document.getElementById('pin-dots');
+    dots.classList.add('shake');
+    for (let i = 0; i < 6; i++) {
+      const dot = document.getElementById('d' + i);
+      dot.classList.remove('filled');
+      dot.classList.add('error');
+    }
+    document.getElementById('pin-error').textContent = 'PIN salah, coba lagi';
+    pinBuffer = '';
+    setTimeout(() => {
+      dots.classList.remove('shake');
+      updatePinDots();
+    }, 500);
+  }
+}
+
+function clearError() {
+  document.getElementById('pin-error').textContent = '';
+}
+
+function unlockApp(instant) {
+  pinLocked = false;
+  document.removeEventListener('keydown', handlePinKey);
+  const screen  = document.getElementById('pin-screen');
+  const content = document.getElementById('app-content');
+
+  if (instant) {
+    screen.style.display  = 'none';
+    content.style.display = 'block';
+  } else {
+    screen.classList.add('unlocked');
+    content.style.display = 'block';
+    setTimeout(() => { screen.style.display = 'none'; }, 400);
+  }
+}
+
 /* ============================================
    JADWAL KELUARGA — script.js (Firebase Sync)
    ============================================
@@ -44,18 +153,23 @@ function initFirebase() {
       }
     });
 
-    // Listen realtime
+    // Listen realtime todos — tangkap PERMISSION_DENIED secara spesifik
     todosRef.on('value', snap => {
       const raw = snap.val();
       todos = raw ? Object.entries(raw).map(([fbKey, v]) => ({ ...v, fbKey })) : [];
       renderTodos();
     }, err => {
-      setSyncStatus('error', 'Gagal: ' + err.code);
+      console.error('Firebase error:', err.code);
+      if (err.code === 'PERMISSION_DENIED') {
+        setSyncStatus('error', '⚠️ Izin ditolak');
+        showPermissionBanner();
+      } else {
+        setSyncStatus('error', 'Gagal sync');
+      }
       loadFromLocal();
     });
 
     isFirebaseReady = true;
-    // Panggil setelah db siap — pakai setTimeout 0 agar tidak race condition
     setTimeout(initMenuFirebase, 0);
 
   } catch (e) {
@@ -63,6 +177,37 @@ function initFirebase() {
     console.error(e);
     loadFromLocal();
   }
+}
+
+/* Banner muncul saat permission denied — tampil sekali, bisa ditutup */
+function showPermissionBanner() {
+  if (document.getElementById('fb-permission-banner')) return;
+  const el = document.createElement('div');
+  el.id = 'fb-permission-banner';
+  el.style.cssText = [
+    'position:fixed','bottom:1.25rem','left:50%','transform:translateX(-50%)',
+    'background:#1e1b2e','color:#fde68a','border:1.5px solid #f59e0b',
+    'border-radius:14px','padding:.85rem 1.25rem','font-size:12.5px',
+    'font-family:system-ui,sans-serif','z-index:9999','max-width:min(480px,92vw)',
+    'box-shadow:0 8px 32px rgba(0,0,0,0.35)','line-height:1.6',
+    'display:flex','align-items:flex-start','gap:10px'
+  ].join(';');
+  el.innerHTML = \`
+    <span style="font-size:20px;flex-shrink:0;margin-top:1px">⚠️</span>
+    <div style="flex:1">
+      <b style="display:block;margin-bottom:3px">Firebase Rules perlu diperbarui</b>
+      1. Buka <b>console.firebase.google.com</b><br>
+      2. Pilih project → <b>Realtime Database → Rules</b><br>
+      3. Ganti <code style="background:#fff2;padding:0 4px;border-radius:3px">false</code>
+         jadi <code style="background:#fff2;padding:0 4px;border-radius:3px">true</code>
+         untuk <b>.read</b> dan <b>.write</b><br>
+      4. Klik <b>Publish</b>
+    </div>
+    <button onclick="document.getElementById('fb-permission-banner').remove()" style="
+      background:none;border:none;color:#fde68a;font-size:18px;
+      cursor:pointer;flex-shrink:0;line-height:1">✕</button>
+  \`;
+  document.body.appendChild(el);
 }
 
 /* ─── Sync status indicator ─── */
@@ -475,6 +620,7 @@ function injectDateBadge() {
    Init
    ======================== */
 document.addEventListener('DOMContentLoaded', () => {
+  initPinScreen();
   injectClock();
   injectDateBadge();
   autoSelectDay();

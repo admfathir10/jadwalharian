@@ -1119,10 +1119,11 @@ body {
   }
 }
 
-/* Mobile: full width wajar */
+/* Mobile: samakan dengan padding .main-content agar lebar box To-Do
+   sejajar dengan card Jadwal Suami/Istri */
 @media (max-width: 600px) {
   .todo-section {
-    padding: 0.85rem 1rem 0;
+    padding: 0.85rem 1.75rem 0;
   }
 }
 

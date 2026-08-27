@@ -1,4 +1,92 @@
 /* ============================================
+   PIN LOCK — proteksi privasi keluarga
+   ============================================
+   GANTI PIN DI BAWAH INI dengan 6 digit pilihanmu.
+   Ini bukan enkripsi tingkat bank (situs statis di GitHub Pages
+   memang tidak bisa 100% aman dari orang yang sengaja membuka kode
+   sumbernya) — tapi cukup untuk mencegah orang random yang menemukan
+   link ini iseng buka dan lihat jadwal/data keluarga kalian.
+   ============================================ */
+(function () {
+  const PIN_CODE = '111213';            // <-- GANTI PIN 6 digit di sini
+  const REMEMBER_DAYS = 30;             // berapa hari device ini tetap "ingat" login
+
+  const STORAGE_KEY = 'jk_pin_unlock';
+  let enteredPin = '';
+
+  function getDots() { return document.querySelectorAll('#pin-dots .pin-dot'); }
+
+  function refreshDots() {
+    const dots = getDots();
+    dots.forEach((dot, i) => dot.classList.toggle('filled', i < enteredPin.length));
+  }
+
+  function showError(msg) {
+    const errEl = document.getElementById('pin-error');
+    const box = document.getElementById('pin-lock-box');
+    if (errEl) errEl.textContent = msg;
+    if (box) {
+      box.classList.add('shake');
+      setTimeout(() => box.classList.remove('shake'), 400);
+    }
+  }
+
+  function unlockApp(remember) {
+    document.body.classList.add('app-unlocked');
+    if (remember) {
+      const expires = Date.now() + REMEMBER_DAYS * 24 * 60 * 60 * 1000;
+      try { localStorage.setItem(STORAGE_KEY, String(expires)); } catch (e) {}
+    }
+  }
+
+  function isRemembered() {
+    try {
+      const expires = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+      return expires > Date.now();
+    } catch (e) { return false; }
+  }
+
+  function checkPin() {
+    if (enteredPin === PIN_CODE) {
+      document.getElementById('pin-error').textContent = '';
+      unlockApp(true);
+    } else {
+      showError('PIN salah, coba lagi');
+      enteredPin = '';
+      refreshDots();
+    }
+  }
+
+  window.pinPress = function (digit) {
+    if (enteredPin.length >= 6) return;
+    enteredPin += digit;
+    refreshDots();
+    if (enteredPin.length === 6) {
+      setTimeout(checkPin, 120);
+    }
+  };
+
+  window.pinBackspace = function () {
+    enteredPin = enteredPin.slice(0, -1);
+    refreshDots();
+    document.getElementById('pin-error').textContent = '';
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    if (isRemembered()) {
+      unlockApp(false);
+      return;
+    }
+    // Dukungan keyboard fisik (angka 0-9 dan backspace)
+    document.addEventListener('keydown', function (e) {
+      if (document.body.classList.contains('app-unlocked')) return;
+      if (e.key >= '0' && e.key <= '9') window.pinPress(e.key);
+      else if (e.key === 'Backspace') window.pinBackspace();
+    });
+  });
+})();
+
+/* ============================================
    JADWAL KELUARGA — script.js (Firebase Sync)
    ============================================
 

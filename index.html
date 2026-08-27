@@ -35,6 +35,44 @@
 </head>
 <body>
 
+<!-- ===================== PIN LOCK SCREEN ===================== -->
+<div class="pin-lock-screen">
+  <div class="pin-lock-box" id="pin-lock-box">
+    <div class="pin-lock-icon">🔒</div>
+    <h2>Jadwal Keluarga</h2>
+    <p>Masukkan PIN untuk masuk</p>
+
+    <div class="pin-dots" id="pin-dots">
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+    </div>
+
+    <input type="tel" id="pin-input" class="pin-hidden-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" />
+
+    <div class="pin-keypad">
+      <button type="button" class="pin-key" onclick="pinPress('1')">1</button>
+      <button type="button" class="pin-key" onclick="pinPress('2')">2</button>
+      <button type="button" class="pin-key" onclick="pinPress('3')">3</button>
+      <button type="button" class="pin-key" onclick="pinPress('4')">4</button>
+      <button type="button" class="pin-key" onclick="pinPress('5')">5</button>
+      <button type="button" class="pin-key" onclick="pinPress('6')">6</button>
+      <button type="button" class="pin-key" onclick="pinPress('7')">7</button>
+      <button type="button" class="pin-key" onclick="pinPress('8')">8</button>
+      <button type="button" class="pin-key" onclick="pinPress('9')">9</button>
+      <button type="button" class="pin-key pin-key-empty">•</button>
+      <button type="button" class="pin-key" onclick="pinPress('0')">0</button>
+      <button type="button" class="pin-key pin-key-back" onclick="pinBackspace()">⌫</button>
+    </div>
+
+    <div class="pin-error" id="pin-error"></div>
+  </div>
+  <div class="pin-lock-footer">Hanya untuk keluarga Fathir & Salma</div>
+</div>
+
 <!-- ===================== HEADER + MAIN TABS ===================== -->
 <header class="site-header">
   <h1>📅 Jadwal Keluarga</h1>

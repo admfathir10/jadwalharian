@@ -15,7 +15,7 @@
     @media(max-width:480px){.todo-section{padding:.85rem 1rem 0!important}.main-content{padding-left:1rem!important;padding-right:1rem!important}}
 
     /* ── PIN screen — inline agar tidak kena CDN cache ── */
-    #pin-screen{position:fixed!important;inset:0!important;z-index:99999!important;background:linear-gradient(135deg,#0f1628 0%,#1a2540 50%,#0d2818 100%)!important;display:none!important;align-items:center!important;justify-content:center!important;padding:1rem!important}
+    #pin-screen{position:fixed!important;inset:0!important;z-index:99999!important;background:linear-gradient(135deg,#0f1628 0%,#1a2540 50%,#0d2818 100%)!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:1rem!important}
     #pin-screen.visible{display:flex!important}
     #pin-screen.unlocked{animation:pinFadeOut .4s ease forwards!important}
     @keyframes pinFadeOut{to{opacity:0;pointer-events:none}}
@@ -44,108 +44,76 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-  <!-- PIN logic inline — tidak bergantung script.js -->
   <script>
-    const _PIN = '111213'; // ← GANTI PIN DI SINI
-    const _KEY = 'jadwal_unlocked';
-    const _TTL = 12 * 60 * 60 * 1000;
-
-    // Cek session — kalau sudah unlock dalam 12 jam, langsung buka
-    (function() {
-      try {
-        var s = localStorage.getItem(_KEY);
-        if (s) {
-          var d = JSON.parse(s);
-          if (Date.now() - d.ts < _TTL) {
-            // Tandai sudah unlock — script.js akan baca ini
-            window._pinUnlocked = true;
-          }
-        }
-      } catch(e) {}
-    })();
-
+    /* ── PIN 6 digit — inline, tidak butuh script.js ── */
+    var _PIN = '111213'; /* GANTI PIN DI SINI */
+    var _KEY = 'jadwal_pin_ok';
+    var _TTL = 12 * 60 * 60 * 1000;
     var _buf = '';
 
     function pinPress(d) {
       if (_buf.length >= 6) return;
       _buf += d;
-      _updateDots();
-      if (_buf.length === 6) setTimeout(_check, 120);
+      for (var i = 0; i < 6; i++) {
+        var el = document.getElementById('d' + i);
+        if (el) { el.classList.toggle('filled', i < _buf.length); el.classList.remove('error'); }
+      }
+      if (_buf.length === 6) setTimeout(_checkPin, 150);
     }
 
     function pinDel() {
       _buf = _buf.slice(0, -1);
-      _updateDots();
-      document.getElementById('pin-error').textContent = '';
-    }
-
-    function _updateDots() {
       for (var i = 0; i < 6; i++) {
-        var dot = document.getElementById('d' + i);
-        if (!dot) continue;
-        dot.classList.toggle('filled', i < _buf.length);
-        dot.classList.remove('error');
+        var el = document.getElementById('d' + i);
+        if (el) { el.classList.toggle('filled', i < _buf.length); el.classList.remove('error'); }
       }
+      var err = document.getElementById('pin-error');
+      if (err) err.textContent = '';
     }
 
-    function _check() {
+    function _checkPin() {
       if (_buf === _PIN) {
-        try { localStorage.setItem(_KEY, JSON.stringify({ts: Date.now()})); } catch(e) {}
-        _unlock(false);
+        try { localStorage.setItem(_KEY, Date.now().toString()); } catch(e) {}
+        _openApp();
       } else {
         var dots = document.getElementById('pin-dots');
-        dots.classList.add('shake');
+        if (dots) { dots.classList.add('shake'); setTimeout(function(){ dots.classList.remove('shake'); }, 500); }
         for (var i = 0; i < 6; i++) {
-          var dot = document.getElementById('d' + i);
-          if (dot) { dot.classList.remove('filled'); dot.classList.add('error'); }
+          var el = document.getElementById('d' + i);
+          if (el) { el.classList.remove('filled'); el.classList.add('error'); }
         }
-        document.getElementById('pin-error').textContent = 'PIN salah, coba lagi';
+        var err = document.getElementById('pin-error');
+        if (err) err.textContent = 'PIN salah, coba lagi';
         _buf = '';
-        setTimeout(function() {
-          dots.classList.remove('shake');
-          _updateDots();
-        }, 500);
       }
     }
 
-    function _unlock(instant) {
-      var screen  = document.getElementById('pin-screen');
-      var content = document.getElementById('app-content');
-      if (!screen || !content) return;
-      content.style.display = 'block';
-      if (instant) {
-        screen.style.display = 'none';
-      } else {
-        screen.classList.add('unlocked');
-        setTimeout(function() { screen.style.display = 'none'; }, 400);
-      }
-      // Keyboard listener off
-      document.removeEventListener('keydown', _keyHandler);
-    }
-
-    function _keyHandler(e) {
+    function _openApp() {
       var s = document.getElementById('pin-screen');
-      if (!s || s.style.display === 'none') return;
-      if (e.key >= '0' && e.key <= '9') pinPress(e.key);
-      else if (e.key === 'Backspace') pinDel();
+      if (s) { s.classList.add('unlocked'); setTimeout(function(){ s.style.display = 'none'; }, 400); }
     }
 
-    // Jalankan saat DOM siap
     document.addEventListener('DOMContentLoaded', function() {
-      var screen  = document.getElementById('pin-screen');
-      var content = document.getElementById('app-content');
-      if (!screen || !content) return;
+      /* Cek sesi — sudah login dalam 12 jam? */
+      var ok = false;
+      try {
+        var ts = parseInt(localStorage.getItem(_KEY) || '0', 10);
+        if (ts && (Date.now() - ts < _TTL)) ok = true;
+      } catch(e) {}
 
-      if (window._pinUnlocked) {
-        // Session masih valid — langsung buka tanpa animasi
-        screen.style.display = 'none';
-        content.style.display = 'block';
-      } else {
-        // Tampilkan PIN screen
-        screen.style.display   = 'flex';
-        content.style.display  = 'none';
-        document.addEventListener('keydown', _keyHandler);
+      var s = document.getElementById('pin-screen');
+      if (ok) {
+        /* Langsung buka */
+        if (s) s.style.display = 'none';
       }
+      /* Jika belum ok, pin-screen sudah display:flex dari CSS — biarkan tampil */
+
+      /* Keyboard support */
+      document.addEventListener('keydown', function(e) {
+        if (!s || s.style.display === 'none') return;
+        if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+        else if (e.key === 'Backspace') pinDel();
+      });
     });
   </script>
 </head>
@@ -185,7 +153,7 @@
 </div>
 
 <!-- Semua konten utama — tersembunyi sampai PIN benar -->
-<div id="app-content" style="display:none">
+<div id="app-content">
 
 
 <!-- ===================== HEADER + MAIN TABS ===================== -->

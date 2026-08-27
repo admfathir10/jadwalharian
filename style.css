@@ -1458,3 +1458,154 @@ body {
   .menu-week-header, .menu-grid, .bahan-section { margin-left: 1rem; margin-right: 1rem; }
   .bahan-header { flex-direction: column; align-items: flex-start; }
 }
+
+/* ================================================
+   PIN LOCK SCREEN — proteksi privasi keluarga
+   ================================================ */
+
+/* Sembunyikan semua konten asli selama belum unlock */
+body:not(.app-unlocked) > *:not(.pin-lock-screen) {
+  display: none !important;
+}
+body:not(.app-unlocked) {
+  overflow: hidden;
+}
+.pin-lock-screen {
+  display: none;
+}
+body:not(.app-unlocked) .pin-lock-screen {
+  display: flex;
+}
+
+.pin-lock-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 60%, var(--green-dark) 100%);
+  padding: 1.5rem;
+}
+
+.pin-lock-box {
+  width: 100%;
+  max-width: 340px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.75rem 1.75rem;
+  text-align: center;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+}
+
+.pin-lock-box.shake {
+  animation: pinShake 0.4s;
+}
+
+@keyframes pinShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.pin-lock-icon {
+  font-size: 34px;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 0.9rem;
+  border-radius: 50%;
+  background: rgba(240,192,96,0.12);
+  border: 1.5px solid rgba(240,192,96,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pin-lock-box h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-on-dark);
+  margin-bottom: 4px;
+}
+
+.pin-lock-box p {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin-bottom: 1.4rem;
+}
+
+.pin-dots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  background: transparent;
+  transition: background 0.15s, transform 0.15s, border-color 0.15s;
+}
+
+.pin-dot.filled {
+  background: var(--gold);
+  border-color: var(--gold);
+  transform: scale(1.1);
+}
+
+.pin-hidden-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  height: 0;
+  width: 0;
+}
+
+.pin-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.pin-key {
+  padding: 14px 0;
+  font-size: 17px;
+  font-weight: 600;
+  font-family: var(--font);
+  color: var(--text-on-dark);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.pin-key:hover  { background: rgba(255,255,255,0.12); }
+.pin-key:active { transform: scale(0.95); }
+
+.pin-key.pin-key-empty { visibility: hidden; }
+
+.pin-key.pin-key-back {
+  font-size: 15px;
+  color: var(--gold-soft);
+}
+
+.pin-error {
+  min-height: 16px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #f87171;
+  letter-spacing: 0.01em;
+}
+
+.pin-lock-footer {
+  margin-top: 1.1rem;
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.02em;
+}

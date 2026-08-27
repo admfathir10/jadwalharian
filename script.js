@@ -8,7 +8,7 @@
    link ini iseng buka dan lihat jadwal/data keluarga kalian.
    ============================================ */
 (function () {
-  const PIN_CODE = '111213';            // <-- GANTI PIN 6 digit di sini
+  const PIN_CODE = '123456';            // <-- GANTI PIN 6 digit di sini
   const REMEMBER_DAYS = 30;             // berapa hari device ini tetap "ingat" login
 
   const STORAGE_KEY = 'jk_pin_unlock';

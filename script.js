@@ -1,120 +1,4 @@
-/* ================================================
-   PIN SCREEN — 6 digit
-   Ganti PIN_CORRECT di bawah dengan PIN yang kamu inginkan
-   ================================================ */
-
-const PIN_CORRECT  = '123456';   // ← GANTI PIN DI SINI
-const PIN_STORAGE  = 'jadwal_unlocked';
-const PIN_DURATION = 12 * 60 * 60 * 1000; // 12 jam — tidak perlu login ulang seharian
-
-let pinBuffer = '';
-let pinLocked = true;
-
-function initPinScreen() {
-  const screen  = document.getElementById('pin-screen');
-  const content = document.getElementById('app-content');
-
-  // Pastikan konten tersembunyi dulu
-  content.style.display = 'none';
-
-  // Cek apakah sudah unlock dalam 12 jam terakhir
-  try {
-    const saved = localStorage.getItem(PIN_STORAGE);
-    if (saved) {
-      const { ts } = JSON.parse(saved);
-      if (Date.now() - ts < PIN_DURATION) {
-        unlockApp(true); // langsung buka tanpa animasi
-        return;
-      }
-    }
-  } catch {}
-
-  // Tampilkan PIN screen pakai class .visible
-  screen.classList.add('visible');
-
-  // Keyboard support (laptop)
-  document.addEventListener('keydown', handlePinKey);
-}
-
-function handlePinKey(e) {
-  if (!pinLocked) return;
-  if (e.key >= '0' && e.key <= '9') pinPress(e.key);
-  else if (e.key === 'Backspace') pinDel();
-}
-
-window.pinPress = function(digit) {
-  if (!pinLocked) return;
-  if (pinBuffer.length >= 6) return;
-
-  pinBuffer += digit;
-  updatePinDots();
-
-  if (pinBuffer.length === 6) {
-    setTimeout(checkPin, 120); // delay kecil agar dot ke-6 terlihat terisi
-  }
-};
-
-window.pinDel = function() {
-  if (!pinLocked) return;
-  pinBuffer = pinBuffer.slice(0, -1);
-  updatePinDots();
-  clearError();
-};
-
-function updatePinDots() {
-  for (let i = 0; i < 6; i++) {
-    const dot = document.getElementById('d' + i);
-    dot.classList.toggle('filled', i < pinBuffer.length);
-    dot.classList.remove('error');
-  }
-}
-
-function checkPin() {
-  if (pinBuffer === PIN_CORRECT) {
-    // Simpan timestamp unlock
-    localStorage.setItem(PIN_STORAGE, JSON.stringify({ ts: Date.now() }));
-    unlockApp(false);
-  } else {
-    // Shake + error
-    const dots = document.getElementById('pin-dots');
-    dots.classList.add('shake');
-    for (let i = 0; i < 6; i++) {
-      const dot = document.getElementById('d' + i);
-      dot.classList.remove('filled');
-      dot.classList.add('error');
-    }
-    document.getElementById('pin-error').textContent = 'PIN salah, coba lagi';
-    pinBuffer = '';
-    setTimeout(() => {
-      dots.classList.remove('shake');
-      updatePinDots();
-    }, 500);
-  }
-}
-
-function clearError() {
-  document.getElementById('pin-error').textContent = '';
-}
-
-function unlockApp(instant) {
-  pinLocked = false;
-  document.removeEventListener('keydown', handlePinKey);
-  const screen  = document.getElementById('pin-screen');
-  const content = document.getElementById('app-content');
-
-  content.style.display = 'block';
-
-  if (instant) {
-    screen.classList.remove('visible');
-    screen.style.display = 'none';
-  } else {
-    screen.classList.add('unlocked');
-    setTimeout(() => {
-      screen.classList.remove('visible');
-      screen.style.display = 'none';
-    }, 400);
-  }
-}
+/* PIN dihandle di index.html */
 
 /* ============================================
    JADWAL KELUARGA — script.js (Firebase Sync)
@@ -628,16 +512,22 @@ function injectDateBadge() {
 /* ========================
    Init
    ======================== */
-document.addEventListener('DOMContentLoaded', () => {
-  // PIN dihandle inline di index.html
+/* initApp dipanggil dari PIN screen setelah unlock (atau langsung jika session valid) */
+window.initApp = function() {
   injectClock();
   injectDateBadge();
   autoSelectDay();
   updateClock();
   highlightLiveBlocks();
-  initFirebase(); // akan fallback ke localStorage jika DATABASE_URL belum diisi
+  initFirebase();
   setInterval(updateClock, 1000);
   setInterval(highlightLiveBlocks, 30000);
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  // initApp akan dipanggil oleh PIN screen inline di index.html
+  // Jika PIN sudah unlock (window._pinUnlocked), initApp sudah dipanggil di sana
+  // Tidak perlu memanggil apapun di sini
 });
 
 /* ================================================

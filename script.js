@@ -1,90 +1,120 @@
-/* ============================================
-   PIN LOCK — proteksi privasi keluarga
-   ============================================
-   GANTI PIN DI BAWAH INI dengan 6 digit pilihanmu.
-   Ini bukan enkripsi tingkat bank (situs statis di GitHub Pages
-   memang tidak bisa 100% aman dari orang yang sengaja membuka kode
-   sumbernya) — tapi cukup untuk mencegah orang random yang menemukan
-   link ini iseng buka dan lihat jadwal/data keluarga kalian.
-   ============================================ */
-(function () {
-  const PIN_CODE = '111213';            // <-- GANTI PIN 6 digit di sini
-  const REMEMBER_DAYS = 0;             // berapa hari device ini tetap "ingat" login
+/* ================================================
+   PIN SCREEN — 6 digit
+   Ganti PIN_CORRECT di bawah dengan PIN yang kamu inginkan
+   ================================================ */
 
-  const STORAGE_KEY = 'jk_pin_unlock';
-  let enteredPin = '';
+const PIN_CORRECT  = '123456';   // ← GANTI PIN DI SINI
+const PIN_STORAGE  = 'jadwal_unlocked';
+const PIN_DURATION = 12 * 60 * 60 * 1000; // 12 jam — tidak perlu login ulang seharian
 
-  function getDots() { return document.querySelectorAll('#pin-dots .pin-dot'); }
+let pinBuffer = '';
+let pinLocked = true;
 
-  function refreshDots() {
-    const dots = getDots();
-    dots.forEach((dot, i) => dot.classList.toggle('filled', i < enteredPin.length));
-  }
+function initPinScreen() {
+  const screen  = document.getElementById('pin-screen');
+  const content = document.getElementById('app-content');
 
-  function showError(msg) {
-    const errEl = document.getElementById('pin-error');
-    const box = document.getElementById('pin-lock-box');
-    if (errEl) errEl.textContent = msg;
-    if (box) {
-      box.classList.add('shake');
-      setTimeout(() => box.classList.remove('shake'), 400);
+  // Pastikan konten tersembunyi dulu
+  content.style.display = 'none';
+
+  // Cek apakah sudah unlock dalam 12 jam terakhir
+  try {
+    const saved = localStorage.getItem(PIN_STORAGE);
+    if (saved) {
+      const { ts } = JSON.parse(saved);
+      if (Date.now() - ts < PIN_DURATION) {
+        unlockApp(true); // langsung buka tanpa animasi
+        return;
+      }
     }
+  } catch {}
+
+  // Tampilkan PIN screen pakai class .visible
+  screen.classList.add('visible');
+
+  // Keyboard support (laptop)
+  document.addEventListener('keydown', handlePinKey);
+}
+
+function handlePinKey(e) {
+  if (!pinLocked) return;
+  if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+  else if (e.key === 'Backspace') pinDel();
+}
+
+window.pinPress = function(digit) {
+  if (!pinLocked) return;
+  if (pinBuffer.length >= 6) return;
+
+  pinBuffer += digit;
+  updatePinDots();
+
+  if (pinBuffer.length === 6) {
+    setTimeout(checkPin, 120); // delay kecil agar dot ke-6 terlihat terisi
   }
+};
 
-  function unlockApp(remember) {
-    document.body.classList.add('app-unlocked');
-    if (remember) {
-      const expires = Date.now() + REMEMBER_DAYS * 24 * 60 * 60 * 1000;
-      try { localStorage.setItem(STORAGE_KEY, String(expires)); } catch (e) {}
-    }
+window.pinDel = function() {
+  if (!pinLocked) return;
+  pinBuffer = pinBuffer.slice(0, -1);
+  updatePinDots();
+  clearError();
+};
+
+function updatePinDots() {
+  for (let i = 0; i < 6; i++) {
+    const dot = document.getElementById('d' + i);
+    dot.classList.toggle('filled', i < pinBuffer.length);
+    dot.classList.remove('error');
   }
+}
 
-  function isRemembered() {
-    try {
-      const expires = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
-      return expires > Date.now();
-    } catch (e) { return false; }
+function checkPin() {
+  if (pinBuffer === PIN_CORRECT) {
+    // Simpan timestamp unlock
+    localStorage.setItem(PIN_STORAGE, JSON.stringify({ ts: Date.now() }));
+    unlockApp(false);
+  } else {
+    // Shake + error
+    const dots = document.getElementById('pin-dots');
+    dots.classList.add('shake');
+    for (let i = 0; i < 6; i++) {
+      const dot = document.getElementById('d' + i);
+      dot.classList.remove('filled');
+      dot.classList.add('error');
+    }
+    document.getElementById('pin-error').textContent = 'PIN salah, coba lagi';
+    pinBuffer = '';
+    setTimeout(() => {
+      dots.classList.remove('shake');
+      updatePinDots();
+    }, 500);
   }
+}
 
-  function checkPin() {
-    if (enteredPin === PIN_CODE) {
-      document.getElementById('pin-error').textContent = '';
-      unlockApp(true);
-    } else {
-      showError('PIN salah, coba lagi');
-      enteredPin = '';
-      refreshDots();
-    }
+function clearError() {
+  document.getElementById('pin-error').textContent = '';
+}
+
+function unlockApp(instant) {
+  pinLocked = false;
+  document.removeEventListener('keydown', handlePinKey);
+  const screen  = document.getElementById('pin-screen');
+  const content = document.getElementById('app-content');
+
+  content.style.display = 'block';
+
+  if (instant) {
+    screen.classList.remove('visible');
+    screen.style.display = 'none';
+  } else {
+    screen.classList.add('unlocked');
+    setTimeout(() => {
+      screen.classList.remove('visible');
+      screen.style.display = 'none';
+    }, 400);
   }
-
-  window.pinPress = function (digit) {
-    if (enteredPin.length >= 6) return;
-    enteredPin += digit;
-    refreshDots();
-    if (enteredPin.length === 6) {
-      setTimeout(checkPin, 120);
-    }
-  };
-
-  window.pinBackspace = function () {
-    enteredPin = enteredPin.slice(0, -1);
-    refreshDots();
-    document.getElementById('pin-error').textContent = '';
-  };
-
-  document.addEventListener('DOMContentLoaded', function () {
-    if (isRemembered()) {
-      unlockApp(false);
-      return;
-    }
-    // Dukungan keyboard fisik (angka 0-9 dan backspace)
-    document.addEventListener('keydown', function (e) {
-      if (document.body.classList.contains('app-unlocked')) return;
-      if (e.key >= '0' && e.key <= '9') window.pinPress(e.key);
-      else if (e.key === 'Backspace') window.pinBackspace();
-    });
-  });
-})();
+}
 
 /* ============================================
    JADWAL KELUARGA — script.js (Firebase Sync)
@@ -132,18 +162,23 @@ function initFirebase() {
       }
     });
 
-    // Listen realtime
+    // Listen realtime todos — tangkap PERMISSION_DENIED secara spesifik
     todosRef.on('value', snap => {
       const raw = snap.val();
       todos = raw ? Object.entries(raw).map(([fbKey, v]) => ({ ...v, fbKey })) : [];
       renderTodos();
     }, err => {
-      setSyncStatus('error', 'Gagal: ' + err.code);
+      console.error('Firebase error:', err.code);
+      if (err.code === 'PERMISSION_DENIED') {
+        setSyncStatus('error', '⚠️ Izin ditolak');
+        showPermissionBanner();
+      } else {
+        setSyncStatus('error', 'Gagal sync');
+      }
       loadFromLocal();
     });
 
     isFirebaseReady = true;
-    // Panggil setelah db siap — pakai setTimeout 0 agar tidak race condition
     setTimeout(initMenuFirebase, 0);
 
   } catch (e) {
@@ -151,6 +186,37 @@ function initFirebase() {
     console.error(e);
     loadFromLocal();
   }
+}
+
+/* Banner muncul saat permission denied — tampil sekali, bisa ditutup */
+function showPermissionBanner() {
+  if (document.getElementById('fb-permission-banner')) return;
+  const el = document.createElement('div');
+  el.id = 'fb-permission-banner';
+  el.style.cssText = [
+    'position:fixed','bottom:1.25rem','left:50%','transform:translateX(-50%)',
+    'background:#1e1b2e','color:#fde68a','border:1.5px solid #f59e0b',
+    'border-radius:14px','padding:.85rem 1.25rem','font-size:12.5px',
+    'font-family:system-ui,sans-serif','z-index:9999','max-width:min(480px,92vw)',
+    'box-shadow:0 8px 32px rgba(0,0,0,0.35)','line-height:1.6',
+    'display:flex','align-items:flex-start','gap:10px'
+  ].join(';');
+  el.innerHTML = \`
+    <span style="font-size:20px;flex-shrink:0;margin-top:1px">⚠️</span>
+    <div style="flex:1">
+      <b style="display:block;margin-bottom:3px">Firebase Rules perlu diperbarui</b>
+      1. Buka <b>console.firebase.google.com</b><br>
+      2. Pilih project → <b>Realtime Database → Rules</b><br>
+      3. Ganti <code style="background:#fff2;padding:0 4px;border-radius:3px">false</code>
+         jadi <code style="background:#fff2;padding:0 4px;border-radius:3px">true</code>
+         untuk <b>.read</b> dan <b>.write</b><br>
+      4. Klik <b>Publish</b>
+    </div>
+    <button onclick="document.getElementById('fb-permission-banner').remove()" style="
+      background:none;border:none;color:#fde68a;font-size:18px;
+      cursor:pointer;flex-shrink:0;line-height:1">✕</button>
+  \`;
+  document.body.appendChild(el);
 }
 
 /* ─── Sync status indicator ─── */
@@ -563,6 +629,7 @@ function injectDateBadge() {
    Init
    ======================== */
 document.addEventListener('DOMContentLoaded', () => {
+  // PIN dihandle inline di index.html
   injectClock();
   injectDateBadge();
   autoSelectDay();
@@ -983,4 +1050,314 @@ const _origShowView = window.showView;
 window.showView = function(id) {
   _origShowView(id);
   if (id === 'menu') initMenu();
+};
+
+/* ================================================
+   DASHBOARD TABS — Hari Ini, English, Keluarga, Finansial
+   ================================================ */
+
+/* ── Data Agenda per hari ── */
+const _schedules = {
+  1: [
+    {time:'03.00',act:'Bangun — persiapan ibadah malam',icon:'🌙',color:'#D1FAE5'},
+    {time:'03.15',act:'Tahajud, Witir, doa',icon:'📿',color:'#D1FAE5'},
+    {time:'03.40',act:'Sahur',icon:'🍽️',color:'#FEF9E7'},
+    {time:'04.10',act:'Tilawah Al-Qur\'an',icon:'📖',color:'#D1FAE5'},
+    {time:'04.45',act:'Sholat Subuh + Dzikir pagi',icon:'📿',color:'#D1FAE5'},
+    {time:'05.30',act:'Workout pagi (20 menit)',icon:'💪',color:'#DBEAFE'},
+    {time:'06.20',act:'Berangkat ke SMAN 8 Kediri',icon:'🏍️',color:'#DBEAFE'},
+    {time:'09.00',act:'Istirahat — Sholat Dhuha',icon:'🕌',color:'#D1FAE5'},
+    {time:'11.30',act:'Sholat Dzuhur berjamaah',icon:'🕌',color:'#D1FAE5'},
+    {time:'15.00',act:'Sholat Ashar',icon:'🕌',color:'#D1FAE5'},
+    {time:'15.30',act:'Absensi pulang',icon:'🏫',color:'#DBEAFE'},
+    {time:'16.20',act:'Main bareng anak',sub:'Tanpa HP — 40 menit fokus',icon:'👦',color:'#D1FAE5'},
+    {time:'17.45',act:'Maghrib — berbuka puasa',icon:'🌅',color:'#D1FAE5'},
+    {time:'18.30',act:'Makan malam bersama keluarga',icon:'🍽️',color:'#D1FAE5'},
+    {time:'19.15',act:'Isya + Dzikir malam',icon:'📿',color:'#D1FAE5'},
+    {time:'20.00',act:'Cek Artilerianstore / Coding / Baca',icon:'💻',color:'#EDE9FE'},
+    {time:'21.30',act:'Tidur',icon:'😴',color:'#F3F4F6'},
+  ],
+  2: [
+    {time:'03.45',act:'Bangun — Tahajud, Witir, doa',icon:'🌙',color:'#D1FAE5'},
+    {time:'04.45',act:'Sholat Subuh + Dzikir',icon:'📿',color:'#D1FAE5'},
+    {time:'05.35',act:'Workout pagi (25 menit)',icon:'💪',color:'#DBEAFE'},
+    {time:'06.20',act:'Berangkat ke sekolah',icon:'🏍️',color:'#DBEAFE'},
+    {time:'09.00',act:'Sholat Dhuha',icon:'🕌',color:'#D1FAE5'},
+    {time:'11.30',act:'Sholat Dzuhur + makan siang',icon:'🕌',color:'#D1FAE5'},
+    {time:'15.30',act:'Absensi pulang',icon:'🏫',color:'#DBEAFE'},
+    {time:'16.00',act:'Fotografi / Videografi konten',icon:'📸',color:'#FEF3C7'},
+    {time:'18.00',act:'Maghrib + Tilawah',icon:'🌅',color:'#D1FAE5'},
+    {time:'18.30',act:'Makan malam bersama keluarga',icon:'🍽️',color:'#D1FAE5'},
+    {time:'19.15',act:'Isya',icon:'📿',color:'#D1FAE5'},
+    {time:'19.45',act:'English: Writing — jurnal / paragraf',icon:'✍️',color:'#EDE9FE'},
+    {time:'21.30',act:'Tidur',icon:'😴',color:'#F3F4F6'},
+  ],
+  3: [
+    {time:'03.45',act:'Bangun — Tahajud, Witir, doa',icon:'🌙',color:'#D1FAE5'},
+    {time:'04.45',act:'Sholat Subuh + Dzikir',icon:'📿',color:'#D1FAE5'},
+    {time:'05.35',act:'Workout pagi (20 menit — ringkas)',icon:'💪',color:'#DBEAFE'},
+    {time:'06.20',act:'Berangkat ke sekolah',icon:'🏍️',color:'#DBEAFE'},
+    {time:'09.00',act:'Sholat Dhuha',icon:'🕌',color:'#D1FAE5'},
+    {time:'11.30',act:'Sholat Dzuhur + makan siang',icon:'🕌',color:'#D1FAE5'},
+    {time:'15.30',act:'Segera pulang — madin jam 16.30',icon:'🏫',color:'#DBEAFE'},
+    {time:'16.30',act:'Mengajar Madin / TPA',icon:'📖',color:'#EDE9FE',sub:'Hingga 19.00'},
+    {time:'19.00',act:'Maghrib + Isya',icon:'🌅',color:'#D1FAE5'},
+    {time:'19.45',act:'Makan malam + istirahat',icon:'🍽️',color:'#D1FAE5'},
+    {time:'21.00',act:'Tidur lebih awal',icon:'😴',color:'#F3F4F6'},
+  ],
+  4: [
+    {time:'03.00',act:'Bangun — Tahajud, Witir, doa',icon:'🌙',color:'#D1FAE5'},
+    {time:'03.40',act:'Sahur',icon:'🍽️',color:'#FEF9E7'},
+    {time:'04.45',act:'Sholat Subuh + Dzikir',icon:'📿',color:'#D1FAE5'},
+    {time:'05.30',act:'Workout pagi (20 menit)',icon:'💪',color:'#DBEAFE'},
+    {time:'06.20',act:'Berangkat ke sekolah',icon:'🏍️',color:'#DBEAFE'},
+    {time:'09.00',act:'Sholat Dhuha',icon:'🕌',color:'#D1FAE5'},
+    {time:'11.30',act:'Sholat Dzuhur (puasa)',icon:'🕌',color:'#D1FAE5'},
+    {time:'15.30',act:'Absensi pulang',icon:'🏫',color:'#DBEAFE'},
+    {time:'16.20',act:'Main bareng anak',icon:'👦',color:'#D1FAE5'},
+    {time:'17.45',act:'Maghrib — berbuka puasa',icon:'🌅',color:'#D1FAE5'},
+    {time:'18.30',act:'Makan malam bersama keluarga',icon:'🍽️',color:'#D1FAE5'},
+    {time:'19.15',act:'Isya',icon:'📿',color:'#D1FAE5'},
+    {time:'20.00',act:'English: Reading — artikel edukasi',icon:'📖',color:'#EDE9FE'},
+    {time:'21.30',act:'Tidur',icon:'😴',color:'#F3F4F6'},
+  ],
+  5: [
+    {time:'03.45',act:'Tahajud, Witir, doa',icon:'🌙',color:'#D1FAE5'},
+    {time:'04.45',act:'Subuh + baca Al-Kahfi pagi Jumat',icon:'📿',color:'#D1FAE5'},
+    {time:'05.35',act:'Workout pagi (25 menit)',icon:'💪',color:'#DBEAFE'},
+    {time:'06.20',act:'Berangkat ke sekolah',icon:'🏍️',color:'#DBEAFE'},
+    {time:'11.30',act:'Sholat Jumat berjamaah',icon:'🕌',color:'#D1FAE5'},
+    {time:'16.00',act:'Absensi pulang',icon:'🏫',color:'#DBEAFE'},
+    {time:'16.30',act:'Workout sore / mancing sore',icon:'🎣',color:'#FEF3C7'},
+    {time:'18.00',act:'Maghrib + Tilawah',icon:'🌅',color:'#D1FAE5'},
+    {time:'18.30',act:'Date Night Salma ❤️',sub:'Konsisten tiap Jumat',icon:'💑',color:'#FCE7F3'},
+    {time:'19.15',act:'Isya',icon:'📿',color:'#D1FAE5'},
+    {time:'20.30',act:'English: Speaking — shadowing',icon:'🎙️',color:'#EDE9FE'},
+    {time:'21.30',act:'Tidur',icon:'😴',color:'#F3F4F6'},
+  ],
+  6: [
+    {time:'04.30',act:'Subuh + Dzikir',icon:'📿',color:'#D1FAE5'},
+    {time:'05.15',act:'Jogging / workout (45–60 menit)',icon:'🏃',color:'#DBEAFE'},
+    {time:'06.15',act:'Mandikan anak — beri Salma 1 jam bebas',icon:'🛁',color:'#FCE7F3'},
+    {time:'06.45',act:'Sarapan bersama keluarga',icon:'🍳',color:'#D1FAE5'},
+    {time:'09.30',act:'Sholat Dhuha',icon:'🕌',color:'#D1FAE5'},
+    {time:'09.45',act:'Fotografi / Coding / nulis artikel',icon:'📸',color:'#FEF3C7'},
+    {time:'12.00',act:'Makan siang + tidur siang',icon:'😴',color:'#F3F4F6'},
+    {time:'13.30',act:'Evaluasi toko Shopee — brief karyawan',icon:'📊',color:'#FEF3C7'},
+    {time:'14.30',act:'Jalan-jalan keluarga / kuliner Kediri',icon:'👨‍👩‍👦',color:'#D1FAE5'},
+    {time:'18.00',act:'Maghrib + Tilawah',icon:'🌅',color:'#D1FAE5'},
+    {time:'18.30',act:'Kuliner / nongki bareng Salma',icon:'🍜',color:'#FCE7F3'},
+    {time:'22.00',act:'Tidur',icon:'😴',color:'#F3F4F6'},
+  ],
+  0: [
+    {time:'05.00',act:'Subuh',icon:'📿',color:'#D1FAE5'},
+    {time:'07.00',act:'Bangun santai — sarapan keluarga',icon:'☕',color:'#D1FAE5'},
+    {time:'08.00',act:'Jogging pagi bersama keluarga',icon:'🏃',color:'#DBEAFE'},
+    {time:'09.00',act:'Sholat Dhuha',icon:'🕌',color:'#D1FAE5'},
+    {time:'09.30',act:'Liburan / wisata keluarga',icon:'🌳',color:'#D1FAE5'},
+    {time:'12.00',act:'Makan siang + tidur siang panjang',icon:'😴',color:'#F3F4F6'},
+    {time:'14.00',act:'Main bareng anak / hobi bebas',icon:'👦',color:'#D1FAE5'},
+    {time:'18.00',act:'Maghrib + Tilawah',icon:'🌅',color:'#D1FAE5'},
+    {time:'18.30',act:'Cek toko Shopee — set target minggu depan',icon:'📊',color:'#FEF3C7'},
+    {time:'19.00',act:'Makan malam keluarga',icon:'🍽️',color:'#D1FAE5'},
+    {time:'21.00',act:'Tidur lebih awal — besok Senin',icon:'😴',color:'#F3F4F6'},
+  ],
+};
+
+const _reminders = {
+  1:'Senin 🌙 Hari puasa sunnah. Bangun 03.00 untuk Tahajud + Sahur. Main bareng anak sore ini 40 menit — prioritas.',
+  2:'Selasa ✍️ Selesaikan admin di sekolah sebelum jam 16. Malam ini: English Writing 30 menit.',
+  3:'Rabu ⚡ Hari tersibuk. Ada madin jam 16.30 sampai 19.00. Tidak ada target tambahan — selamatkan hari ini.',
+  4:'Kamis 🌙 Hari puasa sunnah. Bangun 03.00 untuk Tahajud + Sahur. Main bareng anak sore jam 16.20.',
+  5:'Jumat ✨ Baca Al-Kahfi pagi ini. Setelah pulang: HP kerja OFF. Date night Salma malam ini — jangan skip.',
+  6:'Sabtu 🌿 Mandikan anak pagi ini, beri Salma waktu bebas. Sore: jalan keluarga Kediri.',
+  0:'Minggu 🏠 Hari keluarga penuh. Hadir sepenuhnya untuk Salma dan anak. Tidak ada urusan sekolah hari ini.',
+};
+
+/* ── Render Timeline ── */
+function renderDTimeline() {
+  const el = document.getElementById('d-timeline');
+  if (!el) return;
+  const now = new Date();
+  const dow = now.getDay();
+  const sched = _schedules[dow] || _schedules[1];
+  const curH = now.getHours() + now.getMinutes() / 60;
+  el.innerHTML = '';
+  sched.forEach((item, i) => {
+    const [h, m] = item.time.split('.').map(Number);
+    const ih = h + (m || 0) / 60;
+    const nh = i < sched.length - 1
+      ? (() => { const [nh2,nm2] = sched[i+1].time.split('.').map(Number); return nh2+(nm2||0)/60; })()
+      : 25;
+    const isDone = curH > ih + 0.5;
+    const isNow  = curH >= ih && curH < nh;
+    const div = document.createElement('div');
+    div.className = 'd-tl-item' + (isDone?' done':'') + (isNow?' now':'');
+    div.innerHTML = `
+      <div class="d-tl-dot" style="background:${item.color}">${item.icon}</div>
+      <div class="d-tl-content">
+        <div class="d-tl-time">${item.time}${isNow?'<span class="d-now-chip">SEKARANG</span>':''}</div>
+        <div class="d-tl-act">${item.act}</div>
+        ${item.sub?`<div class="d-tl-sub">${item.sub}</div>`:''}
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+/* ── Reminder ── */
+function renderDReminder() {
+  const el = document.getElementById('d-reminder');
+  if (!el) return;
+  el.textContent = _reminders[new Date().getDay()] || '';
+}
+
+/* ── DateTime stat ── */
+function renderDDateTime() {
+  const now = new Date();
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const sh = document.getElementById('d-stat-hari');
+  const sj = document.getElementById('d-stat-jam');
+  if (sh) sh.textContent = days[now.getDay()];
+  if (sj) sj.textContent = now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+}
+
+/* ── Checklist ── */
+const _checkItems = [
+  {id:'subuh',   lbl:'Sholat Subuh berjamaah / tepat waktu',    tag:'Ibadah',    color:'green'},
+  {id:'tilawah', lbl:'Tilawah Al-Qur\'an (min. 1 halaman)',      tag:'Ibadah',    color:'green'},
+  {id:'dhuha',   lbl:'Sholat Dhuha (istirahat sekolah)',          tag:'Ibadah',    color:'green'},
+  {id:'dzuhur',  lbl:'Sholat Dzuhur berjamaah',                   tag:'Ibadah',    color:'green'},
+  {id:'isya',    lbl:'Sholat Isya & doa malam bersama anak',      tag:'Ibadah',    color:'green'},
+  {id:'hpoff',   lbl:'HP kerja OFF setelah jam 16.00',            tag:'Keluarga',  color:'rose'},
+  {id:'anak',    lbl:"Main / quality time dengan anak (min. 30')",tag:'Keluarga',  color:'rose'},
+  {id:'salma',   lbl:'Ngobrol dengan Salma (bukan sambil HP)',     tag:'Keluarga',  color:'rose'},
+  {id:'admin',   lbl:'Selesaikan admin sekolah DI SEKOLAH',        tag:'Kerja',     color:'blue'},
+  {id:'english', lbl:'Belajar Bahasa Inggris 30 menit',           tag:'Upgrade',   color:'purple'},
+  {id:'toko',    lbl:'Cek Artilerianstore (singkat)',              tag:'Bisnis',    color:'blue'},
+];
+const _tagCls = {green:'d-tag-green', rose:'d-tag-rose', blue:'d-tag-blue', purple:'d-tag-purple'};
+
+function renderDChecks() {
+  const el = document.getElementById('d-checks');
+  if (!el) return;
+  const today = new Date().toDateString();
+  const saved = JSON.parse(localStorage.getItem('dchecks_' + today) || '{}');
+  el.innerHTML = '';
+  _checkItems.forEach(item => {
+    const div = document.createElement('div');
+    const checked = saved[item.id] || false;
+    div.className = 'd-check-item' + (checked ? ' checked' : '');
+    div.onclick = () => toggleDCheck(item.id);
+    div.innerHTML = `
+      <div class="d-check-box">${checked ? '✓' : ''}</div>
+      <div class="d-check-lbl">${item.lbl}</div>
+      <span class="d-check-tag ${_tagCls[item.color] || 'd-tag-blue'}">${item.tag}</span>`;
+    el.appendChild(div);
+  });
+}
+
+function toggleDCheck(id) {
+  const today = new Date().toDateString();
+  const saved = JSON.parse(localStorage.getItem('dchecks_' + today) || '{}');
+  saved[id] = !saved[id];
+  localStorage.setItem('dchecks_' + today, JSON.stringify(saved));
+  renderDChecks();
+}
+
+window.saveDChecks = function() {
+  const today = new Date().toDateString();
+  const saved = JSON.parse(localStorage.getItem('dchecks_' + today) || '{}');
+  const done = Object.values(saved).filter(Boolean).length;
+  alert(`Checklist tersimpan! ${done}/${_checkItems.length} selesai. Tetap istiqamah 💪`);
+};
+
+window.resetDChecks = function() {
+  const today = new Date().toDateString();
+  localStorage.removeItem('dchecks_' + today);
+  renderDChecks();
+};
+
+/* ── English Streak ── */
+const _engDayNames = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+const _engFocus    = ['🏠','🎧','✍️','⚡','📖','🎙️','🌿'];
+const _engBadges   = ['🌱','🌿','⭐','🔥','🔥','🏆','🏆'];
+const _engMsgs     = ['Mulai hari ini!','Bagus, lanjutkan!','Momentum terbentuk!','Luar biasa!','Hampir sempurna!','Konsisten sekali!','Sempurna minggu ini! 🎉'];
+
+function _getWeekKey() {
+  const now = new Date(), s = new Date(now);
+  s.setDate(now.getDate() - now.getDay());
+  return 'eng_' + s.toDateString();
+}
+
+function renderEngWeek() {
+  const wk = _getWeekKey();
+  const states = JSON.parse(localStorage.getItem(wk) || '["","","","","","",""]');
+  const done = states.filter(s => s === 'done').length;
+  const sEl = document.getElementById('eng-streak');
+  const lEl = document.getElementById('eng-streak-lbl');
+  const bEl = document.getElementById('eng-badge');
+  if (sEl) sEl.textContent = done;
+  if (lEl) lEl.textContent = 'hari · ' + _engMsgs[Math.min(done, 6)];
+  if (bEl) bEl.textContent = _engBadges[Math.min(done, 6)];
+  const grid = document.getElementById('eng-week-dots');
+  if (!grid) return;
+  grid.innerHTML = '';
+  _engDayNames.forEach((d, i) => {
+    const wrap = document.createElement('div'); wrap.className = 'eng-wdot-wrap';
+    const dot  = document.createElement('div');
+    dot.className = 'eng-wdot' + (states[i]==='done'?' done':states[i]==='skip'?' skip':'');
+    dot.textContent = states[i]==='done' ? '✓' : states[i]==='skip' ? '✗' : _engFocus[i];
+    dot.onclick = () => {
+      if (states[i]==='')     states[i] = 'done';
+      else if (states[i]==='done') states[i] = 'skip';
+      else states[i] = '';
+      localStorage.setItem(wk, JSON.stringify(states));
+      renderEngWeek();
+    };
+    const lbl = document.createElement('div'); lbl.className = 'eng-wdot-lbl'; lbl.textContent = d;
+    wrap.appendChild(dot); wrap.appendChild(lbl); grid.appendChild(wrap);
+  });
+}
+
+window.saveEngStreak = function() {
+  const wk = _getWeekKey();
+  const states = JSON.parse(localStorage.getItem(wk) || '["","","","","","",""]');
+  const dow = new Date().getDay();
+  if (states[dow] !== 'done') {
+    states[dow] = 'done';
+    localStorage.setItem(wk, JSON.stringify(states));
+    renderEngWeek();
+  }
+  alert('Keren! Sesi hari ini ditandai selesai 💪');
+};
+
+window.resetEngWeek = function() {
+  localStorage.removeItem(_getWeekKey());
+  renderEngWeek();
+};
+
+/* ── Init fungsi-fungsi dashboard ── */
+function initDashboard() {
+  renderDDateTime();
+  renderDTimeline();
+  renderDReminder();
+  renderDChecks();
+  renderEngWeek();
+  setInterval(renderDDateTime, 30000);
+  setInterval(renderDTimeline, 60000);
+}
+
+/* Sambungkan ke initApp yang sudah ada */
+const _origInitApp = window.initApp;
+window.initApp = function() {
+  if (_origInitApp) _origInitApp();
+  initDashboard();
+};
+
+/* Override showView untuk refresh data saat pindah tab */
+const _origShowViewDash = window.showView;
+window.showView = function(id) {
+  if (_origShowViewDash) _origShowViewDash(id);
+  if (id === 'today')   { renderDDateTime(); renderDTimeline(); renderDChecks(); renderDReminder(); }
+  if (id === 'english') { renderEngWeek(); }
 };

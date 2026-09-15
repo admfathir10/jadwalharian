@@ -487,8 +487,14 @@ const ID_HARI   = ['minggu','senin','selasa','rabu','kamis','jumat','sabtu'];
 window.showView = function(id) {
   document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.main-tabs button').forEach(b => b.classList.remove('active'));
-  document.getElementById('view-'+id).classList.add('active');
-  document.getElementById('mtab-'+id).classList.add('active');
+  var panel = document.getElementById('view-' + id);
+  var btn   = document.getElementById('mtab-' + id);
+  if (panel) panel.classList.add('active');
+  if (btn)   btn.classList.add('active');
+  /* Refresh data saat pindah tab — semua handler di sini, tidak ada override lain */
+  if (id === 'menu'    && typeof initMenu        === 'function') initMenu();
+  if (id === 'today'   && typeof renderDDateTime === 'function') { renderDDateTime(); renderDTimeline(); renderDChecks(); renderDReminder(); }
+  if (id === 'english' && typeof renderEngWeek   === 'function') renderEngWeek();
 };
 
 window.showDay = function(day, btn) {
@@ -1348,14 +1354,3 @@ window.initApp = function() {
   if (_origInitApp) _origInitApp();
   initDashboard();
 };
-
-/* ── showView override final — satu kali saja ── */
-(function() {
-  var _orig = window.showView;
-  window.showView = function(id) {
-    if (_orig) _orig(id);
-    if (id === 'menu')     { if (typeof initMenu     === 'function') initMenu(); }
-    if (id === 'today')    { renderDDateTime(); renderDTimeline(); renderDChecks(); renderDReminder(); }
-    if (id === 'english')  { renderEngWeek(); }
-  };
-})();

@@ -1,1356 +1,622 @@
-/* ================================================
-   PIN SCREEN — 6 digit
-   Ganti PIN_CORRECT di bawah dengan PIN yang kamu inginkan
-   ================================================ */
-
-const PIN_CORRECT  = '123456';   // ← GANTI PIN DI SINI
-const PIN_STORAGE  = 'jadwal_unlocked';
-const PIN_DURATION = 12 * 60 * 60 * 1000; // 12 jam — tidak perlu login ulang seharian
-
-let pinBuffer = '';
-let pinLocked = true;
-
-function initPinScreen() {
-  const screen  = document.getElementById('pin-screen');
-  const content = document.getElementById('app-content');
-
-  // Pastikan konten tersembunyi dulu
-  content.style.display = 'none';
-
-  // Cek apakah sudah unlock dalam 12 jam terakhir
-  try {
-    const saved = localStorage.getItem(PIN_STORAGE);
-    if (saved) {
-      const { ts } = JSON.parse(saved);
-      if (Date.now() - ts < PIN_DURATION) {
-        unlockApp(true); // langsung buka tanpa animasi
-        return;
-      }
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jadwal Keluarga — Fathir & Salma</title>
+  <link rel="stylesheet" href="style.css?v=2" />
+  <!-- Override todo-section layout — bypass CDN cache -->
+  <style>
+    .todo-section {
+      /* Padding kiri-kanan SELALU sama persis dengan .main-content (1.75rem)
+         di semua ukuran layar, supaya lebar box To-Do identik dengan
+         card Jadwal Suami/Istri — tidak ada breakpoint terpisah lagi. */
+      max-width: 1240px !important;
+      width: 100% !important;
+      margin: 0 auto !important;
+      padding: 1.1rem 1.75rem 0 !important;
+      box-sizing: border-box !important;
     }
-  } catch {}
-
-  // Tampilkan PIN screen pakai class .visible
-  screen.classList.add('visible');
-
-  // Keyboard support (laptop)
-  document.addEventListener('keydown', handlePinKey);
-}
-
-function handlePinKey(e) {
-  if (!pinLocked) return;
-  if (e.key >= '0' && e.key <= '9') pinPress(e.key);
-  else if (e.key === 'Backspace') pinDel();
-}
-
-window.pinPress = function(digit) {
-  if (!pinLocked) return;
-  if (pinBuffer.length >= 6) return;
-
-  pinBuffer += digit;
-  updatePinDots();
-
-  if (pinBuffer.length === 6) {
-    setTimeout(checkPin, 120); // delay kecil agar dot ke-6 terlihat terisi
-  }
-};
-
-window.pinDel = function() {
-  if (!pinLocked) return;
-  pinBuffer = pinBuffer.slice(0, -1);
-  updatePinDots();
-  clearError();
-};
-
-function updatePinDots() {
-  for (let i = 0; i < 6; i++) {
-    const dot = document.getElementById('d' + i);
-    dot.classList.toggle('filled', i < pinBuffer.length);
-    dot.classList.remove('error');
-  }
-}
-
-function checkPin() {
-  if (pinBuffer === PIN_CORRECT) {
-    // Simpan timestamp unlock
-    localStorage.setItem(PIN_STORAGE, JSON.stringify({ ts: Date.now() }));
-    unlockApp(false);
-  } else {
-    // Shake + error
-    const dots = document.getElementById('pin-dots');
-    dots.classList.add('shake');
-    for (let i = 0; i < 6; i++) {
-      const dot = document.getElementById('d' + i);
-      dot.classList.remove('filled');
-      dot.classList.add('error');
+    .todo-section .todo-panel {
+      margin-top: 0 !important;
+      width: 100% !important;
     }
-    document.getElementById('pin-error').textContent = 'PIN salah, coba lagi';
-    pinBuffer = '';
-    setTimeout(() => {
-      dots.classList.remove('shake');
-      updatePinDots();
-    }, 500);
-  }
-}
+    .todo-section .todo-list {
+      max-height: 260px !important;
+    }
+    .main-content {
+      padding-top: 1rem !important;
+    }
+  </style>
 
-function clearError() {
-  document.getElementById('pin-error').textContent = '';
-}
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
 
-function unlockApp(instant) {
-  pinLocked = false;
-  document.removeEventListener('keydown', handlePinKey);
-  const screen  = document.getElementById('pin-screen');
-  const content = document.getElementById('app-content');
+<!-- ===================== PIN LOCK SCREEN ===================== -->
+<div class="pin-lock-screen">
+  <div class="pin-lock-box" id="pin-lock-box">
+    <div class="pin-lock-icon">🔒</div>
+    <h2>Jadwal Keluarga</h2>
+    <p>Masukkan PIN untuk masuk</p>
 
-  content.style.display = 'block';
-
-  if (instant) {
-    screen.classList.remove('visible');
-    screen.style.display = 'none';
-  } else {
-    screen.classList.add('unlocked');
-    setTimeout(() => {
-      screen.classList.remove('visible');
-      screen.style.display = 'none';
-    }, 400);
-  }
-}
-
-/* ============================================
-   JADWAL KELUARGA — script.js (Firebase Sync)
-   ============================================
-
-   SETUP (sekali saja, 3 menit):
-   1. Buka https://console.firebase.google.com
-   2. Create project → nama bebas (mis. jadwal-keluarga)
-   3. Build → Realtime Database → Create Database
-      → pilih Singapore → Start in test mode
-   4. Salin URL database (bentuknya:
-      https://nama-project-default-rtdb.asia-southeast1.firebasedatabase.app)
-   5. Tempel di DATABASE_URL di bawah ini, lalu upload ulang script.js
-
-   ============================================ */
-
-const DATABASE_URL = 'https://jadwal-keluarga-17b86-default-rtdb.asia-southeast1.firebasedatabase.app/';
-// Contoh: 'https://jadwal-keluarga-abc12-default-rtdb.asia-southeast1.firebasedatabase.app'
-
-/* ─── Firebase init ─── */
-let db      = null;
-let todosRef = null;
-let isFirebaseReady = false;
-
-function initFirebase() {
-  if (DATABASE_URL.startsWith('GANTI')) {
-    setSyncStatus('error', 'Belum dikonfigurasi — pakai data lokal');
-    loadFromLocal();
-    return;
-  }
-
-  try {
-    const app = firebase.initializeApp({
-      databaseURL: DATABASE_URL
-    });
-    db       = firebase.database(app);
-    todosRef = db.ref('todos');
-
-    // Deteksi online/offline
-    db.ref('.info/connected').on('value', snap => {
-      if (snap.val()) {
-        setSyncStatus('connected', 'Tersync ✓');
-      } else {
-        setSyncStatus('offline', 'Offline — data lokal');
-      }
-    });
-
-    // Listen realtime todos — tangkap PERMISSION_DENIED secara spesifik
-    todosRef.on('value', snap => {
-      const raw = snap.val();
-      todos = raw ? Object.entries(raw).map(([fbKey, v]) => ({ ...v, fbKey })) : [];
-      renderTodos();
-    }, err => {
-      console.error('Firebase error:', err.code);
-      if (err.code === 'PERMISSION_DENIED') {
-        setSyncStatus('error', '⚠️ Izin ditolak');
-        showPermissionBanner();
-      } else {
-        setSyncStatus('error', 'Gagal sync');
-      }
-      loadFromLocal();
-    });
-
-    isFirebaseReady = true;
-    setTimeout(initMenuFirebase, 0);
-
-  } catch (e) {
-    setSyncStatus('error', 'Error Firebase');
-    console.error(e);
-    loadFromLocal();
-  }
-}
-
-/* Banner muncul saat permission denied — tampil sekali, bisa ditutup */
-function showPermissionBanner() {
-  if (document.getElementById('fb-permission-banner')) return;
-  const el = document.createElement('div');
-  el.id = 'fb-permission-banner';
-  el.style.cssText = [
-    'position:fixed','bottom:1.25rem','left:50%','transform:translateX(-50%)',
-    'background:#1e1b2e','color:#fde68a','border:1.5px solid #f59e0b',
-    'border-radius:14px','padding:.85rem 1.25rem','font-size:12.5px',
-    'font-family:system-ui,sans-serif','z-index:9999','max-width:min(480px,92vw)',
-    'box-shadow:0 8px 32px rgba(0,0,0,0.35)','line-height:1.6',
-    'display:flex','align-items:flex-start','gap:10px'
-  ].join(';');
-  el.innerHTML = \`
-    <span style="font-size:20px;flex-shrink:0;margin-top:1px">⚠️</span>
-    <div style="flex:1">
-      <b style="display:block;margin-bottom:3px">Firebase Rules perlu diperbarui</b>
-      1. Buka <b>console.firebase.google.com</b><br>
-      2. Pilih project → <b>Realtime Database → Rules</b><br>
-      3. Ganti <code style="background:#fff2;padding:0 4px;border-radius:3px">false</code>
-         jadi <code style="background:#fff2;padding:0 4px;border-radius:3px">true</code>
-         untuk <b>.read</b> dan <b>.write</b><br>
-      4. Klik <b>Publish</b>
+    <div class="pin-dots" id="pin-dots">
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
     </div>
-    <button onclick="document.getElementById('fb-permission-banner').remove()" style="
-      background:none;border:none;color:#fde68a;font-size:18px;
-      cursor:pointer;flex-shrink:0;line-height:1">✕</button>
-  \`;
-  document.body.appendChild(el);
-}
 
-/* ─── Sync status indicator ─── */
-function setSyncStatus(state, msg) {
-  const dot  = document.getElementById('sync-dot');
-  const text = document.getElementById('sync-text');
-  if (!dot || !text) return;
-  dot.className = 'sync-dot ' + state;
-  text.textContent = msg;
-}
+    <input type="tel" id="pin-input" class="pin-hidden-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" />
 
-/* ─── Fallback localStorage ─── */
-const LOCAL_KEY = 'todos_keluarga';
-
-function loadFromLocal() {
-  try {
-    const raw = localStorage.getItem(LOCAL_KEY);
-    todos = raw ? JSON.parse(raw) : [];
-  } catch { todos = []; }
-  renderTodos();
-}
-
-function saveToLocal() {
-  try { localStorage.setItem(LOCAL_KEY, JSON.stringify(todos)); } catch {}
-}
-
-/* ========================
-   TO-DO — State
-   ======================== */
-let todos        = [];
-let activeWho    = 'suami';
-let activeFilter = 'semua';
-
-/* ========================
-   CRUD — Firebase-aware
-   ======================== */
-window.addTodo = function () {
-  const input    = document.getElementById('todo-input');
-  const dlInput  = document.getElementById('todo-deadline');
-  const text     = input.value.trim();
-  if (!text) { input.focus(); return; }
-
-  const item = {
-    id:        Date.now(),
-    text,
-    who:       activeWho,
-    done:      false,
-    deadline:  dlInput?.value || null,
-    createdAt: Date.now(),
-    doneAt:    null
-  };
-
-  if (isFirebaseReady && todosRef) {
-    // Firebase: push lalu biarkan listener yang update todos[]
-    todosRef.push(item);
-  } else {
-    todos.push(item);
-    saveToLocal();
-    renderTodos();
-  }
-
-  input.value = '';
-  if (dlInput) dlInput.value = '';
-  input.focus();
-};
-
-window.toggleTodo = function (id) {
-  const item = todos.find(t => t.id === id);
-  if (!item) return;
-  const nowDone = !item.done;
-  const patch   = { done: nowDone, doneAt: nowDone ? Date.now() : null };
-
-  if (isFirebaseReady && item.fbKey) {
-    todosRef.child(item.fbKey).update(patch);
-  } else {
-    todos = todos.map(t => t.id === id ? { ...t, ...patch } : t);
-    saveToLocal();
-    renderTodos();
-  }
-};
-
-window.deleteTodo = function (id) {
-  const item = todos.find(t => t.id === id);
-  if (!item) return;
-
-  if (isFirebaseReady && item.fbKey) {
-    todosRef.child(item.fbKey).remove();
-  } else {
-    todos = todos.filter(t => t.id !== id);
-    saveToLocal();
-    renderTodos();
-  }
-};
-
-window.clearDone = function () {
-  const doneItems = todos.filter(t => t.done);
-  if (!doneItems.length) return;
-  if (!confirm(`Hapus ${doneItems.length} tugas yang sudah selesai?`)) return;
-
-  if (isFirebaseReady) {
-    const updates = {};
-    doneItems.forEach(t => { if (t.fbKey) updates[t.fbKey] = null; });
-    todosRef.update(updates);
-  } else {
-    todos = todos.filter(t => !t.done);
-    saveToLocal();
-    renderTodos();
-  }
-};
-
-/* ========================
-   Who / Filter
-   ======================== */
-window.setWho = function (who, btn) {
-  activeWho = who;
-  document.querySelectorAll('.who-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-};
-
-window.setFilter = function (filter, btn) {
-  activeFilter = filter;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTodos();
-};
-
-/* ========================
-   Date helpers
-   ======================== */
-function todayStr() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-function deadlineStatus(dl) {
-  if (!dl) return null;
-  const today = todayStr();
-  if (dl < today) return 'lewat';
-  if (dl === today) return 'hari-ini';
-  const tom = new Date(); tom.setDate(tom.getDate()+1);
-  const ts  = `${tom.getFullYear()}-${String(tom.getMonth()+1).padStart(2,'0')}-${String(tom.getDate()).padStart(2,'0')}`;
-  return dl === ts ? 'besok' : 'mendatang';
-}
-
-function fmtDeadline(str) {
-  if (!str) return '';
-  const [y,m,d] = str.split('-').map(Number);
-  const dt   = new Date(y, m-1, d);
-  const hari = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'][dt.getDay()];
-  const bln  = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'][m-1];
-  const today = todayStr();
-  if (str === today) return 'Hari ini';
-  const tom = new Date(); tom.setDate(tom.getDate()+1);
-  const ts  = `${tom.getFullYear()}-${String(tom.getMonth()+1).padStart(2,'0')}-${String(tom.getDate()).padStart(2,'0')}`;
-  if (str === ts) return 'Besok';
-  return `${hari}, ${d} ${bln}`;
-}
-
-function fmtTime(ts) {
-  const d   = new Date(ts);
-  const now = new Date();
-  const hh  = String(d.getHours()).padStart(2,'0');
-  const mm  = String(d.getMinutes()).padStart(2,'0');
-  const sameDay = d.getDate()    === now.getDate() &&
-                  d.getMonth()   === now.getMonth() &&
-                  d.getFullYear() === now.getFullYear();
-  if (sameDay) return `${hh}:${mm}`;
-  const hari = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'][d.getDay()];
-  return `${hari} ${d.getDate()}/${d.getMonth()+1} ${hh}:${mm}`;
-}
-
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-/* ========================
-   Render
-   ======================== */
-function renderTodos() {
-  const list  = document.getElementById('todo-list');
-  const empty = document.getElementById('todo-empty');
-  if (!list) return;
-
-  list.querySelectorAll('.todo-item').forEach(el => el.remove());
-
-  const today = todayStr();
-  let filtered = [...todos];
-
-  switch (activeFilter) {
-    case 'selesai':
-      filtered = filtered.filter(t => t.done); break;
-    case 'hari-ini':
-      filtered = filtered.filter(t => !t.done && t.deadline === today); break;
-    case 'terlambat':
-      filtered = filtered.filter(t => !t.done && t.deadline && t.deadline < today); break;
-    case 'suami': case 'istri': case 'bersama':
-      filtered = filtered.filter(t => t.who === activeFilter && !t.done); break;
-  }
-
-  const rank = t => {
-    if (t.done) return 99;
-    const s = deadlineStatus(t.deadline);
-    return s === 'lewat' ? 0 : s === 'hari-ini' ? 1 : s === 'besok' ? 2 : s === 'mendatang' ? 3 : 4;
-  };
-
-  filtered.sort((a, b) => {
-    const ra = rank(a), rb = rank(b);
-    if (ra !== rb) return ra - rb;
-    if (a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
-    return b.createdAt - a.createdAt;
-  });
-
-  if (filtered.length === 0) {
-    if (empty) empty.style.display = 'flex';
-    return;
-  }
-  if (empty) empty.style.display = 'none';
-
-  filtered.forEach(item => list.appendChild(buildTodoEl(item)));
-}
-
-function buildTodoEl(item) {
-  const div = document.createElement('div');
-  const ds  = deadlineStatus(item.deadline);
-  div.className = 'todo-item'
-    + (item.done                  ? ' done'    : '')
-    + (!item.done && ds==='lewat' ? ' overdue' : '')
-    + (!item.done && ds==='hari-ini' ? ' today' : '');
-  div.setAttribute('data-who', item.who);
-
-  const whoLabel = { suami:'Fathir', istri:'Salma', bersama:'Bersama' };
-  const tagClass = { suami:'tag-suami', istri:'tag-istri', bersama:'tag-bersama' };
-
-  let dlBadge = '';
-  if (item.deadline && !item.done) {
-    const lbl = fmtDeadline(item.deadline);
-    const cls = ds==='lewat' ? 'dl-overdue' : ds==='hari-ini' ? 'dl-today' : ds==='besok' ? 'dl-soon' : 'dl-future';
-    const ico = ds==='lewat' ? '⚠️' : ds==='hari-ini' ? '📅' : ds==='besok' ? '🔔' : '🗓️';
-    dlBadge = `<span class="deadline-badge ${cls}">${ico} ${lbl}</span>`;
-  } else if (item.deadline && item.done) {
-    dlBadge = `<span class="deadline-badge dl-done">✓ ${fmtDeadline(item.deadline)}</span>`;
-  }
-
-  div.innerHTML = `
-    <div class="todo-check" onclick="toggleTodo(${item.id})">
-      <span class="todo-check-mark">✓</span>
+    <div class="pin-keypad">
+      <button type="button" class="pin-key" onclick="pinPress('1')">1</button>
+      <button type="button" class="pin-key" onclick="pinPress('2')">2</button>
+      <button type="button" class="pin-key" onclick="pinPress('3')">3</button>
+      <button type="button" class="pin-key" onclick="pinPress('4')">4</button>
+      <button type="button" class="pin-key" onclick="pinPress('5')">5</button>
+      <button type="button" class="pin-key" onclick="pinPress('6')">6</button>
+      <button type="button" class="pin-key" onclick="pinPress('7')">7</button>
+      <button type="button" class="pin-key" onclick="pinPress('8')">8</button>
+      <button type="button" class="pin-key" onclick="pinPress('9')">9</button>
+      <button type="button" class="pin-key pin-key-empty">•</button>
+      <button type="button" class="pin-key" onclick="pinPress('0')">0</button>
+      <button type="button" class="pin-key pin-key-back" onclick="pinBackspace()">⌫</button>
     </div>
-    <div class="todo-body">
-      <div class="todo-text">${escHtml(item.text)}</div>
-      <div class="todo-meta">
-        <span class="todo-who-tag ${tagClass[item.who]||'tag-bersama'}">${whoLabel[item.who]||'Bersama'}</span>
-        ${dlBadge}
-        <span class="todo-time-tag">dibuat ${fmtTime(item.createdAt)}</span>
-        ${item.done && item.doneAt ? `<span class="todo-done-at">✓ selesai ${fmtTime(item.doneAt)}</span>` : ''}
+
+    <div class="pin-error" id="pin-error"></div>
+  </div>
+  <div class="pin-lock-footer">Hanya untuk keluarga Fathir & Salma</div>
+</div>
+
+<!-- ===================== HEADER + MAIN TABS ===================== -->
+<header class="site-header">
+  <h1>📅 Jadwal Keluarga</h1>
+  <p>Keluarga Kecil Kami - Tumbuh dan Merekah, Bismillah</p>
+  <nav class="main-tabs">
+    <button id="mtab-jadwal" class="active" onclick="showView('jadwal')">Jadwal Harian</button>
+    <button id="mtab-bersama" onclick="showView('bersama')">🤝 Momen Bersama</button>
+    <button id="mtab-menu" onclick="showView('menu')">🍳 Menu Masakan</button>
+  </nav>
+</header>
+
+<!-- ===================== LEGEND ===================== -->
+<div class="legend-bar">
+  <div class="leg"><div class="leg-dot" style="background:#639922"></div>Ibadah</div>
+  <div class="leg"><div class="leg-dot" style="background:#378add"></div>Olahraga</div>
+  <div class="leg"><div class="leg-dot" style="background:#7f77dd"></div>Kerja/Sekolah</div>
+  <div class="leg"><div class="leg-dot" style="background:#888780"></div>Istirahat/Makan</div>
+  <div class="leg"><div class="leg-dot" style="background:#ba7517"></div>Nongki/Sosial</div>
+  <div class="leg"><div class="leg-dot" style="background:#d85a30"></div>Hobi & Kreatif</div>
+  <div class="leg"><div class="leg-dot" style="background:#d4537e"></div>Keluarga</div>
+  <div class="leg"><div class="leg-dot" style="background:#1d9e75"></div>Toko Shopee</div>
+</div>
+
+<!-- ===================== TO-DO KELUARGA ===================== -->
+<section class="todo-section">
+  <div class="todo-panel">
+      <div class="todo-header">
+        <div class="todo-title">
+          <span class="todo-icon">✅</span>
+          <div>
+            <div class="todo-title-text">To-Do Keluarga</div>
+            <div class="todo-title-sub">Rencana bersama — centang kalau sudah selesai</div>
+          </div>
+        </div>
+        <div class="todo-header-right">
+          <div class="todo-sync-status" id="todo-sync-status">
+            <span class="sync-dot" id="sync-dot"></span>
+            <span id="sync-text">Menghubungkan...</span>
+          </div>
+          <div class="todo-date-badge" id="todo-date-badge"></div>
+        </div>
+      </div>
+
+      <!-- Input area -->
+      <div class="todo-input-area">
+        <div class="todo-who-select">
+          <button class="who-btn active" data-who="suami" onclick="setWho('suami',this)">👨 Fathir</button>
+          <button class="who-btn" data-who="istri" onclick="setWho('istri',this)">👩 Salma</button>
+          <button class="who-btn" data-who="bersama" onclick="setWho('bersama',this)">👨‍👩‍👦 Bersama</button>
+        </div>
+        <div class="todo-input-row">
+          <input
+            type="text"
+            id="todo-input"
+            class="todo-input"
+            placeholder="Tulis rencana atau tugas..."
+            maxlength="120"
+            onkeydown="if(event.key==='Enter') addTodo()"
+          />
+          <div class="todo-deadline-wrap">
+            <label class="deadline-label">Target</label>
+            <input type="date" id="todo-deadline" class="todo-deadline" />
+          </div>
+          <button class="todo-add-btn" onclick="addTodo()">+ Tambah</button>
+        </div>
+      </div>
+
+      <!-- Filter tabs -->
+      <div class="todo-filters">
+        <button class="filter-btn active" onclick="setFilter('semua',this)">Semua</button>
+        <button class="filter-btn" onclick="setFilter('hari-ini',this)">📅 Hari ini</button>
+        <button class="filter-btn" onclick="setFilter('terlambat',this)">🔴 Terlambat</button>
+        <button class="filter-btn" onclick="setFilter('suami',this)">👨 Fathir</button>
+        <button class="filter-btn" onclick="setFilter('istri',this)">👩 Salma</button>
+        <button class="filter-btn" onclick="setFilter('bersama',this)">👨‍👩‍👦 Bersama</button>
+        <button class="filter-btn" onclick="setFilter('selesai',this)">✅ Selesai</button>
+        <button class="todo-clear-btn" onclick="clearDone()">Hapus yang selesai</button>
+      </div>
+
+      <!-- List -->
+      <div class="todo-list" id="todo-list">
+        <div class="todo-empty" id="todo-empty">
+          <div class="todo-empty-icon">📋</div>
+          <div>Belum ada rencana. Yuk tambahkan!</div>
+        </div>
+      </div>
+
+      <div class="todo-footer-info">
+        Data tersimpan permanen · tugas belum selesai tetap muncul sampai dicentang atau dihapus
       </div>
     </div>
-    <button class="todo-delete" onclick="deleteTodo(${item.id})" title="Hapus">✕</button>
-  `;
-  return div;
-}
+</section>
 
-/* ========================
-   JADWAL — navigasi
-   ======================== */
-const NAMA_HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-const ID_HARI   = ['minggu','senin','selasa','rabu','kamis','jumat','sabtu'];
+<!-- ===================== MAIN CONTENT ===================== -->
+<main class="main-content">
 
-window.showView = function(id) {
-  document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.main-tabs button').forEach(b => b.classList.remove('active'));
-  var panel = document.getElementById('view-' + id);
-  var btn   = document.getElementById('mtab-' + id);
-  if (panel) panel.classList.add('active');
-  if (btn)   btn.classList.add('active');
-  /* Refresh data saat pindah tab — semua handler di sini, tidak ada override lain */
-  if (id === 'menu'    && typeof initMenu        === 'function') initMenu();
-  if (id === 'today'   && typeof renderDDateTime === 'function') { renderDDateTime(); renderDTimeline(); renderDChecks(); renderDReminder(); }
-  if (id === 'english' && typeof renderEngWeek   === 'function') renderEngWeek();
-};
+  <!-- ========== VIEW: JADWAL HARIAN ========== -->
+  <div id="view-jadwal" class="view-panel active">
+    <div class="dual-grid">
 
-window.showDay = function(day, btn) {
-  document.querySelectorAll('.day-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.day-tabs button').forEach(b => b.classList.remove('active'));
-  document.getElementById('day-'+day).classList.add('active');
-  btn.classList.add('active');
-  highlightLiveBlocks();
-};
+      <!-- ===== KOLOM SUAMI ===== -->
+      <div class="col-card">
+        <div class="col-header suami">
+          <div class="avatar">S</div>
+          <div class="col-meta">
+            <div class="col-name">Suami — Guru PPPK</div>
+            <div class="col-sub">SMAN 8 Kediri - Artilerianstore Owner- Aruma Studio Owner</div>
+          </div>
+        </div>
 
-window.showIstri = function(id, btn) {
-  document.querySelectorAll('.istri-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.istri-tabs button').forEach(b => b.classList.remove('active'));
-  document.getElementById('istri-'+id).classList.add('active');
-  btn.classList.add('active');
-  highlightLiveBlocks();
-};
+        <div class="col-body">
+          <!-- Tab hari -->
+          <div class="day-tabs">
+            <button data-day="senin"   onclick="showDay('senin',this)">Sen</button>
+            <button data-day="selasa"  onclick="showDay('selasa',this)">Sel</button>
+            <button data-day="rabu"    onclick="showDay('rabu',this)">Rab</button>
+            <button data-day="kamis"   onclick="showDay('kamis',this)">Kam</button>
+            <button data-day="jumat"   onclick="showDay('jumat',this)">Jum</button>
+            <button data-day="sabtu"   onclick="showDay('sabtu',this)">Sab</button>
+            <button data-day="minggu"  onclick="showDay('minggu',this)">Min</button>
+          </div>
 
-/* ========================
-   Live clock
-   ======================== */
-function updateClock() {
-  const el    = document.getElementById('live-clock');
-  const dayEl = document.getElementById('live-day');
-  if (!el) return;
-  const now = new Date();
-  el.textContent = [now.getHours(), now.getMinutes(), now.getSeconds()]
-    .map(n => String(n).padStart(2,'0')).join(':');
-  if (dayEl) dayEl.textContent = NAMA_HARI[now.getDay()];
-}
+          <!-- SENIN -->
+          <div class="day-panel" id="day-senin">
+            <div class="col-day-label">Senin — Hari Kerja + Puasa Sunnah</div>
+            <div class="timeline">
+              <div class="row"><span class="time">03.00</span><div class="block blk-ibadah">Bangun — persiapan ibadah malam</div></div>
+              <div class="row"><span class="time">03.15</span><div class="block blk-ibadah">Tahajud, Witir, doa</div></div>
+              <div class="row"><span class="time">03.40</span><div class="block blk-istirahat">Sahur</div></div>
+              <div class="row"><span class="time">04.10</span><div class="block blk-ibadah">Tilawah Al-Qur'an</div></div>
+              <div class="row"><span class="time">04.45</span><div class="block blk-ibadah">Sholat Subuh + Dzikir pagi</div></div>
+              <div class="row"><span class="time">05.10</span><div class="block blk-ibadah">Mengaji</div></div>
+              <div class="row"><span class="time">05.30</span><div class="block blk-olahraga">Workout pagi — bodyweight / lari ringan (20 menit)</div></div>
+              <div class="row"><span class="time">05.50</span><div class="block blk-istirahat">Mandi, berpakaian rapi</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke SMAN 8 Kota Kediri</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah — absensi pagi</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Istirahat — Sholat Dhuha (2–4 rakaat)</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur berjamaah (puasa — tidak makan siang)</div></div>
+              <div class="row"><span class="time">12.15</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-kerja">Absensi pulang — perjalanan ke rumah</div></div>
+              <div class="row"><span class="time">16.20</span><div class="block blk-keluarga">Bermain dengan anak</div></div>
+              <div class="row"><span class="time">17.00</span><div class="block blk-istirahat">Istirahat / persiapan berbuka</div></div>
+              <div class="row"><span class="time">17.45</span><div class="block blk-ibadah">Maghrib — berbuka puasa</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga</div></div>
+              <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Sholat Isya + Dzikir malam</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-toko">Cek Artilerianstore</div></div>
+              <div class="row"><span class="time">20.30</span><div class="block blk-hobby">Coding / membaca / nulis artikel</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur</div></div>
+            </div>
+            <div class="note">🌙 Senin = puasa sunnah Senin–Kamis. Bangun 03.00 untuk Tahajud + Sahur. Workout diperpendek agar tidak kelelahan saat puasa.</div>
+          </div>
 
-/* ========================
-   Sedang berlangsung
-   ======================== */
-function parseTime(str) {
-  const p = str.trim().replace(',','.').split('.');
-  return p.length < 2 ? NaN : +p[0]*60 + +p[1];
-}
+          <!-- SELASA -->
+          <div class="day-panel" id="day-selasa">
+            <div class="col-day-label">Selasa — Hari Kerja</div>
+            <div class="timeline">
+              <div class="row"><span class="time">03.45</span><div class="block blk-ibadah">Bangun — Tahajud, Witir, doa</div></div>
+              <div class="row"><span class="time">04.30</span><div class="block blk-istirahat">Sahur ringan / minum</div></div>
+              <div class="row"><span class="time">04.45</span><div class="block blk-ibadah">Sholat Subuh + Dzikir pagi</div></div>
+              <div class="row"><span class="time">05.10</span><div class="block blk-ibadah">Mengaji / Tilawah</div></div>
+              <div class="row"><span class="time">05.35</span><div class="block blk-olahraga">Workout pagi (25 menit)</div></div>
+              <div class="row"><span class="time">06.00</span><div class="block blk-istirahat">Mandi + sarapan</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke sekolah</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Istirahat — Sholat Dhuha + snack</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur + makan siang</div></div>
+              <div class="row"><span class="time">12.15</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-kerja">Absensi pulang</div></div>
+              <div class="row"><span class="time">16.00</span><div class="block blk-hobby">Fotografi / videografi sore (konten kreatif)</div></div>
+              <div class="row"><span class="time">16.45</span><div class="block blk-istirahat">Mandi + istirahat</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga</div></div>
+              <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">19.45</span><div class="block blk-hobby">Nulis artikel / edit foto-video / baca buku / cek toko</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur</div></div>
+            </div>
+          </div>
 
-function getScheduleBlocks(panel) {
-  const items = [];
-  panel.querySelectorAll('.row').forEach(row => {
-    const te = row.querySelector('.time');
-    const be = row.querySelector('.block');
-    if (!te || !be) return;
-    const min = parseTime(te.textContent);
-    if (!isNaN(min)) items.push({ startMin: min, blockEl: be });
-  });
-  items.forEach((it,i) => { it.endMin = i+1 < items.length ? items[i+1].startMin : it.startMin+60; });
-  return items;
-}
+          <!-- RABU -->
+          <div class="day-panel" id="day-rabu">
+            <div class="col-day-label">Rabu — Hari Kerja + Madin/TPA</div>
+            <div class="timeline">
+              <div class="row"><span class="time">03.45</span><div class="block blk-ibadah">Bangun — Tahajud, Witir, doa</div></div>
+              <div class="row"><span class="time">04.30</span><div class="block blk-istirahat">Sahur ringan / minum</div></div>
+              <div class="row"><span class="time">04.45</span><div class="block blk-ibadah">Sholat Subuh + Dzikir + Tilawah</div></div>
+              <div class="row"><span class="time">05.10</span><div class="block blk-ibadah">Mengaji</div></div>
+              <div class="row"><span class="time">05.35</span><div class="block blk-olahraga">Workout pagi (20 menit — ringkas, malam ada madin)</div></div>
+              <div class="row"><span class="time">06.00</span><div class="block blk-istirahat">Mandi + sarapan</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke sekolah</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Istirahat — Sholat Dhuha</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur + makan siang</div></div>
+              <div class="row"><span class="time">12.15</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-kerja">Absensi pulang — segera pulang</div></div>
+              <div class="row"><span class="time">15.45</span><div class="block blk-istirahat">Makan ringan + persiapan mengajar madin</div></div>
+              <div class="row"><span class="time">16.30</span><div class="block blk-madin">Mengajar Madin / TPA (hingga 19.00)</div></div>
+              <div class="row"><span class="time">19.00</span><div class="block blk-ibadah">Selesai madin — Sholat Maghrib</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Sholat Isya</div></div>
+              <div class="row"><span class="time">19.45</span><div class="block blk-istirahat">Makan malam + istirahat ringan</div></div>
+              <div class="row"><span class="time">20.30</span><div class="block blk-hobby">Santai: baca / coding ringan / cek toko (maks. 1 jam)</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur lebih awal — Rabu hari yang padat</div></div>
+            </div>
+            <div class="note">⚠️ Rabu adalah hari tersibuk. Workout sore ditiadakan. Prioritaskan stamina.</div>
+          </div>
 
-function makeBadge() {
-  const s = document.createElement('span');
-  s.className = 'live-badge';
-  s.innerHTML = '<span class="live-dot"></span> sedang berlangsung';
-  return s;
-}
+                    <!-- KAMIS -->
+          <div class="day-panel" id="day-kamis">
+            <div class="col-day-label">Kamis — Hari Kerja + Puasa Sunnah</div>
+            <div class="timeline">
+              <div class="row"><span class="time">03.00</span><div class="block blk-ibadah">Bangun — persiapan ibadah malam</div></div>
+              <div class="row"><span class="time">03.15</span><div class="block blk-ibadah">Tahajud, Witir, doa</div></div>
+              <div class="row"><span class="time">03.40</span><div class="block blk-istirahat">Sahur</div></div>
+              <div class="row"><span class="time">04.10</span><div class="block blk-ibadah">Tilawah Al-Qur'an</div></div>
+              <div class="row"><span class="time">04.45</span><div class="block blk-ibadah">Sholat Subuh + Dzikir pagi</div></div>
+              <div class="row"><span class="time">05.10</span><div class="block blk-ibadah">Mengaji</div></div>
+              <div class="row"><span class="time">05.30</span><div class="block blk-olahraga">Workout pagi (20 menit)</div></div>
+              <div class="row"><span class="time">05.50</span><div class="block blk-istirahat">Mandi, berpakaian rapi</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke sekolah</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Sholat Dhuha (2–4 rakaat)</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur berjamaah (puasa — tidak makan siang)</div></div>
+              <div class="row"><span class="time">12.15</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-kerja">Absensi pulang — perjalanan ke rumah</div></div>
+              <div class="row"><span class="time">16.20</span><div class="block blk-keluarga">Bermain dengan anak</div></div>
+              <div class="row"><span class="time">17.00</span><div class="block blk-istirahat">Istirahat / persiapan berbuka</div></div>
+              <div class="row"><span class="time">17.45</span><div class="block blk-ibadah">Maghrib — berbuka puasa</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga</div></div>
+              <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Sholat Isya + Dzikir malam</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-toko">Cek Artilerianstore</div></div>
+              <div class="row"><span class="time">20.30</span><div class="block blk-hobby">Coding / membaca / nulis artikel</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur</div></div>
+            </div>
+            <div class="note">🌙 Kamis = puasa sunnah Senin–Kamis. Jadwal identik dengan Senin: bangun 03.00, Tahajud, Sahur, berbuka Maghrib 17.45.</div>
+          </div>
 
-function highlightLiveBlocks() {
-  document.querySelectorAll('.block').forEach(b => {
-    b.classList.remove('live-now');
-    b.querySelector('.live-badge')?.remove();
-  });
-  const now  = new Date();
-  const cur  = now.getHours()*60 + now.getMinutes();
-  const tidx = now.getDay();
+                    <!-- JUMAT -->
+          <div class="day-panel" id="day-jumat">
+            <div class="col-day-label">Jumat — Hari Kerja Spesial</div>
+            <div class="timeline">
+              <div class="row"><span class="time">03.45</span><div class="block blk-ibadah">Bangun — Tahajud, Witir, doa</div></div>
+              <div class="row"><span class="time">04.30</span><div class="block blk-istirahat">Sahur ringan / minum</div></div>
+              <div class="row"><span class="time">04.45</span><div class="block blk-ibadah">Subuh + Dzikir (sunnah baca Al-Kahfi pagi Jumat)</div></div>
+              <div class="row"><span class="time">05.10</span><div class="block blk-ibadah">Mengaji / Tilawah</div></div>
+              <div class="row"><span class="time">05.35</span><div class="block blk-olahraga">Workout pagi (25 menit)</div></div>
+              <div class="row"><span class="time">06.00</span><div class="block blk-istirahat">Mandi + sarapan</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke sekolah</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Sholat Dhuha + istirahat</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.00</span><div class="block blk-ibadah">Persiapan Sholat Jumat (mandi Jumat sebelum ke masjid)</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Berangkat ke Masjid — Sholat Jumat</div></div>
+              <div class="row"><span class="time">13.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Ashar</div></div>
+              <div class="row"><span class="time">16.00</span><div class="block blk-kerja">Absensi pulang + pulang</div></div>
+              <div class="row"><span class="time">16.30</span><div class="block blk-olahraga">Workout sore / mancing sore (hobi)</div></div>
+              <div class="row"><span class="time">17.00</span><div class="block blk-istirahat">Mandi + istirahat</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-sosial">Nongki malam / makan malam bersama istri</div></div>
+              <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-keluarga">Quality time keluarga / ngobrol santai / cek toko</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur</div></div>
+            </div>
+            <div class="note">📖 Jumat: sunnah baca Al-Kahfi pagi hari. Sholat Jumat berjamaah di masjid jam 11.30.</div>
+          </div>
 
-  const activeDay = document.querySelector('.day-panel.active');
-  if (activeDay) {
-    const btn = document.querySelector('.day-tabs button.active');
-    if (btn?.getAttribute('data-day') === ID_HARI[tidx]) {
-      getScheduleBlocks(activeDay).forEach(it => {
-        if (cur >= it.startMin && cur < it.endMin) {
-          it.blockEl.classList.add('live-now');
-          it.blockEl.appendChild(makeBadge());
-        }
-      });
-    }
-  }
+                    <!-- SABTU -->
+          <div class="day-panel" id="day-sabtu">
+            <div class="col-day-label">Sabtu — Hari Libur Produktif</div>
+            <div class="timeline">
+              <div class="row"><span class="time">04.30</span><div class="block blk-ibadah">Subuh + Tilawah + Dzikir (lebih santai)</div></div>
+              <div class="row"><span class="time">05.15</span><div class="block blk-olahraga">Jogging / workout pagi lebih lama (45–60 menit)</div></div>
+              <div class="row"><span class="time">06.15</span><div class="block blk-keluarga">Bantu istri mandikan anak</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-istirahat">Sarapan bersama keluarga</div></div>
+              <div class="row"><span class="time">07.30</span><div class="block blk-hobby">Merawat tanaman & aquascape (rutin mingguan)</div></div>
+              <div class="row"><span class="time">08.30</span><div class="block blk-hobby">Bersih-bersih sekitar rumah</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-ibadah">Sholat Dhuha</div></div>
+              <div class="row"><span class="time">09.45</span><div class="block blk-hobby">Fotografi / Coding / nulis artikel</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Dzuhur</div></div>
+              <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Makan siang + tidur siang (1–1.5 jam)</div></div>
+              <div class="row"><span class="time">13.30</span><div class="block blk-toko">Evaluasi toko Shopee — brief karyawan mingguan</div></div>
+              <div class="row"><span class="time">14.30</span><div class="block blk-keluarga">Jalan-jalan keluarga / wisata kuliner kota Kediri</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-hobby">Mancing sore / nongki santai</div></div>
+              <div class="row"><span class="time">17.30</span><div class="block blk-istirahat">Mandi + istirahat</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-sosial">Kuliner malam / nongkrong bareng istri</div></div>
+              <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-hobby">Baca buku / nonton film / masak bareng istri</div></div>
+              <div class="row"><span class="time">22.00</span><div class="block blk-tidur">Tidur (boleh lebih malam — besok Minggu)</div></div>
+            </div>
+            <div class="note">🌿 Sabtu = recharge + produktif. Jika ada rencana liburan keluar kota, geser aktivitas rumah ke Minggu pagi.</div>
+          </div>
 
-  const activeIstri = document.querySelector('.istri-panel.active');
-  if (activeIstri) {
-    const isWE = tidx===0||tidx===6;
-    const id   = activeIstri.id;
-    if ((id==='istri-weekend'&&isWE)||(id==='istri-kerja'&&!isWE)) {
-      getScheduleBlocks(activeIstri).forEach(it => {
-        if (cur >= it.startMin && cur < it.endMin) {
-          it.blockEl.classList.add('live-now');
-          it.blockEl.appendChild(makeBadge());
-        }
-      });
-    }
-  }
-}
+                    <!-- MINGGU -->
+          <div class="day-panel" id="day-minggu">
+            <div class="col-day-label">Minggu — Hari Istirahat & Keluarga</div>
+            <div class="timeline">
+              <div class="row"><span class="time">05.00</span><div class="block blk-ibadah">Subuh (boleh agak telat bangun — weekend rest)</div></div>
+              <div class="row"><span class="time">05.30</span><div class="block blk-tidur">Tidur lagi / rebahan santai</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-keluarga">Bangun — bantu mandikan anak, sarapan keluarga</div></div>
+              <div class="row"><span class="time">08.00</span><div class="block blk-olahraga">Jogging pagi bersama keluarga</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Sholat Dhuha</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-keluarga">Liburan keluarga / wisata / jalan-jalan (jika ada rencana)</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Dzuhur</div></div>
+              <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Makan siang + tidur siang (2 jam)</div></div>
+              <div class="row"><span class="time">14.00</span><div class="block blk-keluarga">Family time — bermain dengan anak / jalan sore</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-hobby">Hobi bebas: mancing / aquascape / tanaman / baca buku</div></div>
+              <div class="row"><span class="time">17.30</span><div class="block blk-istirahat">Mandi + persiapan malam</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-toko">Cek toko Shopee — evaluasi & set target mingguan</div></div>
+              <div class="row"><span class="time">19.00</span><div class="block blk-keluarga">Makan malam keluarga + ngobrol santai</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-hobby">Me-time: baca / nulis / coding / evaluasi mingguan</div></div>
+              <div class="row"><span class="time">21.00</span><div class="block blk-tidur">Tidur lebih awal — besok Senin mulai kerja</div></div>
+            </div>
+            <div class="note">🏡 Minggu = keluarga & istirahat. Evaluasi mingguan malam Minggu untuk persiapan pekan depan.</div>
+          </div>
 
-/* ========================
-   Auto-select hari
-   ======================== */
-function autoSelectDay() {
-  const today  = new Date().getDay();
-  const hariId = ID_HARI[today];
-  const btn    = document.querySelector(`.day-tabs button[data-day="${hariId}"]`);
-  if (btn) {
-    document.querySelectorAll('.day-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.day-tabs button').forEach(b => b.classList.remove('active'));
-    document.getElementById('day-'+hariId)?.classList.add('active');
-    btn.classList.add('active');
-  }
-  const isWE = today===0||today===6;
-  const ib   = document.querySelectorAll('.istri-tabs button');
-  document.querySelectorAll('.istri-panel').forEach(p => p.classList.remove('active'));
-  ib.forEach(b => b.classList.remove('active'));
-  if (isWE) { document.getElementById('istri-weekend')?.classList.add('active'); ib[1]?.classList.add('active'); }
-  else       { document.getElementById('istri-kerja')?.classList.add('active');   ib[0]?.classList.add('active'); }
-}
+        </div><!-- /col-body suami -->
+      </div><!-- /col-card suami -->
 
-/* ========================
-   Clock & date badge inject
-   ======================== */
-function injectClock() {
-  const header = document.querySelector('.site-header');
-  if (!header) return;
-  const div = document.createElement('div');
-  div.className = 'header-clock';
-  div.innerHTML = '<span id="live-clock">--:--:--</span><span class="header-clock-day" id="live-day"></span>';
-  header.appendChild(div);
-}
+      <!-- ===== KOLOM ISTRI ===== -->
+      <div class="col-card">
+        <div class="col-header istri">
+          <div class="avatar">I</div>
+          <div class="col-meta">
+            <div class="col-name">Istri — IRT Produktif</div>
+            <div class="col-sub">Salmarket owner - Atsar's Mom</div>
+          </div>
+        </div>
 
-function injectDateBadge() {
-  const el = document.getElementById('todo-date-badge');
-  if (!el) return;
-  const d = new Date();
-  el.textContent = `${NAMA_HARI[d.getDay()]}, ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
-}
+        <div class="col-body">
+          <!-- Sub-tab istri -->
+          <div class="istri-tabs">
+            <button class="active" onclick="showIstri('kerja',this)">Senin–Jumat</button>
+            <button onclick="showIstri('weekend',this)">Sabtu–Minggu</button>
+            <button onclick="showIstri('puasa',this)">🌙 Puasa Sen & Kam</button>
+          </div>
 
-/* ========================
-   Init
-   ======================== */
-document.addEventListener('DOMContentLoaded', () => {
-  injectClock();
-  injectDateBadge();
-  autoSelectDay();
-  updateClock();
-  highlightLiveBlocks();
-  initFirebase();
-  initDashboard();
-  setInterval(updateClock, 1000);
-  setInterval(highlightLiveBlocks, 30000);
-});
+          <!-- ISTRI: HARI KERJA -->
+          <div class="istri-panel active" id="istri-kerja">
+            <div class="col-day-label">Hari Kerja — Rutinitas Harian</div>
+            <div class="timeline">
+              <div class="row"><span class="time">05.00</span><div class="block blk-ibadah">Bangun — Subuh + Dzikir pagi</div></div>
+              <div class="row"><span class="time">05.30</span><div class="block blk-keluarga">Siapkan suami berangkat (sarapan, bekal jika perlu)</div></div>
+              <div class="row"><span class="time">06.00</span><div class="block blk-keluarga">Merawat & menyusui anak, aktivitas pagi bayi</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-istirahat">Sarapan + mandi pagi</div></div>
+              <div class="row"><span class="time">07.30</span><div class="block blk-toko">Cek toko Shopee salmarket — balas chat, proses pesanan</div></div>
+              <div class="row"><span class="time">08.30</span><div class="block blk-keluarga">Menemani & stimulasi anak (bermain, belajar motorik)</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-keluarga">Berangkat ke rumah ibu — bantu jaga toko offline</div></div>
+              <div class="row"><span class="time">11.00</span><div class="block blk-keluarga">Pulang ke rumah / anak tidur siang</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur</div></div>
+              <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Makan siang + istirahat / tidur siang bersama anak</div></div>
+              <div class="row"><span class="time">13.30</span><div class="block blk-toko">Kelola toko salmarket — update stok, foto produk, desain konten</div></div>
+              <div class="row"><span class="time">14.30</span><div class="block blk-olahraga">Workout IRT: yoga / pilates / senam ringan (20–30 menit)</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.15</span><div class="block blk-keluarga">Siapkan mandi anak sore + bermain sore</div></div>
+              <div class="row"><span class="time">16.00</span><div class="block blk-istirahat">Masak untuk makan malam keluarga</div></div>
+              <div class="row"><span class="time">17.00</span><div class="block blk-hobby">Me-time: konten kreatif / belajar hal baru online / skincare</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Sambut suami pulang — makan malam bersama</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-keluarga">Quality time: nonton bersama / ngobrol / skincare ritual</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur — menyesuaikan ritme anak</div></div>
+            </div>
+            <div class="note">💡 Waktu toko & me-time fleksibel mengikuti tidur siang anak. Jika anak tidak tidur siang, prioritaskan menemani anak dulu.</div>
+          </div>
 
-/* ================================================
-   MENU MASAKAN — Week planner + Stok Bahan
-   Firebase realtime sync (pakai db yang sama dengan Todo)
-   ================================================ */
+          <!-- ISTRI: WEEKEND -->
+          <div class="istri-panel" id="istri-weekend">
+            <div class="col-day-label">Sabtu & Minggu — Hari Keluarga</div>
+            <div class="timeline">
+              <div class="row"><span class="time">05.00</span><div class="block blk-ibadah">Subuh + Dzikir</div></div>
+              <div class="row"><span class="time">06.00</span><div class="block blk-olahraga">Workout pagi bersama suami (atau jalan pagi keluarga)</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-keluarga">Mandikan anak bersama suami</div></div>
+              <div class="row"><span class="time">08.00</span><div class="block blk-hobby">Masak sarapan / eksperimen resep / bersih rumah bersama</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-toko">Evaluasi mingguan toko salmarket — laporan & target</div></div>
+              <div class="row"><span class="time">10.00</span><div class="block blk-keluarga">Jalan-jalan keluarga / liburan bersama</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Dzuhur</div></div>
+              <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Makan siang + tidur siang (istirahat lebih panjang dari hari kerja)</div></div>
+              <div class="row"><span class="time">14.00</span><div class="block blk-hobby">Me-time: belajar skill baru / konten kreatif / skincare / baca</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-keluarga">Aktivitas sore bersama anak (taman / bermain di rumah)</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-hobby">Quality time / nonton / ngobrol santai</div></div>
+              <div class="row"><span class="time">22.00</span><div class="block blk-tidur">Tidur</div></div>
+            </div>
+          </div>
 
-const DAFTAR_MENU = [
-  "Pecel","Telur Dadar","Telur Rebus","Sayur Sop","Ayam Goreng",
-  "Oseng Tempe","Sayur Asem","Pindang Goreng","Capjay Kuah","Mendoan",
-  "Sayur Bening","Lele Goreng","Sop Daging","Nasi Goreng","Sop Ayam",
-  "Tahu Goreng","Ca Kangkung","Capjay","Ayam Kecap","Oseng Tahu",
-  "Sardine","Dadar Jagung","Nasi Sayur Bobor","Telur Balado",
-  "Oseng Daun Pepaya","Udang Goreng","Ayam Kentacky","Tumis Brokoli",
-  "Tumis Kubis","Oseng Terong","Sambal Terasi","Sambal Teri",
-  "Sambal Matah","Sambal Orek","Bergedel Kentang","Tumis Sawi Kecambah",
-  "Tumis Kecambah","Orak Arik Tahu Telor","Sop Pakchoy Tahu"
-].sort();
+          <!-- ISTRI: PUASA SENIN & KAMIS -->
+          <div class="istri-panel" id="istri-puasa">
+            <div class="col-day-label">Senin & Kamis — Puasa Sunnah</div>
+            <div class="timeline">
+              <div class="row"><span class="time">03.00</span><div class="block blk-ibadah">Bangun bersama suami</div></div>
+              <div class="row"><span class="time">03.15</span><div class="block blk-ibadah">Tahajud, Witir, doa</div></div>
+              <div class="row"><span class="time">03.35</span><div class="block blk-istirahat">Sahur bersama — siapkan makanan untuk suami & diri sendiri</div></div>
+              <div class="row"><span class="time">04.10</span><div class="block blk-ibadah">Tilawah Al-Qur'an</div></div>
+              <div class="row"><span class="time">04.45</span><div class="block blk-ibadah">Sholat Subuh + Dzikir pagi</div></div>
+              <div class="row"><span class="time">05.30</span><div class="block blk-keluarga">Siapkan suami berangkat — merawat anak pagi</div></div>
+              <div class="row"><span class="time">06.30</span><div class="block blk-istirahat">Mandi + istirahat</div></div>
+              <div class="row"><span class="time">07.30</span><div class="block blk-toko">Cek toko Shopee salmarket — balas chat, proses pesanan</div></div>
+              <div class="row"><span class="time">08.30</span><div class="block blk-keluarga">Menemani & stimulasi anak (bermain, belajar motorik)</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-keluarga">Bantu toko offline orang tua (jika kondisi memungkinkan)</div></div>
+              <div class="row"><span class="time">11.00</span><div class="block blk-keluarga">Pulang — anak tidur siang</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur (puasa — tidak makan siang)</div></div>
+              <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Tidur siang bersama anak (agar kuat berpuasa)</div></div>
+              <div class="row"><span class="time">13.30</span><div class="block blk-toko">Kelola toko salmarket — update stok, desain konten</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.15</span><div class="block blk-keluarga">Bermain bersama anak sore hari</div></div>
+              <div class="row"><span class="time">16.30</span><div class="block blk-istirahat">Siapkan menu berbuka untuk keluarga</div></div>
+              <div class="row"><span class="time">17.45</span><div class="block blk-ibadah">Maghrib — berbuka puasa bersama suami</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-keluarga">Quality time bersama suami & anak</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur — istirahat setelah puasa seharian</div></div>
+            </div>
+            <div class="note">🌙 Hari puasa: bangun lebih awal bersama suami. Tidur siang sangat dianjurkan agar tubuh tetap bertenaga. Siapkan menu berbuka sederhana tapi bergizi.</div>
+          </div>
 
-const DAFTAR_BAHAN = {
-  "\uD83C\uDF5A Bahan Pokok": [
-    "Beras","Telur","Tempe","Tahu","Ayam","Daging sapi",
-    "Lele","Udang","Ikan pindang","Sardine kaleng","Jagung",
-    "Tepung terigu","Tepung tapioka","Tepung beras"
-  ],
-  "\uD83E\uDD6C Sayuran": [
-    "Kangkung","Bayam","Wortel","Kol/Kubis","Brokoli","Labu siam",
-    "Daun pepaya","Terong","Daun bawang","Seledri","Tomat","Timun",
-    "Kacang panjang","Tauge","Buncis","Sawi","Kentang","Daun melinjo","Daun singkong"
-  ],
-  "\uD83E\uDDC4 Bumbu Dasar": [
-    "Bawang merah","Bawang putih","Cabai kecil","Cabai merah","Cabai rawit","Kemiri",
-    "Ketumbar","Merica/Lada","Kunyit","Jahe","Lengkuas","Kencur",
-    "Serai","Daun salam","Daun jeruk","Daun kunyit","Daun bawang","Seledri",
-    "Garam","Gula pasir","Gula merah","Kaldu bubuk","Minyak goreng"
-  ],
-  "\uD83E\uDD63 Bahan Pelengkap": [
-    "Kecap manis","Saus tiram","Santan","Air asam jawa","Asam jawa",
-    "Terasi","Tepung bumbu","Tepung panir","Jeruk nipis","Jeruk limau","Minyak wijen"
-  ]
-};
+        </div><!-- /col-body istri -->
+      </div><!-- /col-card istri -->
 
-const SLOTS      = ['sarapan','siang','malam'];
-const SLOT_LABEL = { sarapan:'\uD83C\uDF05 Sarapan', siang:'\u2600\uFE0F Makan Siang', malam:'\uD83C\uDF19 Makan Malam' };
-const MAX_MENU_PER_SLOT = 3;
+    </div><!-- /dual-grid -->
 
-/* State */
-let weekOffset = 0;
-let menuData   = {};   // { "2026-07-14": { sarapan:["Nasi Goreng","Telur Dadar"], siang:[], malam:[] } }
-let bahanData  = {};   // { "Beras": true/false/undefined }
-let activeSlot = null; // { dk, slot, menuIndex } — menuIndex = index dalam array menu (0/1/2)
+  </div><!-- /view-jadwal -->  </div><!-- /view-jadwal -->
 
-/* Firebase refs untuk menu & bahan */
-let menuRef  = null;
-let bahanRef = null;
-let menuFirebaseReady = false;
 
-/* Encode nama bahan jadi Firebase-safe key — konsisten saat simpan & baca */
-function encodeBahanKey(nama) {
-  return nama
-    .replace(/\./g,  '__dot__')
-    .replace(/\//g,  '__sl__')
-    .replace(/\[/g,  '__lb__')
-    .replace(/\]/g,  '__rb__')
-    .replace(/\#/g,  '__hash__')
-    .replace(/\$/g,  '__dol__')
-    .replace(/\s+/g, '_');
-}
+  <!-- ========== VIEW: MOMEN BERSAMA ========== -->
+  <div id="view-bersama" class="view-panel">
+    <div class="together-grid">
 
-/* Dipanggil setelah Firebase db siap */
-function initMenuFirebase() {
-  if (!db) { initMenuLocal(); return; }
-  try {
-    menuRef  = db.ref('menu');
-    bahanRef = db.ref('bahan');
-
-    /* Listen menu realtime — format: { "2026-07-14": { sarapan:["Menu1","Menu2"], siang:[], malam:[] } }
-       Migrasi otomatis dari format string lama ke array */
-    menuRef.on('value', snap => {
-      const raw = snap.val() || {};
-      menuData = {};
-      Object.entries(raw).forEach(([dk, slots]) => {
-        menuData[dk] = {};
-        SLOTS.forEach(s => {
-          const v = slots[s];
-          if (!v) menuData[dk][s] = [];
-          else if (Array.isArray(v)) menuData[dk][s] = v.filter(Boolean);
-          else if (typeof v === 'string' && v !== '') menuData[dk][s] = [v]; // format lama
-          else menuData[dk][s] = [];
-        });
-      });
-      renderMenuGrid();
-    }, () => initMenuLocal());
-
-    /* Listen bahan realtime — format: { "Beras": true/false/null } dengan key encoded */
-    bahanRef.on('value', snap => {
-      const raw = snap.val() || {};
-      /* Decode balik: key encoded → nama asli */
-      bahanData = {};
-      /* Simpan dengan nama asli sebagai key untuk lookup mudah */
-      Object.values(DAFTAR_BAHAN).flat().forEach(nama => {
-        const k = encodeBahanKey(nama);
-        if (raw[k] !== undefined) bahanData[nama] = raw[k];
-      });
-      renderBahanGrid();
-    }, () => initMenuLocal());
-
-    menuFirebaseReady = true;
-  } catch(e) {
-    console.error('Menu Firebase error:', e);
-    initMenuLocal();
-  }
-}
-
-function initMenuLocal() {
-  try {
-    const raw = JSON.parse(localStorage.getItem('menu_mingguan_v2') || '{}');
-    // Migrasi format string lama → array
-    menuData = {};
-    Object.entries(raw).forEach(([dk, slots]) => {
-      menuData[dk] = {};
-      SLOTS.forEach(s => {
-        const v = slots[s];
-        if (!v) menuData[dk][s] = [];
-        else if (Array.isArray(v)) menuData[dk][s] = v.filter(Boolean);
-        else if (typeof v === 'string' && v !== '') menuData[dk][s] = [v];
-        else menuData[dk][s] = [];
-      });
-    });
-  } catch { menuData = {}; }
-  try { bahanData = JSON.parse(localStorage.getItem('stok_bahan_v2') || '{}'); } catch { bahanData = {}; }
-  renderMenuGrid();
-  renderBahanGrid();
-}
-
-/* Save helpers */
-/* Ambil array menu untuk slot (selalu array, max 3) */
-function getMenuArray(dk, slot) {
-  const val = menuData[dk]?.[slot];
-  if (!val) return [];
-  if (Array.isArray(val)) return val.filter(v => v && v !== '');
-  if (typeof val === 'string' && val !== '') return [val]; // migrasi format lama
-  return [];
-}
-
-function saveMenuSlot(dk, slot, arr) {
-  if (!menuData[dk]) menuData[dk] = {};
-  menuData[dk][slot] = arr;
-  if (menuFirebaseReady && menuRef) {
-    menuRef.child(dk).child(slot).set(arr.length ? arr : null);
-  } else {
-    localStorage.setItem('menu_mingguan_v2', JSON.stringify(menuData));
-  }
-}
-
-/* Tambah satu menu ke slot */
-function addMenuToSlot(dk, slot, menu) {
-  const arr = getMenuArray(dk, slot);
-  if (arr.length >= MAX_MENU_PER_SLOT) return;
-  if (!arr.includes(menu)) arr.push(menu);
-  saveMenuSlot(dk, slot, arr);
-}
-
-/* Hapus menu pada index tertentu dari slot */
-function removeMenuFromSlot(dk, slot, idx) {
-  const arr = getMenuArray(dk, slot);
-  arr.splice(idx, 1);
-  saveMenuSlot(dk, slot, arr);
-}
-
-/* Ganti menu pada index tertentu */
-function replaceMenuInSlot(dk, slot, idx, menu) {
-  const arr = getMenuArray(dk, slot);
-  arr[idx] = menu;
-  saveMenuSlot(dk, slot, arr);
-}
-
-function saveBahanItem(nama, value) {
-  bahanData[nama] = value;
-  const key = encodeBahanKey(nama);
-  if (menuFirebaseReady && bahanRef) {
-    bahanRef.child(key).set(value === undefined ? null : value);
-  } else {
-    localStorage.setItem('stok_bahan_v2', JSON.stringify(bahanData));
-  }
-}
-
-function saveAllBahan(status) {
-  const all = Object.values(DAFTAR_BAHAN).flat();
-  all.forEach(n => { bahanData[n] = status; });
-  if (menuFirebaseReady && bahanRef) {
-    const updates = {};
-    all.forEach(n => { updates[encodeBahanKey(n)] = status; });
-    bahanRef.update(updates);
-  } else {
-    localStorage.setItem('stok_bahan_v2', JSON.stringify(bahanData));
-    renderBahanGrid();
-  }
-}
-
-/* ── Week helpers ── */
-function getMondayOf(offset) {
-  const d = new Date();
-  const day = d.getDay();
-  const diff = (day === 0 ? -6 : 1 - day);
-  d.setDate(d.getDate() + diff + offset * 7);
-  d.setHours(0,0,0,0);
-  return d;
-}
-function dateKey(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function todayKey2() { return dateKey(new Date()); }
-function getWeekDays(offset) {
-  const mon = getMondayOf(offset);
-  return Array.from({length:7}, (_,i) => {
-    const d = new Date(mon); d.setDate(mon.getDate()+i); return d;
-  });
-}
-
-function updateWeekLabel() {
-  const days = getWeekDays(weekOffset);
-  const bln  = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
-  const f = `${days[0].getDate()} ${bln[days[0].getMonth()]}`;
-  const l = `${days[6].getDate()} ${bln[days[6].getMonth()]} ${days[6].getFullYear()}`;
-  const el = document.getElementById('week-label');
-  if (el) el.textContent = weekOffset === 0 ? `Minggu ini \xb7 ${f} \u2013 ${l}` : `${f} \u2013 ${l}`;
-}
-
-window.shiftWeek = function(dir) { weekOffset += dir; renderMenuGrid(); };
-window.resetWeek = function()    { weekOffset  = 0;   renderMenuGrid(); };
-
-/* ── Render grid ── */
-function renderMenuGrid() {
-  updateWeekLabel();
-  const grid = document.getElementById('menu-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
-  const today = todayKey2();
-  const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
-
-  getWeekDays(weekOffset).forEach(d => {
-    const dk     = dateKey(d);
-    const idx    = d.getDay() === 0 ? 6 : d.getDay()-1;
-    const card   = document.createElement('div');
-    card.className = 'menu-day-card' + (dk === today ? ' today' : '');
-    card.innerHTML = `
-      <div class="menu-day-label">
-        ${dayNames[idx]}
-        <span class="menu-day-date">${d.getDate()}/${d.getMonth()+1}</span>
+      <div class="together-card">
+        <h3>🍽️ Rutinitas Harian Bersama</h3>
+        <div class="timeline">
+          <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama — setiap hari (setelah suami pulang)</div></div>
+          <div class="row"><span class="time">20.00</span><div class="block blk-keluarga">Quality time: nonton / ngobrol / bermain dengan anak</div></div>
+        </div>
       </div>
-      <div class="menu-slots">
-        ${SLOTS.map(s => buildSlotHTML(dk, s)).join('')}
-      </div>`;
-    grid.appendChild(card);
-  });
-}
 
-function buildSlotHTML(dk, slot) {
-  const arr    = getMenuArray(dk, slot);
-  const filled = arr.length > 0;
-  const canAdd = arr.length < MAX_MENU_PER_SLOT;
+      <div class="together-card">
+        <h3>🏠 Pembagian Rumah Tangga</h3>
+        <div class="timeline">
+          <div class="row"><span class="time">Pagi</span><div class="block blk-istirahat"><b>Cuci baju</b> — istri tiap pagi hari kerja (07.00–07.30) atau mesin cuci timer malam</div></div>
+          <div class="row"><span class="time">Malam</span><div class="block blk-istirahat"><b>Lipat baju</b> — bersama setelah makan malam (Sen/Rab/Jum) atau Minggu sore sambil nonton</div></div>
+          <div class="row"><span class="time">16.00</span><div class="block blk-istirahat"><b>Masak malam</b> — istri Senin–Kamis. Jumat & weekend: bersama atau beli di luar</div></div>
+          <div class="row"><span class="time">Sabtu</span><div class="block blk-keluarga"><b>Bersih rumah</b> — bersama pagi Sabtu (08.30–09.30). Istri: dalam rumah. Suami: halaman & luar</div></div>
+        </div>
+      </div>
 
-  const menuItems = arr.map((m, i) => `
-    <div class="slot-menu-item">
-      <span class="slot-menu-text" onclick="openMenuModal('${dk}','${slot}',${i})">${escMH(m)}</span>
-      <button class="slot-menu-remove" onclick="event.stopPropagation();removeMenuSlotItem('${dk}','${slot}',${i})" title="Hapus menu ini">✕</button>
-    </div>`).join('');
+      <div class="together-card">
+        <h3>📍 Keluar Bersama (Mingguan)</h3>
+        <div class="timeline">
+          <div class="row"><span class="time">Jum malam</span><div class="block blk-keluarga">Makan malam di luar / nongki berdua (tanpa atau bawa anak)</div></div>
+          <div class="row"><span class="time">Sab sore</span><div class="block blk-keluarga">Jalan-jalan keluarga bertiga — kuliner / taman / mall Kediri</div></div>
+          <div class="row"><span class="time">Min pagi</span><div class="block blk-keluarga">Sarapan di luar / car free day / pasar pagi bersama</div></div>
+        </div>
+      </div>
 
-  return `
-    <div class="menu-slot ${filled ? 'filled' : ''}">
-      <div class="slot-label ${slot}">${SLOT_LABEL[slot]}</div>
-      ${filled ? `<div class="slot-menu-list">${menuItems}</div>` : ''}
-      ${canAdd ? `<div class="slot-empty" onclick="openMenuModal('${dk}','${slot}',${arr.length})">+ ${filled ? 'tambah menu' : 'pilih menu'}</div>` : ''}
-    </div>`;
-}
-function escMH(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+      <div class="together-card">
+        <h3>✈️ Jadwal Liburan</h3>
+        <div class="timeline">
+          <div class="row"><span class="time">Sab–Min</span><div class="block blk-keluarga">Liburan keluar kota — 1–2× sebulan. Rencanakan H-7: destinasi Jawa Timur, pantai, gunung</div></div>
+          <div class="row"><span class="time">Libur panjang</span><div class="block blk-keluarga">Trip keluarga besar / wisata lebih jauh — manfaatkan libur nasional</div></div>
+        </div>
+        <div class="note">✨ Komunikasi malam sebelumnya tentang rencana esok hari. Update via chat keluarga untuk penyesuaian jadwal anak dan toko.</div>
+      </div>
 
-window.removeMenuSlotItem = function(dk, slot, idx) {
-  removeMenuFromSlot(dk, slot, idx);
-  renderMenuGrid();
-};
+    </div>
+  </div><!-- /view-bersama -->
 
-/* ── Modal ── */
-window.openMenuModal = function(dk, slot, menuIndex) {
-  activeSlot = { dk, slot, menuIndex: menuIndex ?? 0 };
-  const ov   = document.getElementById('menu-modal');
-  const bln  = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
-  const d    = new Date(dk+'T00:00:00');
-  const names= { sarapan:'Sarapan', siang:'Makan Siang', malam:'Makan Malam' };
-  const arr  = getMenuArray(dk, slot);
-  const isEdit = menuIndex < arr.length;
-  const menuNum = arr.length > 0 ? ` (Menu ${(menuIndex ?? arr.length) + 1})` : '';
-  document.getElementById('modal-title').textContent = `${names[slot]}${menuNum} \xb7 ${d.getDate()} ${bln[d.getMonth()]}`;
-  document.getElementById('modal-search').value = '';
-  ov.classList.add('open');
-  document.getElementById('modal-search').focus();
-  renderModalList('');
-};
-
-window.closeMenuModal = function(e) {
-  if (!e || e.target === document.getElementById('menu-modal')) {
-    document.getElementById('menu-modal').classList.remove('open');
-    activeSlot = null;
-  }
-};
-window.filterMenuModal = function() { renderModalList(document.getElementById('modal-search').value); };
-
-function renderModalList(q) {
-  const arr = activeSlot ? getMenuArray(activeSlot.dk, activeSlot.slot) : [];
-  const curMenu = activeSlot && activeSlot.menuIndex < arr.length ? arr[activeSlot.menuIndex] : '';
-  const filtered = DAFTAR_MENU.filter(m => m.toLowerCase().includes(q.toLowerCase()));
-  document.getElementById('modal-list').innerHTML = filtered.map(m => {
-    const isCur = m === curMenu;
-    const isOther = arr.includes(m) && !isCur;
-    return `<div class="menu-option ${isCur?'selected':''} ${isOther?'already-picked':''}" onclick="selectMenu('${escMH(m)}')">${escMH(m)}${isOther?' ✓':''}</div>`;
-  }).join('');
-}
-
-window.selectMenu = function(menu) {
-  if (!activeSlot) return;
-  const { dk, slot, menuIndex } = activeSlot;
-  const arr = getMenuArray(dk, slot);
-  if (menuIndex < arr.length) {
-    // Edit menu yang sudah ada
-    replaceMenuInSlot(dk, slot, menuIndex, menu);
-  } else {
-    // Tambah menu baru
-    addMenuToSlot(dk, slot, menu);
-  }
-  renderMenuGrid();
-  document.getElementById('menu-modal').classList.remove('open');
-  activeSlot = null;
-};
-
-window.clearSlot = function() {
-  if (!activeSlot) return;
-  const { dk, slot, menuIndex } = activeSlot;
-  const arr = getMenuArray(dk, slot);
-  if (menuIndex < arr.length) {
-    // Hapus hanya menu pada index ini
-    removeMenuFromSlot(dk, slot, menuIndex);
-  } else {
-    // Kosongkan semua
-    saveMenuSlot(dk, slot, []);
-  }
-  renderMenuGrid();
-  document.getElementById('menu-modal').classList.remove('open');
-  activeSlot = null;
-};
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    document.getElementById('menu-modal')?.classList.remove('open');
-    activeSlot = null;
-  }
-});
-
-/* ── Bahan stok ── */
-function renderBahanGrid() {
-  const grid = document.getElementById('bahan-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
-
-  Object.entries(DAFTAR_BAHAN).forEach(([kat, items]) => {
-    const grp = document.createElement('div');
-    grp.className = 'bahan-group';
-    grp.innerHTML = `<div class="bahan-group-label">${kat}</div><div class="bahan-items"></div>`;
-    grid.appendChild(grp);
-
-    const cont = grp.querySelector('.bahan-items');
-    items.forEach(nama => {
-      /* bahanData selalu pakai nama asli sebagai key (decode sudah dilakukan saat listen) */
-      const val = bahanData[nama];
-      const cls = val === true ? 'ada' : val === false ? 'habis' : '';
-      const pill = document.createElement('div');
-      pill.className = `bahan-pill ${cls}`;
-      pill.innerHTML = `<span class="bahan-pill-dot"></span>${nama}`;
-      pill.onclick   = () => toggleBahan(nama, pill);
-      cont.appendChild(pill);
-    });
-  });
-}
-
-function toggleBahan(nama, el) {
-  const cur = bahanData[nama];
-  let next;
-  if (cur === undefined || cur === null) { next = true;      el.className = 'bahan-pill ada';   }
-  else if (cur === true)                 { next = false;     el.className = 'bahan-pill habis'; }
-  else                                   { next = undefined; el.className = 'bahan-pill';       }
-  bahanData[nama] = next;
-  saveBahanItem(nama, next);
-}
-
-window.setAllBahan = function(status) { saveAllBahan(status); };
-
-/* ── Init ── */
-function initMenu() {
-  if (menuFirebaseReady) {
-    /* sudah listen realtime, render ulang saja */
-    renderMenuGrid();
-    renderBahanGrid();
-  } else {
-    initMenuLocal();
-  }
-}
+</main>
 
 
+  <!-- ========== VIEW: MENU MASAKAN ========== -->
+  <div id="view-menu" class="view-panel">
+  <div class="main-content" style="padding-bottom:2rem;">
 
-/* ================================================
-   DASHBOARD TABS — Hari Ini, English, Keluarga, Finansial
-   ================================================ */
+    <!-- ── Minggu selector ── -->
+    <div class="menu-week-header" style="max-width:100%;padding:0 0 1rem;">
+      <button class="week-nav-btn" onclick="shiftWeek(-1)">&#8249;</button>
+      <div class="week-label" id="week-label">Minggu ini</div>
+      <button class="week-nav-btn" onclick="shiftWeek(1)">&#8250;</button>
+      <button class="week-reset-btn" onclick="resetWeek()">Hari ini</button>
+    </div>
 
-/* ── Data Agenda per hari ── */
-const _schedules = {
-  1: [
-    {time:'03.00',act:'Bangun — persiapan ibadah malam',icon:'🌙',color:'#D1FAE5'},
-    {time:'03.15',act:'Tahajud, Witir, doa',icon:'📿',color:'#D1FAE5'},
-    {time:'03.40',act:'Sahur',icon:'🍽️',color:'#FEF9E7'},
-    {time:'04.10',act:'Tilawah Al-Qur\'an',icon:'📖',color:'#D1FAE5'},
-    {time:'04.45',act:'Sholat Subuh + Dzikir pagi',icon:'📿',color:'#D1FAE5'},
-    {time:'05.30',act:'Workout pagi (20 menit)',icon:'💪',color:'#DBEAFE'},
-    {time:'06.20',act:'Berangkat ke SMAN 8 Kediri',icon:'🏍️',color:'#DBEAFE'},
-    {time:'09.00',act:'Istirahat — Sholat Dhuha',icon:'🕌',color:'#D1FAE5'},
-    {time:'11.30',act:'Sholat Dzuhur berjamaah',icon:'🕌',color:'#D1FAE5'},
-    {time:'15.00',act:'Sholat Ashar',icon:'🕌',color:'#D1FAE5'},
-    {time:'15.30',act:'Absensi pulang',icon:'🏫',color:'#DBEAFE'},
-    {time:'16.20',act:'Main bareng anak',sub:'Tanpa HP — 40 menit fokus',icon:'👦',color:'#D1FAE5'},
-    {time:'17.45',act:'Maghrib — berbuka puasa',icon:'🌅',color:'#D1FAE5'},
-    {time:'18.30',act:'Makan malam bersama keluarga',icon:'🍽️',color:'#D1FAE5'},
-    {time:'19.15',act:'Isya + Dzikir malam',icon:'📿',color:'#D1FAE5'},
-    {time:'20.00',act:'Cek Artilerianstore / Coding / Baca',icon:'💻',color:'#EDE9FE'},
-    {time:'21.30',act:'Tidur',icon:'😴',color:'#F3F4F6'},
-  ],
-  2: [
-    {time:'03.45',act:'Bangun — Tahajud, Witir, doa',icon:'🌙',color:'#D1FAE5'},
-    {time:'04.45',act:'Sholat Subuh + Dzikir',icon:'📿',color:'#D1FAE5'},
-    {time:'05.35',act:'Workout pagi (25 menit)',icon:'💪',color:'#DBEAFE'},
-    {time:'06.20',act:'Berangkat ke sekolah',icon:'🏍️',color:'#DBEAFE'},
-    {time:'09.00',act:'Sholat Dhuha',icon:'🕌',color:'#D1FAE5'},
-    {time:'11.30',act:'Sholat Dzuhur + makan siang',icon:'🕌',color:'#D1FAE5'},
-    {time:'15.30',act:'Absensi pulang',icon:'🏫',color:'#DBEAFE'},
-    {time:'16.00',act:'Fotografi / Videografi konten',icon:'📸',color:'#FEF3C7'},
-    {time:'18.00',act:'Maghrib + Tilawah',icon:'🌅',color:'#D1FAE5'},
-    {time:'18.30',act:'Makan malam bersama keluarga',icon:'🍽️',color:'#D1FAE5'},
-    {time:'19.15',act:'Isya',icon:'📿',color:'#D1FAE5'},
-    {time:'19.45',act:'English: Writing — jurnal / paragraf',icon:'✍️',color:'#EDE9FE'},
-    {time:'21.30',act:'Tidur',icon:'😴',color:'#F3F4F6'},
-  ],
-  3: [
-    {time:'03.45',act:'Bangun — Tahajud, Witir, doa',icon:'🌙',color:'#D1FAE5'},
-    {time:'04.45',act:'Sholat Subuh + Dzikir',icon:'📿',color:'#D1FAE5'},
-    {time:'05.35',act:'Workout pagi (20 menit — ringkas)',icon:'💪',color:'#DBEAFE'},
-    {time:'06.20',act:'Berangkat ke sekolah',icon:'🏍️',color:'#DBEAFE'},
-    {time:'09.00',act:'Sholat Dhuha',icon:'🕌',color:'#D1FAE5'},
-    {time:'11.30',act:'Sholat Dzuhur + makan siang',icon:'🕌',color:'#D1FAE5'},
-    {time:'15.30',act:'Segera pulang — madin jam 16.30',icon:'🏫',color:'#DBEAFE'},
-    {time:'16.30',act:'Mengajar Madin / TPA',icon:'📖',color:'#EDE9FE',sub:'Hingga 19.00'},
-    {time:'19.00',act:'Maghrib + Isya',icon:'🌅',color:'#D1FAE5'},
-    {time:'19.45',act:'Makan malam + istirahat',icon:'🍽️',color:'#D1FAE5'},
-    {time:'21.00',act:'Tidur lebih awal',icon:'😴',color:'#F3F4F6'},
-  ],
-  4: [
-    {time:'03.00',act:'Bangun — Tahajud, Witir, doa',icon:'🌙',color:'#D1FAE5'},
-    {time:'03.40',act:'Sahur',icon:'🍽️',color:'#FEF9E7'},
-    {time:'04.45',act:'Sholat Subuh + Dzikir',icon:'📿',color:'#D1FAE5'},
-    {time:'05.30',act:'Workout pagi (20 menit)',icon:'💪',color:'#DBEAFE'},
-    {time:'06.20',act:'Berangkat ke sekolah',icon:'🏍️',color:'#DBEAFE'},
-    {time:'09.00',act:'Sholat Dhuha',icon:'🕌',color:'#D1FAE5'},
-    {time:'11.30',act:'Sholat Dzuhur (puasa)',icon:'🕌',color:'#D1FAE5'},
-    {time:'15.30',act:'Absensi pulang',icon:'🏫',color:'#DBEAFE'},
-    {time:'16.20',act:'Main bareng anak',icon:'👦',color:'#D1FAE5'},
-    {time:'17.45',act:'Maghrib — berbuka puasa',icon:'🌅',color:'#D1FAE5'},
-    {time:'18.30',act:'Makan malam bersama keluarga',icon:'🍽️',color:'#D1FAE5'},
-    {time:'19.15',act:'Isya',icon:'📿',color:'#D1FAE5'},
-    {time:'20.00',act:'English: Reading — artikel edukasi',icon:'📖',color:'#EDE9FE'},
-    {time:'21.30',act:'Tidur',icon:'😴',color:'#F3F4F6'},
-  ],
-  5: [
-    {time:'03.45',act:'Tahajud, Witir, doa',icon:'🌙',color:'#D1FAE5'},
-    {time:'04.45',act:'Subuh + baca Al-Kahfi pagi Jumat',icon:'📿',color:'#D1FAE5'},
-    {time:'05.35',act:'Workout pagi (25 menit)',icon:'💪',color:'#DBEAFE'},
-    {time:'06.20',act:'Berangkat ke sekolah',icon:'🏍️',color:'#DBEAFE'},
-    {time:'11.30',act:'Sholat Jumat berjamaah',icon:'🕌',color:'#D1FAE5'},
-    {time:'16.00',act:'Absensi pulang',icon:'🏫',color:'#DBEAFE'},
-    {time:'16.30',act:'Workout sore / mancing sore',icon:'🎣',color:'#FEF3C7'},
-    {time:'18.00',act:'Maghrib + Tilawah',icon:'🌅',color:'#D1FAE5'},
-    {time:'18.30',act:'Date Night Salma ❤️',sub:'Konsisten tiap Jumat',icon:'💑',color:'#FCE7F3'},
-    {time:'19.15',act:'Isya',icon:'📿',color:'#D1FAE5'},
-    {time:'20.30',act:'English: Speaking — shadowing',icon:'🎙️',color:'#EDE9FE'},
-    {time:'21.30',act:'Tidur',icon:'😴',color:'#F3F4F6'},
-  ],
-  6: [
-    {time:'04.30',act:'Subuh + Dzikir',icon:'📿',color:'#D1FAE5'},
-    {time:'05.15',act:'Jogging / workout (45–60 menit)',icon:'🏃',color:'#DBEAFE'},
-    {time:'06.15',act:'Mandikan anak — beri Salma 1 jam bebas',icon:'🛁',color:'#FCE7F3'},
-    {time:'06.45',act:'Sarapan bersama keluarga',icon:'🍳',color:'#D1FAE5'},
-    {time:'09.30',act:'Sholat Dhuha',icon:'🕌',color:'#D1FAE5'},
-    {time:'09.45',act:'Fotografi / Coding / nulis artikel',icon:'📸',color:'#FEF3C7'},
-    {time:'12.00',act:'Makan siang + tidur siang',icon:'😴',color:'#F3F4F6'},
-    {time:'13.30',act:'Evaluasi toko Shopee — brief karyawan',icon:'📊',color:'#FEF3C7'},
-    {time:'14.30',act:'Jalan-jalan keluarga / kuliner Kediri',icon:'👨‍👩‍👦',color:'#D1FAE5'},
-    {time:'18.00',act:'Maghrib + Tilawah',icon:'🌅',color:'#D1FAE5'},
-    {time:'18.30',act:'Kuliner / nongki bareng Salma',icon:'🍜',color:'#FCE7F3'},
-    {time:'22.00',act:'Tidur',icon:'😴',color:'#F3F4F6'},
-  ],
-  0: [
-    {time:'05.00',act:'Subuh',icon:'📿',color:'#D1FAE5'},
-    {time:'07.00',act:'Bangun santai — sarapan keluarga',icon:'☕',color:'#D1FAE5'},
-    {time:'08.00',act:'Jogging pagi bersama keluarga',icon:'🏃',color:'#DBEAFE'},
-    {time:'09.00',act:'Sholat Dhuha',icon:'🕌',color:'#D1FAE5'},
-    {time:'09.30',act:'Liburan / wisata keluarga',icon:'🌳',color:'#D1FAE5'},
-    {time:'12.00',act:'Makan siang + tidur siang panjang',icon:'😴',color:'#F3F4F6'},
-    {time:'14.00',act:'Main bareng anak / hobi bebas',icon:'👦',color:'#D1FAE5'},
-    {time:'18.00',act:'Maghrib + Tilawah',icon:'🌅',color:'#D1FAE5'},
-    {time:'18.30',act:'Cek toko Shopee — set target minggu depan',icon:'📊',color:'#FEF3C7'},
-    {time:'19.00',act:'Makan malam keluarga',icon:'🍽️',color:'#D1FAE5'},
-    {time:'21.00',act:'Tidur lebih awal — besok Senin',icon:'😴',color:'#F3F4F6'},
-  ],
-};
+    <!-- ── 7 kolom hari ── -->
+    <div class="menu-grid" id="menu-grid"></div>
 
-const _reminders = {
-  1:'Senin 🌙 Hari puasa sunnah. Bangun 03.00 untuk Tahajud + Sahur. Main bareng anak sore ini 40 menit — prioritas.',
-  2:'Selasa ✍️ Selesaikan admin di sekolah sebelum jam 16. Malam ini: English Writing 30 menit.',
-  3:'Rabu ⚡ Hari tersibuk. Ada madin jam 16.30 sampai 19.00. Tidak ada target tambahan — selamatkan hari ini.',
-  4:'Kamis 🌙 Hari puasa sunnah. Bangun 03.00 untuk Tahajud + Sahur. Main bareng anak sore jam 16.20.',
-  5:'Jumat ✨ Baca Al-Kahfi pagi ini. Setelah pulang: HP kerja OFF. Date night Salma malam ini — jangan skip.',
-  6:'Sabtu 🌿 Mandikan anak pagi ini, beri Salma waktu bebas. Sore: jalan keluarga Kediri.',
-  0:'Minggu 🏠 Hari keluarga penuh. Hadir sepenuhnya untuk Salma dan anak. Tidak ada urusan sekolah hari ini.',
-};
+    <!-- ── Bahan & Bumbu ── -->
+    <div class="bahan-section">
+      <div class="bahan-header">
+        <div class="bahan-title">
+          <span>🧺</span>
+          <div>
+            <div class="bahan-title-text">Stok Bahan & Bumbu</div>
+            <div class="bahan-title-sub">Centang yang tersedia — merah berarti perlu dibeli</div>
+          </div>
+        </div>
+        <div class="bahan-actions">
+          <button class="bahan-act-btn all-ada" onclick="setAllBahan(true)">✓ Semua Ada</button>
+          <button class="bahan-act-btn all-habis" onclick="setAllBahan(false)">✕ Semua Habis</button>
+        </div>
+      </div>
+      <div class="bahan-grid" id="bahan-grid"></div>
+    </div>
 
-/* ── Render Timeline ── */
-function renderDTimeline() {
-  const el = document.getElementById('d-timeline');
-  if (!el) return;
-  const now = new Date();
-  const dow = now.getDay();
-  const sched = _schedules[dow] || _schedules[1];
-  const curH = now.getHours() + now.getMinutes() / 60;
-  el.innerHTML = '';
-  sched.forEach((item, i) => {
-    const [h, m] = item.time.split('.').map(Number);
-    const ih = h + (m || 0) / 60;
-    const nh = i < sched.length - 1
-      ? (() => { const [nh2,nm2] = sched[i+1].time.split('.').map(Number); return nh2+(nm2||0)/60; })()
-      : 25;
-    const isDone = curH > ih + 0.5;
-    const isNow  = curH >= ih && curH < nh;
-    const div = document.createElement('div');
-    div.className = 'd-tl-item' + (isDone?' done':'') + (isNow?' now':'');
-    div.innerHTML = `
-      <div class="d-tl-dot" style="background:${item.color}">${item.icon}</div>
-      <div class="d-tl-content">
-        <div class="d-tl-time">${item.time}${isNow?'<span class="d-now-chip">SEKARANG</span>':''}</div>
-        <div class="d-tl-act">${item.act}</div>
-        ${item.sub?`<div class="d-tl-sub">${item.sub}</div>`:''}
-      </div>`;
-    el.appendChild(div);
-  });
-}
+    <!-- ── Modal picker menu ── -->
+    <div class="menu-modal-overlay" id="menu-modal" onclick="closeMenuModal(event)">
+      <div class="menu-modal">
+        <div class="menu-modal-header">
+          <div id="modal-title">Pilih Menu</div>
+          <button class="menu-modal-close" onclick="closeMenuModal()">✕</button>
+        </div>
+        <input type="text" id="modal-search" class="menu-modal-search" placeholder="🔍 Cari menu..." oninput="filterMenuModal()" />
+        <div class="menu-modal-list" id="modal-list"></div>
+        <div class="menu-modal-footer">
+          <button class="menu-modal-clear" onclick="clearSlot()">Hapus menu ini dari slot</button>
+        </div>
+      </div>
+    </div>
 
-/* ── Reminder ── */
-function renderDReminder() {
-  const el = document.getElementById('d-reminder');
-  if (!el) return;
-  el.textContent = _reminders[new Date().getDay()] || '';
-}
+  </div><!-- /main-content inner -->
+  </div><!-- /view-menu -->
 
-/* ── DateTime stat ── */
-function renderDDateTime() {
-  const now = new Date();
-  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-  const sh = document.getElementById('d-stat-hari');
-  const sj = document.getElementById('d-stat-jam');
-  if (sh) sh.textContent = days[now.getDay()];
-  if (sj) sj.textContent = now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
-}
+<footer class="site-footer">
+  Jadwal Keluarga · dibuat dengan ❤️ · diperbarui sesuai kebutuhan
+</footer>
 
-/* ── Checklist ── */
-const _checkItems = [
-  {id:'subuh',   lbl:'Sholat Subuh berjamaah / tepat waktu',    tag:'Ibadah',    color:'green'},
-  {id:'tilawah', lbl:'Tilawah Al-Qur\'an (min. 1 halaman)',      tag:'Ibadah',    color:'green'},
-  {id:'dhuha',   lbl:'Sholat Dhuha (istirahat sekolah)',          tag:'Ibadah',    color:'green'},
-  {id:'dzuhur',  lbl:'Sholat Dzuhur berjamaah',                   tag:'Ibadah',    color:'green'},
-  {id:'isya',    lbl:'Sholat Isya & doa malam bersama anak',      tag:'Ibadah',    color:'green'},
-  {id:'hpoff',   lbl:'HP kerja OFF setelah jam 16.00',            tag:'Keluarga',  color:'rose'},
-  {id:'anak',    lbl:"Main / quality time dengan anak (min. 30')",tag:'Keluarga',  color:'rose'},
-  {id:'salma',   lbl:'Ngobrol dengan Salma (bukan sambil HP)',     tag:'Keluarga',  color:'rose'},
-  {id:'admin',   lbl:'Selesaikan admin sekolah DI SEKOLAH',        tag:'Kerja',     color:'blue'},
-  {id:'english', lbl:'Belajar Bahasa Inggris 30 menit',           tag:'Upgrade',   color:'purple'},
-  {id:'toko',    lbl:'Cek Artilerianstore (singkat)',              tag:'Bisnis',    color:'blue'},
-];
-const _tagCls = {green:'d-tag-green', rose:'d-tag-rose', blue:'d-tag-blue', purple:'d-tag-purple'};
-
-function renderDChecks() {
-  const el = document.getElementById('d-checks');
-  if (!el) return;
-  const today = new Date().toDateString();
-  const saved = JSON.parse(localStorage.getItem('dchecks_' + today) || '{}');
-  el.innerHTML = '';
-  _checkItems.forEach(item => {
-    const div = document.createElement('div');
-    const checked = saved[item.id] || false;
-    div.className = 'd-check-item' + (checked ? ' checked' : '');
-    div.onclick = () => toggleDCheck(item.id);
-    div.innerHTML = `
-      <div class="d-check-box">${checked ? '✓' : ''}</div>
-      <div class="d-check-lbl">${item.lbl}</div>
-      <span class="d-check-tag ${_tagCls[item.color] || 'd-tag-blue'}">${item.tag}</span>`;
-    el.appendChild(div);
-  });
-}
-
-function toggleDCheck(id) {
-  const today = new Date().toDateString();
-  const saved = JSON.parse(localStorage.getItem('dchecks_' + today) || '{}');
-  saved[id] = !saved[id];
-  localStorage.setItem('dchecks_' + today, JSON.stringify(saved));
-  renderDChecks();
-}
-
-window.saveDChecks = function() {
-  const today = new Date().toDateString();
-  const saved = JSON.parse(localStorage.getItem('dchecks_' + today) || '{}');
-  const done = Object.values(saved).filter(Boolean).length;
-  alert(`Checklist tersimpan! ${done}/${_checkItems.length} selesai. Tetap istiqamah 💪`);
-};
-
-window.resetDChecks = function() {
-  const today = new Date().toDateString();
-  localStorage.removeItem('dchecks_' + today);
-  renderDChecks();
-};
-
-/* ── English Streak ── */
-const _engDayNames = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
-const _engFocus    = ['🏠','🎧','✍️','⚡','📖','🎙️','🌿'];
-const _engBadges   = ['🌱','🌿','⭐','🔥','🔥','🏆','🏆'];
-const _engMsgs     = ['Mulai hari ini!','Bagus, lanjutkan!','Momentum terbentuk!','Luar biasa!','Hampir sempurna!','Konsisten sekali!','Sempurna minggu ini! 🎉'];
-
-function _getWeekKey() {
-  const now = new Date(), s = new Date(now);
-  s.setDate(now.getDate() - now.getDay());
-  return 'eng_' + s.toDateString();
-}
-
-function renderEngWeek() {
-  const wk = _getWeekKey();
-  const states = JSON.parse(localStorage.getItem(wk) || '["","","","","","",""]');
-  const done = states.filter(s => s === 'done').length;
-  const sEl = document.getElementById('eng-streak');
-  const lEl = document.getElementById('eng-streak-lbl');
-  const bEl = document.getElementById('eng-badge');
-  if (sEl) sEl.textContent = done;
-  if (lEl) lEl.textContent = 'hari · ' + _engMsgs[Math.min(done, 6)];
-  if (bEl) bEl.textContent = _engBadges[Math.min(done, 6)];
-  const grid = document.getElementById('eng-week-dots');
-  if (!grid) return;
-  grid.innerHTML = '';
-  _engDayNames.forEach((d, i) => {
-    const wrap = document.createElement('div'); wrap.className = 'eng-wdot-wrap';
-    const dot  = document.createElement('div');
-    dot.className = 'eng-wdot' + (states[i]==='done'?' done':states[i]==='skip'?' skip':'');
-    dot.textContent = states[i]==='done' ? '✓' : states[i]==='skip' ? '✗' : _engFocus[i];
-    dot.onclick = () => {
-      if (states[i]==='')     states[i] = 'done';
-      else if (states[i]==='done') states[i] = 'skip';
-      else states[i] = '';
-      localStorage.setItem(wk, JSON.stringify(states));
-      renderEngWeek();
-    };
-    const lbl = document.createElement('div'); lbl.className = 'eng-wdot-lbl'; lbl.textContent = d;
-    wrap.appendChild(dot); wrap.appendChild(lbl); grid.appendChild(wrap);
-  });
-}
-
-window.saveEngStreak = function() {
-  const wk = _getWeekKey();
-  const states = JSON.parse(localStorage.getItem(wk) || '["","","","","","",""]');
-  const dow = new Date().getDay();
-  if (states[dow] !== 'done') {
-    states[dow] = 'done';
-    localStorage.setItem(wk, JSON.stringify(states));
-    renderEngWeek();
-  }
-  alert('Keren! Sesi hari ini ditandai selesai 💪');
-};
-
-window.resetEngWeek = function() {
-  localStorage.removeItem(_getWeekKey());
-  renderEngWeek();
-};
-
-/* ── Init fungsi-fungsi dashboard ── */
-function initDashboard() {
-  renderDDateTime();
-  renderDTimeline();
-  renderDReminder();
-  renderDChecks();
-  renderEngWeek();
-  setInterval(renderDDateTime, 30000);
-  setInterval(renderDTimeline, 60000);
-}
-
-/* Sambungkan ke initApp yang sudah ada */
-const _origInitApp = window.initApp;
-window.initApp = function() {
-  if (_origInitApp) _origInitApp();
-  initDashboard();
-};
+<script src="script.js?v=2"></script>
+</body>
+</html>

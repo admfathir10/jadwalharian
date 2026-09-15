@@ -848,6 +848,47 @@
 </footer>
 
 </div><!-- /app-content -->
-<script src="script.js"></script>
+
+<script>
+/* ── CRITICAL INLINE — bypass CDN cache script.js ── */
+
+/* showView — navigasi tab utama */
+function showView(id) {
+  document.querySelectorAll('.view-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.main-tabs button').forEach(function(b){ b.classList.remove('active'); });
+  var panel = document.getElementById('view-' + id);
+  var btn   = document.getElementById('mtab-' + id);
+  if (panel) panel.classList.add('active');
+  if (btn)   btn.classList.add('active');
+  if (id === 'menu'    && typeof initMenu        === 'function') initMenu();
+  if (id === 'today'   && typeof renderDDateTime === 'function') { renderDDateTime(); renderDTimeline(); renderDChecks(); renderDReminder(); }
+  if (id === 'english' && typeof renderEngWeek   === 'function') renderEngWeek();
+}
+
+/* showDay — tab hari suami */
+function showDay(day, btn) {
+  document.querySelectorAll('.day-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.day-tabs button').forEach(function(b){ b.classList.remove('active'); });
+  var panel = document.getElementById('day-' + day);
+  if (panel) panel.classList.add('active');
+  if (btn)   btn.classList.add('active');
+  if (typeof highlightLiveBlocks === 'function') highlightLiveBlocks();
+}
+
+/* showIstri — tab istri */
+function showIstri(id, btn) {
+  document.querySelectorAll('.istri-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.istri-tabs button').forEach(function(b){ b.classList.remove('active'); });
+  var panel = document.getElementById('istri-' + id);
+  if (panel) panel.classList.add('active');
+  if (btn)   btn.classList.add('active');
+  if (typeof highlightLiveBlocks === 'function') highlightLiveBlocks();
+}
+
+/* setWho, setFilter, addTodo, toggleTodo, deleteTodo, clearDone — stubs sampai script.js load */
+/* Fungsi-fungsi ini akan di-override oleh script.js ketika sudah load */
+</script>
+
+<script src="script.js?v=1789453420"></script>
 </body>
 </html>

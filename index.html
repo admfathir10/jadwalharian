@@ -113,14 +113,17 @@
       var content = document.getElementById('app-content');
       if (!screen || !content) return;
       content.style.display = 'block';
+      document.removeEventListener('keydown', _keyHandler);
       if (instant) {
         screen.style.display = 'none';
       } else {
         screen.classList.add('unlocked');
         setTimeout(function() { screen.style.display = 'none'; }, 400);
       }
-      // Keyboard listener off
-      document.removeEventListener('keydown', _keyHandler);
+      // Inisialisasi app setelah konten visible
+      setTimeout(function() {
+        if (typeof window.initApp === 'function') window.initApp();
+      }, 50);
     }
 
     function _keyHandler(e) {
@@ -137,13 +140,16 @@
       if (!screen || !content) return;
 
       if (window._pinUnlocked) {
-        // Session masih valid — langsung buka tanpa animasi
-        screen.style.display = 'none';
+        // Session masih valid — langsung buka + init app
+        screen.style.display  = 'none';
         content.style.display = 'block';
+        setTimeout(function() {
+          if (typeof window.initApp === 'function') window.initApp();
+        }, 50);
       } else {
         // Tampilkan PIN screen
-        screen.style.display   = 'flex';
-        content.style.display  = 'none';
+        screen.style.display  = 'flex';
+        content.style.display = 'none';
         document.addEventListener('keydown', _keyHandler);
       }
     });

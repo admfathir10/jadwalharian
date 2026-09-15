@@ -628,8 +628,7 @@ function injectDateBadge() {
 /* ========================
    Init
    ======================== */
-/* initApp dipanggil oleh PIN screen setelah unlock */
-window.initApp = function() {
+document.addEventListener('DOMContentLoaded', () => {
   injectClock();
   injectDateBadge();
   autoSelectDay();
@@ -639,10 +638,6 @@ window.initApp = function() {
   initDashboard();
   setInterval(updateClock, 1000);
   setInterval(highlightLiveBlocks, 30000);
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-  /* Kosong — semua init dijalankan initApp() setelah PIN */
 });
 
 /* ================================================

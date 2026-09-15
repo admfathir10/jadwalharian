@@ -628,16 +628,21 @@ function injectDateBadge() {
 /* ========================
    Init
    ======================== */
-document.addEventListener('DOMContentLoaded', () => {
-  // PIN dihandle inline di index.html
+/* initApp dipanggil oleh PIN screen setelah unlock */
+window.initApp = function() {
   injectClock();
   injectDateBadge();
   autoSelectDay();
   updateClock();
   highlightLiveBlocks();
-  initFirebase(); // akan fallback ke localStorage jika DATABASE_URL belum diisi
+  initFirebase();
+  initDashboard();
   setInterval(updateClock, 1000);
   setInterval(highlightLiveBlocks, 30000);
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  /* Kosong — semua init dijalankan initApp() setelah PIN */
 });
 
 /* ================================================
@@ -1045,12 +1050,7 @@ function initMenu() {
   }
 }
 
-/* Override showView untuk trigger initMenu */
-const _origShowView = window.showView;
-window.showView = function(id) {
-  _origShowView(id);
-  if (id === 'menu') initMenu();
-};
+
 
 /* ================================================
    DASHBOARD TABS — Hari Ini, English, Keluarga, Finansial
@@ -1354,10 +1354,13 @@ window.initApp = function() {
   initDashboard();
 };
 
-/* Override showView untuk refresh data saat pindah tab */
-const _origShowViewDash = window.showView;
-window.showView = function(id) {
-  if (_origShowViewDash) _origShowViewDash(id);
-  if (id === 'today')   { renderDDateTime(); renderDTimeline(); renderDChecks(); renderDReminder(); }
-  if (id === 'english') { renderEngWeek(); }
-};
+/* ── showView override final — satu kali saja ── */
+(function() {
+  var _orig = window.showView;
+  window.showView = function(id) {
+    if (_orig) _orig(id);
+    if (id === 'menu')     { if (typeof initMenu     === 'function') initMenu(); }
+    if (id === 'today')    { renderDDateTime(); renderDTimeline(); renderDChecks(); renderDReminder(); }
+    if (id === 'english')  { renderEngWeek(); }
+  };
+})();

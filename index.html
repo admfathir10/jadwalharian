@@ -46,115 +46,76 @@
 
   <!-- PIN logic inline — tidak bergantung script.js -->
   <script>
-    const _PIN = '111213'; // ← GANTI PIN DI SINI
-    const _KEY = 'jadwal_unlocked';
-    const _TTL = 12 * 60 * 60 * 1000;
-
-    // Cek session — kalau sudah unlock dalam 12 jam, langsung buka
-    (function() {
-      try {
-        var s = localStorage.getItem(_KEY);
-        if (s) {
-          var d = JSON.parse(s);
-          if (Date.now() - d.ts < _TTL) {
-            // Tandai sudah unlock — script.js akan baca ini
-            window._pinUnlocked = true;
-          }
-        }
-      } catch(e) {}
-    })();
-
+    /* PIN 6 digit — overlay saja, tidak menyembunyikan app */
+    var _PIN = '111213'; /* GANTI PIN DI SINI */
+    var _KEY = 'jadwal_pin_ok';
+    var _TTL = 12 * 60 * 60 * 1000;
     var _buf = '';
+    var _locked = true;
 
     function pinPress(d) {
-      if (_buf.length >= 6) return;
+      if (!_locked || _buf.length >= 6) return;
       _buf += d;
-      _updateDots();
-      if (_buf.length === 6) setTimeout(_check, 120);
+      _dots();
+      if (_buf.length === 6) setTimeout(_check, 150);
     }
-
     function pinDel() {
+      if (!_locked) return;
       _buf = _buf.slice(0, -1);
-      _updateDots();
-      document.getElementById('pin-error').textContent = '';
+      _dots();
+      var e = document.getElementById('pin-error');
+      if (e) e.textContent = '';
     }
-
-    function _updateDots() {
+    function _dots() {
       for (var i = 0; i < 6; i++) {
-        var dot = document.getElementById('d' + i);
-        if (!dot) continue;
-        dot.classList.toggle('filled', i < _buf.length);
-        dot.classList.remove('error');
+        var d = document.getElementById('d' + i);
+        if (!d) continue;
+        d.classList.toggle('filled', i < _buf.length);
+        d.classList.remove('error');
       }
     }
-
     function _check() {
       if (_buf === _PIN) {
-        try { localStorage.setItem(_KEY, JSON.stringify({ts: Date.now()})); } catch(e) {}
-        _unlock(false);
+        _locked = false;
+        try { localStorage.setItem(_KEY, String(Date.now())); } catch(e2) {}
+        var s = document.getElementById('pin-screen');
+        if (s) { s.classList.add('unlocked'); setTimeout(function(){ s.style.display='none'; }, 380); }
+        document.removeEventListener('keydown', _kh);
       } else {
         var dots = document.getElementById('pin-dots');
-        dots.classList.add('shake');
+        if (dots) { dots.classList.add('shake'); setTimeout(function(){ dots.classList.remove('shake'); _dots(); }, 500); }
         for (var i = 0; i < 6; i++) {
-          var dot = document.getElementById('d' + i);
-          if (dot) { dot.classList.remove('filled'); dot.classList.add('error'); }
+          var d = document.getElementById('d' + i);
+          if (d) { d.classList.remove('filled'); d.classList.add('error'); }
         }
-        document.getElementById('pin-error').textContent = 'PIN salah, coba lagi';
+        var e = document.getElementById('pin-error');
+        if (e) e.textContent = 'PIN salah, coba lagi';
         _buf = '';
-        setTimeout(function() {
-          dots.classList.remove('shake');
-          _updateDots();
-        }, 500);
       }
     }
-
-    function _unlock(instant) {
-      var screen  = document.getElementById('pin-screen');
-      var content = document.getElementById('app-content');
-      if (!screen || !content) return;
-      content.style.display = 'block';
-      document.removeEventListener('keydown', _keyHandler);
-      if (instant) {
-        screen.style.display = 'none';
-      } else {
-        screen.classList.add('unlocked');
-        setTimeout(function() { screen.style.display = 'none'; }, 400);
-      }
-      // Inisialisasi app setelah konten visible
-      setTimeout(function() {
-        if (typeof window.initApp === 'function') window.initApp();
-      }, 50);
+    function _kh(ev) {
+      if (!_locked) return;
+      if (ev.key >= '0' && ev.key <= '9') pinPress(ev.key);
+      else if (ev.key === 'Backspace') pinDel();
     }
-
-    function _keyHandler(e) {
-      var s = document.getElementById('pin-screen');
-      if (!s || s.style.display === 'none') return;
-      if (e.key >= '0' && e.key <= '9') pinPress(e.key);
-      else if (e.key === 'Backspace') pinDel();
-    }
-
-    // Jalankan saat DOM siap
+    /* Cek sesi ASAP — sebelum DOMContentLoaded */
+    (function() {
+      try {
+        var ts = parseInt(localStorage.getItem(_KEY) || '0', 10);
+        if (ts && Date.now() - ts < _TTL) { _locked = false; }
+      } catch(e) {}
+    })();
     document.addEventListener('DOMContentLoaded', function() {
-      var screen  = document.getElementById('pin-screen');
-      var content = document.getElementById('app-content');
-      if (!screen || !content) return;
-
-      if (window._pinUnlocked) {
-        // Session masih valid — langsung buka + init app
-        screen.style.display  = 'none';
-        content.style.display = 'block';
-        setTimeout(function() {
-          if (typeof window.initApp === 'function') window.initApp();
-        }, 50);
+      var s = document.getElementById('pin-screen');
+      if (!s) return;
+      if (_locked) {
+        s.style.display = 'flex';
+        document.addEventListener('keydown', _kh);
       } else {
-        // Tampilkan PIN screen
-        screen.style.display  = 'flex';
-        content.style.display = 'none';
-        document.addEventListener('keydown', _keyHandler);
+        s.style.display = 'none';
       }
     });
-  </script>
-</head>
+  </script></head>
 <body>
 
 <!-- ===================== PIN SCREEN ===================== -->
@@ -191,7 +152,7 @@
 </div>
 
 <!-- Semua konten utama — tersembunyi sampai PIN benar -->
-<div id="app-content" style="display:none">
+<div id="app-content">
 
 
 <!-- ===================== HEADER + MAIN TABS ===================== -->

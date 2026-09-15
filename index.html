@@ -4,74 +4,189 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jadwal Keluarga — Fathir & Salma</title>
-  <link rel="stylesheet" href="style.css?v=2" />
-  <!-- Override todo-section layout — bypass CDN cache -->
+  <link rel="stylesheet" href="style.css" />
+  <!-- Critical CSS inline — bypass CDN cache -->
   <style>
-    .todo-section {
-      /* Padding kiri-kanan SELALU sama persis dengan .main-content (1.75rem)
-         di semua ukuran layar, supaya lebar box To-Do identik dengan
-         card Jadwal Suami/Istri — tidak ada breakpoint terpisah lagi. */
-      max-width: 1240px !important;
-      width: 100% !important;
-      margin: 0 auto !important;
-      padding: 1.1rem 1.75rem 0 !important;
-      box-sizing: border-box !important;
-    }
-    .todo-section .todo-panel {
-      margin-top: 0 !important;
-      width: 100% !important;
-    }
-    .todo-section .todo-list {
-      max-height: 260px !important;
-    }
-    .main-content {
-      padding-top: 1rem !important;
-    }
+    /* ── Todo layout ── */
+    .todo-section{max-width:1240px!important;width:100%!important;margin:0 auto!important;padding:1.1rem 1.75rem 0!important;box-sizing:border-box!important}
+    .todo-section .todo-panel{margin-top:0!important;width:100%!important}
+    .todo-section .todo-list{max-height:260px!important}
+    .main-content{padding-top:1rem!important}
+    @media(max-width:480px){.todo-section{padding:.85rem 1rem 0!important}.main-content{padding-left:1rem!important;padding-right:1rem!important}}
+
+    /* ── PIN screen — inline agar tidak kena CDN cache ── */
+    #pin-screen{position:fixed!important;inset:0!important;z-index:99999!important;background:linear-gradient(135deg,#0f1628 0%,#1a2540 50%,#0d2818 100%)!important;display:none!important;align-items:center!important;justify-content:center!important;padding:1rem!important}
+    #pin-screen.visible{display:flex!important}
+    #pin-screen.unlocked{animation:pinFadeOut .4s ease forwards!important}
+    @keyframes pinFadeOut{to{opacity:0;pointer-events:none}}
+    .pin-card{display:flex;flex-direction:column;align-items:center;width:100%;max-width:320px}
+    .pin-logo{font-size:48px;margin-bottom:12px;filter:drop-shadow(0 4px 12px rgba(240,192,96,.3))}
+    .pin-title{font-family:system-ui,sans-serif;font-size:22px;font-weight:700;color:#f0eeea;margin-bottom:4px}
+    .pin-subtitle{font-family:system-ui,sans-serif;font-size:13px;color:rgba(240,238,234,.45);margin-bottom:36px}
+    .pin-dots{display:flex;gap:14px;margin-bottom:16px}
+    .pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.25);background:transparent;transition:all .15s;display:block}
+    .pin-dot.filled{background:#f0c060;border-color:#f0c060;box-shadow:0 0 10px rgba(240,192,96,.5);transform:scale(1.1)}
+    .pin-dot.error{background:#ef4444;border-color:#ef4444;box-shadow:0 0 10px rgba(239,68,68,.5)}
+    .pin-error{font-family:system-ui,sans-serif;font-size:12.5px;color:#f87171;height:18px;margin-bottom:24px;text-align:center;font-weight:500}
+    .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:280px;margin-bottom:20px}
+    .pin-btn{aspect-ratio:1;border-radius:50%;border:none;font-size:22px;font-weight:600;font-family:system-ui,sans-serif;cursor:pointer;background:rgba(255,255,255,.08);color:#f0eeea;transition:all .12s;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none}
+    .pin-btn:hover{background:rgba(255,255,255,.15);transform:scale(1.06)}
+    .pin-btn:active{background:rgba(240,192,96,.25);transform:scale(.94)}
+    .pin-btn-empty{background:transparent!important;cursor:default!important;pointer-events:none}
+    .pin-btn-del{font-size:18px;background:rgba(239,68,68,.12)!important;color:#fca5a5!important}
+    .pin-btn-del:hover{background:rgba(239,68,68,.22)!important}
+    .pin-hint{font-family:system-ui,sans-serif;font-size:11.5px;color:rgba(240,238,234,.3);letter-spacing:.03em}
+    @keyframes pinShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+    .pin-dots.shake{animation:pinShake .4s ease}
   </style>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- PIN logic inline — tidak bergantung script.js -->
+  <script>
+    const _PIN = '111213'; // ← GANTI PIN DI SINI
+    const _KEY = 'jadwal_unlocked';
+    const _TTL = 12 * 60 * 60 * 1000;
+
+    // Cek session — kalau sudah unlock dalam 12 jam, langsung buka
+    (function() {
+      try {
+        var s = localStorage.getItem(_KEY);
+        if (s) {
+          var d = JSON.parse(s);
+          if (Date.now() - d.ts < _TTL) {
+            // Tandai sudah unlock — script.js akan baca ini
+            window._pinUnlocked = true;
+          }
+        }
+      } catch(e) {}
+    })();
+
+    var _buf = '';
+
+    function pinPress(d) {
+      if (_buf.length >= 6) return;
+      _buf += d;
+      _updateDots();
+      if (_buf.length === 6) setTimeout(_check, 120);
+    }
+
+    function pinDel() {
+      _buf = _buf.slice(0, -1);
+      _updateDots();
+      document.getElementById('pin-error').textContent = '';
+    }
+
+    function _updateDots() {
+      for (var i = 0; i < 6; i++) {
+        var dot = document.getElementById('d' + i);
+        if (!dot) continue;
+        dot.classList.toggle('filled', i < _buf.length);
+        dot.classList.remove('error');
+      }
+    }
+
+    function _check() {
+      if (_buf === _PIN) {
+        try { localStorage.setItem(_KEY, JSON.stringify({ts: Date.now()})); } catch(e) {}
+        _unlock(false);
+      } else {
+        var dots = document.getElementById('pin-dots');
+        dots.classList.add('shake');
+        for (var i = 0; i < 6; i++) {
+          var dot = document.getElementById('d' + i);
+          if (dot) { dot.classList.remove('filled'); dot.classList.add('error'); }
+        }
+        document.getElementById('pin-error').textContent = 'PIN salah, coba lagi';
+        _buf = '';
+        setTimeout(function() {
+          dots.classList.remove('shake');
+          _updateDots();
+        }, 500);
+      }
+    }
+
+    function _unlock(instant) {
+      var screen  = document.getElementById('pin-screen');
+      var content = document.getElementById('app-content');
+      if (!screen || !content) return;
+      content.style.display = 'block';
+      if (instant) {
+        screen.style.display = 'none';
+      } else {
+        screen.classList.add('unlocked');
+        setTimeout(function() { screen.style.display = 'none'; }, 400);
+      }
+      // Keyboard listener off
+      document.removeEventListener('keydown', _keyHandler);
+    }
+
+    function _keyHandler(e) {
+      var s = document.getElementById('pin-screen');
+      if (!s || s.style.display === 'none') return;
+      if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+      else if (e.key === 'Backspace') pinDel();
+    }
+
+    // Jalankan saat DOM siap
+    document.addEventListener('DOMContentLoaded', function() {
+      var screen  = document.getElementById('pin-screen');
+      var content = document.getElementById('app-content');
+      if (!screen || !content) return;
+
+      if (window._pinUnlocked) {
+        // Session masih valid — langsung buka tanpa animasi
+        screen.style.display = 'none';
+        content.style.display = 'block';
+      } else {
+        // Tampilkan PIN screen
+        screen.style.display   = 'flex';
+        content.style.display  = 'none';
+        document.addEventListener('keydown', _keyHandler);
+      }
+    });
+  </script>
 </head>
 <body>
 
-<!-- ===================== PIN LOCK SCREEN ===================== -->
-<div class="pin-lock-screen">
-  <div class="pin-lock-box" id="pin-lock-box">
-    <div class="pin-lock-icon">🔒</div>
-    <h2>Jadwal Keluarga</h2>
-    <p>Masukkan PIN untuk masuk</p>
-
+<!-- ===================== PIN SCREEN ===================== -->
+<div id="pin-screen">
+  <div class="pin-card">
+    <div class="pin-logo">📅</div>
+    <div class="pin-title">Jadwal Keluarga</div>
+    <div class="pin-subtitle">Fathir & Salma</div>
     <div class="pin-dots" id="pin-dots">
-      <span class="pin-dot"></span>
-      <span class="pin-dot"></span>
-      <span class="pin-dot"></span>
-      <span class="pin-dot"></span>
-      <span class="pin-dot"></span>
-      <span class="pin-dot"></span>
+      <span class="pin-dot" id="d0"></span>
+      <span class="pin-dot" id="d1"></span>
+      <span class="pin-dot" id="d2"></span>
+      <span class="pin-dot" id="d3"></span>
+      <span class="pin-dot" id="d4"></span>
+      <span class="pin-dot" id="d5"></span>
     </div>
-
-    <input type="tel" id="pin-input" class="pin-hidden-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" />
-
-    <div class="pin-keypad">
-      <button type="button" class="pin-key" onclick="pinPress('1')">1</button>
-      <button type="button" class="pin-key" onclick="pinPress('2')">2</button>
-      <button type="button" class="pin-key" onclick="pinPress('3')">3</button>
-      <button type="button" class="pin-key" onclick="pinPress('4')">4</button>
-      <button type="button" class="pin-key" onclick="pinPress('5')">5</button>
-      <button type="button" class="pin-key" onclick="pinPress('6')">6</button>
-      <button type="button" class="pin-key" onclick="pinPress('7')">7</button>
-      <button type="button" class="pin-key" onclick="pinPress('8')">8</button>
-      <button type="button" class="pin-key" onclick="pinPress('9')">9</button>
-      <button type="button" class="pin-key pin-key-empty">•</button>
-      <button type="button" class="pin-key" onclick="pinPress('0')">0</button>
-      <button type="button" class="pin-key pin-key-back" onclick="pinBackspace()">⌫</button>
-    </div>
-
     <div class="pin-error" id="pin-error"></div>
+    <div class="pin-pad">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn pin-btn-empty"></button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn pin-btn-del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="pin-hint">Masukkan PIN 6 digit</div>
   </div>
-  <div class="pin-lock-footer">Hanya untuk keluarga Fathir & Salma</div>
 </div>
+
+<!-- Semua konten utama — tersembunyi sampai PIN benar -->
+<div id="app-content" style="display:none">
+
 
 <!-- ===================== HEADER + MAIN TABS ===================== -->
 <header class="site-header">
@@ -81,6 +196,10 @@
     <button id="mtab-jadwal" class="active" onclick="showView('jadwal')">Jadwal Harian</button>
     <button id="mtab-bersama" onclick="showView('bersama')">🤝 Momen Bersama</button>
     <button id="mtab-menu" onclick="showView('menu')">🍳 Menu Masakan</button>
+    <button id="mtab-today" onclick="showView('today')">📋 Hari Ini</button>
+    <button id="mtab-english" onclick="showView('english')">🇬🇧 English</button>
+    <button id="mtab-keluarga" onclick="showView('keluarga')">❤️ Keluarga</button>
+    <button id="mtab-finansial" onclick="showView('finansial')">💰 Finansial</button>
   </nav>
 </header>
 
@@ -613,10 +732,155 @@
   </div><!-- /main-content inner -->
   </div><!-- /view-menu -->
 
+  <!-- ═══ HARI INI ═══ -->
+  <div id="view-today" class="view-panel">
+  <div class="main-content" style="padding-bottom:2rem">
+
+    <div class="dash-grid-2">
+      <div class="dash-stat-card" style="border-top:3px solid #3b82f6">
+        <div class="dash-stat-num" id="d-stat-hari" style="color:#3b82f6">—</div>
+        <div class="dash-stat-lbl">Hari ini</div>
+      </div>
+      <div class="dash-stat-card" style="border-top:3px solid #10b981">
+        <div class="dash-stat-num" id="d-stat-jam" style="color:#10b981">—</div>
+        <div class="dash-stat-lbl">Waktu sekarang</div>
+      </div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-card-title">⏰ Agenda Hari Ini</div>
+      <div class="dash-timeline" id="d-timeline"></div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-card-title">✅ Checklist Harian</div>
+      <div id="d-checks"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="dash-btn dash-btn-primary" onclick="saveDChecks()">Simpan</button>
+        <button class="dash-btn dash-btn-ghost" onclick="resetDChecks()">Reset</button>
+      </div>
+    </div>
+
+    <div class="dash-card" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#86efac">
+      <div class="dash-card-title" style="color:#065f46">💬 Pengingat Hari Ini</div>
+      <div id="d-reminder" style="font-size:13px;color:#065f46;line-height:1.7"></div>
+    </div>
+
+  </div>
+  </div><!-- /view-today -->
+
+  <!-- ═══ ENGLISH ═══ -->
+  <div id="view-english" class="view-panel">
+  <div class="main-content" style="padding-bottom:2rem">
+
+    <div class="eng-streak-card">
+      <div style="flex:1">
+        <div style="font-size:11px;opacity:.65;margin-bottom:4px">Streak belajar minggu ini</div>
+        <div class="eng-streak-num" id="eng-streak">0</div>
+        <div class="eng-streak-sub" id="eng-streak-lbl">hari · Mulai hari ini!</div>
+        <div class="eng-week-dots" id="eng-week-dots"></div>
+      </div>
+      <div class="eng-badge-big" id="eng-badge">🌱</div>
+    </div>
+
+    <div class="dash-section-label">Jadwal 30 Menit Harian</div>
+
+    <div class="eng-day-card"><div class="eng-ico" style="background:#eff6ff">🎧</div><div style="flex:1"><div class="eng-day-name">Senin — Listening</div><div class="eng-day-focus">Podcast BBC / TED-Ed 20' + Anki 10'</div><div class="eng-day-detail">Dengarkan sambil commute motor. Catat 3 frasa baru, tambah ke Anki.</div></div><span class="eng-time-tag">20.00</span></div>
+    <div class="eng-day-card"><div class="eng-ico" style="background:#ecfdf5">✍️</div><div style="flex:1"><div class="eng-day-name">Selasa — Writing</div><div class="eng-day-focus">Jurnal / Paragraf 150 kata 20' + Grammar 10'</div><div class="eng-day-detail">Tulis pengalaman hari ini dalam Inggris. Tidak perlu sempurna — tulis saja.</div></div><span class="eng-time-tag">19.45</span></div>
+    <div class="eng-day-card" style="border-color:#fecaca"><div class="eng-ico" style="background:#fef2f2">⚡</div><div style="flex:1"><div class="eng-day-name">Rabu — Micro (Hari Padat)</div><div class="eng-day-focus">Anki saja 10 menit</div><div class="eng-day-detail">Rabu = hari tersibuk. Cukup Anki di perjalanan. Konsistensi lebih penting dari durasi.</div></div><span class="eng-time-tag">Pagi</span></div>
+    <div class="eng-day-card"><div class="eng-ico" style="background:#eff6ff">📖</div><div style="flex:1"><div class="eng-day-name">Kamis — Reading</div><div class="eng-day-focus">Artikel edukasi / Islam 20' + Vocab 10'</div><div class="eng-day-detail">BBC Education, The Guardian, atau jurnal Islamic Studies berbahasa Inggris.</div></div><span class="eng-time-tag">20.00</span></div>
+    <div class="eng-day-card"><div class="eng-ico" style="background:#fffbeb">🎙️</div><div style="flex:1"><div class="eng-day-name">Jumat — Speaking</div><div class="eng-day-focus">Shadowing / Monolog 2 menit 20' + Pronunciation 10'</div><div class="eng-day-detail">Rekam suara sendiri, dengar ulang. Atau tirukan kalimat dari YouTube.</div></div><span class="eng-time-tag">20.30</span></div>
+    <div class="eng-day-card"><div class="eng-ico" style="background:#f0fdfa">🌿</div><div style="flex:1"><div class="eng-day-name">Sabtu — Bebas</div><div class="eng-day-focus">Nonton YouTube tanpa sub / Caption konten toko</div><div class="eng-day-detail">Buat caption Artilerianstore dalam Inggris. Belajar sambil bisnis.</div></div><span class="eng-time-tag">Bebas</span></div>
+    <div class="eng-day-card" style="background:#f9f8f5"><div class="eng-ico" style="background:#e5e7eb">🏠</div><div style="flex:1"><div class="eng-day-name">Minggu — Istirahat</div><div class="eng-day-focus">Review Anki ringan saja (opsional)</div><div class="eng-day-detail">Hari keluarga. Otak yang istirahat menyerap lebih baik pekan depan.</div></div><span class="eng-time-tag" style="background:#e5e7eb;color:#6b7280">Opsional</span></div>
+
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="dash-btn dash-btn-primary" onclick="saveEngStreak()">✅ Tandai Hari Ini Selesai</button>
+      <button class="dash-btn dash-btn-ghost" onclick="resetEngWeek()">Reset minggu ini</button>
+    </div>
+
+  </div>
+  </div><!-- /view-english -->
+
+  <!-- ═══ KELUARGA ═══ -->
+  <div id="view-keluarga" class="view-panel">
+  <div class="main-content" style="padding-bottom:2rem">
+
+    <div class="fam-alert-card">
+      <div class="fam-alert-title">✋ Batas HP Kerja</div>
+      <div class="fam-alert-time">16.00</div>
+      <div class="fam-alert-sub">Setelah jam ini: WA siswa → balas besok pagi<br>Toko → ada admin. Deadline admin → Kamis malam.<br>Darurat = siswa sakit / kecelakaan saja.</div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-card-title">❤️ Quality Time Mingguan</div>
+      <div class="fam-item"><div class="fam-ico">👦</div><div><div class="fam-name">Senin &amp; Kamis 16.20–17.00</div><div class="fam-desc">Main bareng anak — tanpa HP, tanpa TV. 40 menit fokus penuh.</div></div></div>
+      <div class="fam-item"><div class="fam-ico">💑</div><div><div class="fam-name">Jumat malam 18.30 — Date Night Salma</div><div class="fam-desc">Warung favorit, jalan-jalan, atau nonton berdua setelah anak tidur. Konsisten tiap Jumat.</div></div></div>
+      <div class="fam-item"><div class="fam-ico">👨‍👩‍👦</div><div><div class="fam-name">Sabtu 14.30 &amp; Minggu 09.30 — Family Trip</div><div class="fam-desc">Sesederhana taman kota atau alun-alun Kediri. Yang penting bersama dan hadir penuh.</div></div></div>
+      <div class="fam-item"><div class="fam-ico">🌙</div><div><div class="fam-name">Setiap malam — Doa sebelum tidur anak</div><div class="fam-desc">5 menit bacakan doa dan surat pendek. Momen paling murah tapi paling mahal nilainya.</div></div></div>
+      <div class="fam-item" style="border:none"><div class="fam-ico">🛁</div><div><div class="fam-name">Sabtu pagi — Ambil alih mandikan anak</div><div class="fam-desc">Beri Salma 1 jam bebas untuk dirinya sendiri.</div></div></div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-card-title">🧠 Mindset Baru</div>
+      <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:8px">❌ Lama: <em>"Rebahan dulu, nanti ngurusin keluarga kalau sudah tenang."</em></div>
+      <div style="font-size:13px;color:#065f46;font-weight:600;background:#ecfdf5;border-radius:8px;padding:10px 12px">✅ Baru: <em>"Keluarga dulu 40 menit, baru boleh rebahan."</em></div>
+    </div>
+
+  </div>
+  </div><!-- /view-keluarga -->
+
+  <!-- ═══ FINANSIAL ═══ -->
+  <div id="view-finansial" class="view-panel">
+  <div class="main-content" style="padding-bottom:2rem">
+
+    <div class="dash-card">
+      <div class="dash-card-title">💰 Prioritas Finansial</div>
+      <div class="fin-prog-item">
+        <div class="fin-prog-head"><span>🟢 Dana Darurat (3–6× pengeluaran)</span><span class="fin-prio" style="color:#10b981">Prioritas 1</span></div>
+        <div class="fin-prog-bar"><div class="fin-prog-fill" style="width:35%;background:#10b981"></div></div>
+      </div>
+      <div class="fin-prog-item">
+        <div class="fin-prog-head"><span>🟡 Tabungan Haji</span><span class="fin-prio" style="color:#f59e0b">Prioritas 2</span></div>
+        <div class="fin-prog-bar"><div class="fin-prog-fill" style="width:20%;background:#f59e0b"></div></div>
+      </div>
+      <div class="fin-prog-item">
+        <div class="fin-prog-head"><span>🔵 Investasi Bibit (auto)</span><span class="fin-prio" style="color:#3b82f6">Prioritas 3</span></div>
+        <div class="fin-prog-bar"><div class="fin-prog-fill" style="width:50%;background:#3b82f6"></div></div>
+      </div>
+      <div class="fin-prog-item">
+        <div class="fin-prog-head"><span>🟠 DP KPR / Rumah</span><span class="fin-prio" style="color:#f43f5e">Prioritas 4</span></div>
+        <div class="fin-prog-bar"><div class="fin-prog-fill" style="width:10%;background:#f43f5e"></div></div>
+      </div>
+    </div>
+
+    <div class="fin-grid-2">
+      <div class="dash-card">
+        <div class="dash-card-title">📥 Sumber Penghasilan</div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#3b82f6"></span>Gaji PPPK Guru</span><span class="fin-badge" style="background:#eff6ff;color:#1d4ed8">Utama</span></div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#10b981"></span>Honor Madin (Rabu)</span><span class="fin-badge" style="background:#ecfdf5;color:#065f46">Tambahan</span></div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#f59e0b"></span>Artilerianstore</span><span class="fin-badge" style="background:#fffbeb;color:#92400e">Bisnis</span></div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#8b5cf6"></span>Freelance Foto/Video</span><span class="fin-badge" style="background:#f5f3ff;color:#5b21b6">Freelance</span></div>
+        <div class="fin-row" style="border:none"><span><span class="fin-dot" style="background:#9ca3af"></span>Affiliate Shopee</span><span class="fin-badge" style="background:#f3f4f6;color:#6b7280">Pasif</span></div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">📤 Pengeluaran Rutin</div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#f43f5e"></span>Kebutuhan pokok</span><span style="font-size:11px;color:var(--text-muted)">Harian</span></div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#3b82f6"></span>Paket data (2 provider)</span><span style="font-size:11px;color:var(--text-muted)">Bulanan</span></div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#f59e0b"></span>Servis motor (3 unit)</span><span style="font-size:11px;color:var(--text-muted)">Berkala</span></div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#10b981"></span>Sedekah / Shadaqah</span><span style="font-size:11px;color:var(--text-muted)">Rutin</span></div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#8b5cf6"></span>Pakan kucing + Galon air</span><span style="font-size:11px;color:var(--text-muted)">Mingguan</span></div>
+        <div class="fin-row" style="border:none"><span><span class="fin-dot" style="background:#9ca3af"></span>BBM kendaraan</span><span style="font-size:11px;color:var(--text-muted)">Mingguan</span></div>
+      </div>
+    </div>
+
+  </div>
+  </div><!-- /view-finansial -->
+
 <footer class="site-footer">
   Jadwal Keluarga · dibuat dengan ❤️ · diperbarui sesuai kebutuhan
 </footer>
 
-<script src="script.js?v=2"></script>
+</div><!-- /app-content -->
+<script src="script.js"></script>
 </body>
 </html>

@@ -1118,83 +1118,6 @@ window.resetDChecks = function() {
 };
 
 /* ================================================
-   ENGLISH LEARNING TRACKER
-   ================================================ */
-const ENG_KEY = 'eng_streak_v2';
-
-function getEngData() {
-  try { return JSON.parse(localStorage.getItem(ENG_KEY) || '{}'); } catch { return {}; }
-}
-function saveEngData(d) {
-  try { localStorage.setItem(ENG_KEY, JSON.stringify(d)); } catch{}
-}
-
-function initEnglish() {
-  const data  = getEngData();
-  const week  = getWeekDaysStr();
-  const today = new Date().toISOString().slice(0,10);
-
-  // Count done this week
-  const doneDays = week.filter(d => data[d]);
-  const streak   = doneDays.length;
-
-  const numEl   = document.getElementById('eng-streak');
-  const lblEl   = document.getElementById('eng-streak-lbl');
-  const dotsEl  = document.getElementById('eng-week-dots');
-  const badgeEl = document.getElementById('eng-badge');
-
-  if (numEl)   numEl.textContent   = streak;
-  if (lblEl)   lblEl.textContent   = streak === 0 ? 'hari · Mulai hari ini!' : `hari minggu ini · ${streak >= 5 ? 'Luar biasa! 🔥' : 'Terus semangat!'}`;
-  if (badgeEl) badgeEl.textContent = streak >= 6 ? '🏆' : streak >= 4 ? '🔥' : streak >= 2 ? '⭐' : '🌱';
-
-  if (dotsEl) {
-    dotsEl.innerHTML = '';
-    week.forEach(d => {
-      const dot = document.createElement('div');
-      dot.className = 'eng-week-dot' + (data[d] ? ' done' : '');
-      dot.title = d;
-      dotsEl.appendChild(dot);
-    });
-  }
-}
-
-function getWeekDaysStr() {
-  const today = new Date();
-  const day   = today.getDay();
-  const diff  = day === 0 ? -6 : 1 - day;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() + diff);
-  return Array.from({length:7}, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return d.toISOString().slice(0,10);
-  });
-}
-
-window.saveEngStreak = function() {
-  const today = new Date().toISOString().slice(0,10);
-  const data  = getEngData();
-  data[today] = !data[today]; // toggle
-  saveEngData(data);
-  initEnglish();
-  const btn = document.querySelector('[onclick="saveEngStreak()"]');
-  if (btn) {
-    const data2 = getEngData();
-    btn.textContent = data2[today] ? '✅ Sudah ditandai!' : '☐ Tandai Hari Ini Selesai';
-    if (data2[today]) btn.style.background = 'linear-gradient(135deg,#16a34a,#22c55e)';
-    else btn.style.background = '';
-  }
-};
-
-window.resetEngWeek = function() {
-  const week = getWeekDaysStr();
-  const data = getEngData();
-  week.forEach(d => delete data[d]);
-  saveEngData(data);
-  initEnglish();
-};
-
-/* ================================================
    Override showView to init sub-views
    ================================================ */
 const _origShowView2 = window.showView;
@@ -1213,3 +1136,431 @@ setInterval(() => {
     if (el) el.textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   }
 }, 60000);
+
+/* ================================================
+   ENGLISH LEARNING TRACKER — Gamified System
+   Intermediate → Advanced
+   ================================================ */
+
+const ENG_KEY    = 'eng_data_v3';      // { dates: {YYYY-MM-DD: true}, totalXP: 0 }
+const ENG_WEEKLY = ['senin','selasa','rabu','kamis','jumat','sabtu','minggu'];
+const DAY_ID_MAP = [6,0,1,2,3,4,5];   // JS getDay (0=Sun) → ENG_WEEKLY index
+
+const ENG_SCHEDULE = {
+  senin:  { icon:'🎧', bg:'#eff6ff', name:'Senin — Listening', focus:'Podcast / Video 20\' + Anki 10\'', tasks:['Buka BBC 6 Minute English atau TED-Ed','Dengarkan 1–2 episode, catat 3–5 frasa baru','Tambahkan frasa ke Anki deck'], xp:10 },
+  selasa: { icon:'✍️', bg:'#ecfdf5', name:'Selasa — Writing', focus:'English Journal 150+ kata 20\' + Grammar 10\'', tasks:['Tulis hari ini dalam bahasa Inggris (minimal 150 kata)','Gunakan Grammarly untuk review','Pelajari 1 grammar point baru'], xp:12 },
+  rabu:   { icon:'⚡', bg:'#fef2f2', name:'Rabu — Micro Day', focus:'Anki review 10 menit (wajib)', tasks:['Buka Anki — review semua due cards','Minimal 10 menit sebelum tidur','Tidak perlu lebih — konsistensi kunci!'], xp:5 },
+  kamis:  { icon:'📖', bg:'#eff6ff', name:'Kamis — Reading', focus:'Artikel English 20\' + Vocab in context 10\'', tasks:['Baca 1 artikel dari BBC Education atau The Guardian','Underline kata/frasa baru','Masukkan ke Anki dengan contoh kalimat'], xp:10 },
+  jumat:  { icon:'🎙️', bg:'#fffbeb', name:'Jumat — Speaking', focus:'Shadowing 15\' + Self-recording 2 menit', tasks:['Pilih video YouTube, tirukan intonasi & ritme','Rekam diri sendiri bicara topik bebas 2 menit','Dengar ulang — evaluasi pronunciation'], xp:15 },
+  sabtu:  { icon:'🌿', bg:'#f0fdfa', name:'Sabtu — Applied English', focus:'Konten bisnis + YouTube tanpa subtitle', tasks:['Buat 2–3 caption Artilerianstore/Salmarket dalam Inggris','Nonton 1 episode YouTube tanpa subtitle','Catat ungkapan natural yang menarik'], xp:10 },
+  minggu: { icon:'🏠', bg:'#f9f8f5', name:'Minggu — Rest & Review', focus:'Review Anki ringan + evaluasi minggu', tasks:['Anki review jika sempat (opsional)','Evaluasi: skill apa yang paling berkembang?','Rencanakan target minggu depan'], xp:5 }
+};
+
+const LEVEL_SYSTEM = [
+  { min:0,   max:99,  badge:'🌱', title:'Beginner',      color:'#6b7280' },
+  { min:100, max:249, badge:'📗', title:'Elementary',    color:'#16a34a' },
+  { min:250, max:499, badge:'⭐', title:'Pre-Intermediate', color:'#ca8a04' },
+  { min:500, max:849, badge:'🔥', title:'Intermediate',  color:'#ea580c' },
+  { min:850, max:1299,badge:'💫', title:'Upper-Inter',   color:'#7c3aed' },
+  { min:1300,max:1999,badge:'🏆', title:'Advanced',      color:'#1d4ed8' },
+  { min:2000,max:9999,badge:'👑', title:'Expert',        color:'#f0c060' }
+];
+
+const ACHIEVEMENTS = [
+  { id:'first',   icon:'🎯', name:'Mulai!',          desc:'Selesai 1 sesi',    req: d => d.total >= 1 },
+  { id:'week1',   icon:'📅', name:'Seminggu',        desc:'7 hari total',      req: d => d.total >= 7 },
+  { id:'streak3', icon:'🔥', name:'3 Hari Beruntun', desc:'Streak 3 hari',     req: d => d.streak >= 3 },
+  { id:'streak7', icon:'⚡', name:'Seminggu Penuh',  desc:'Streak 7 hari',     req: d => d.streak >= 7 },
+  { id:'month',   icon:'🏅', name:'Sebulan',         desc:'30 hari total',     req: d => d.total >= 30 },
+  { id:'speak',   icon:'🎙️', name:'Speaker',         desc:'10x sesi Speaking', req: d => (d.bySkill?.jumat||0) >= 10 },
+  { id:'writer',  icon:'✍️', name:'Writer',          desc:'10x sesi Writing',  req: d => (d.bySkill?.selasa||0) >= 10 },
+  { id:'streak30',icon:'👑', name:'30 Hari Beruntun', desc:'Streak 30 hari',   req: d => d.streak >= 30 },
+];
+
+const TIPS_POOL = [
+  { text:"Don't just study English — use it. Caption toko Artilerianstore dalam bahasa Inggris hari ini.", sub:"Applied learning 5× lebih efektif dari hafalan pasif.", cat:"Strategi" },
+  { text:"Record yourself speaking for 2 minutes. You'll be surprised how much you've improved.", sub:"Self-monitoring adalah salah satu teknik paling powerful untuk pronunciation.", cat:"Speaking" },
+  { text:"Learn vocabulary in context, not in isolation. 'I'm swamped with work' jauh lebih memorable dari hafal kata 'swamped' saja.", sub:"Gunakan Anki dengan contoh kalimat lengkap, bukan kata tunggal.", cat:"Vocabulary" },
+  { text:"Consistency beats intensity. 20 menit tiap hari lebih baik dari 3 jam sekali seminggu.", sub:"Otak membutuhkan repetisi terjadwal untuk menyimpan informasi ke long-term memory.", cat:"Motivasi" },
+  { text:"Shadowing is your fastest path to natural English. Mirror the speaker's rhythm, not just words.", sub:"Teknik ini digunakan language learner professional di seluruh dunia.", cat:"Speaking" },
+  { text:"When you read in English, don't look up every word. Try to guess from context first.", sub:"Kemampuan inferring meaning dari konteks adalah ciri khas advanced learner.", cat:"Reading" },
+  { text:"Error correction: write something, use Grammarly, then understand WHY it was wrong.", sub:"Pelajari pola error kamu. Intermediate learner biasanya punya 5–7 error pattern yang berulang.", cat:"Writing" },
+  { text:"Start your day with 10 minutes of English input — podcast, YouTube, or audio book.", sub:"Morning brain lebih receptive. Gunakan waktu commute motor ke sekolah.", cat:"Strategi" },
+  { text:"Advanced English means using collocations naturally: 'make a decision', not 'do a decision'.", sub:"Fokus belajar collocations, bukan vocab tunggal. Ini pembeda Intermediate vs Advanced.", cat:"Vocabulary" },
+  { text:"Think in English for 5 minutes a day. Narrate what you're doing: 'I'm preparing lessons for tomorrow.'", sub:"Inner monolog dalam bahasa Inggris mempercepat fluency secara signifikan.", cat:"Speaking" },
+  { text:"The best English learners are the most comfortable with making mistakes in public.", sub:"Fear of mistakes adalah hambatan terbesar. Madin dan sekolah = practice arena!", cat:"Motivasi" },
+  { text:"Use English for real purposes: reply 1 email in English today, or write product description toko.", sub:"Real-world usage menciptakan motivasi intrinsik yang lebih kuat dari latihan buatan.", cat:"Strategi" },
+  { text:"Upgrade your vocabulary: instead of 'good', use 'outstanding', 'remarkable', 'stellar'.", sub:"Intermediate → Advanced = range sinonim yang lebar & presisi dalam memilih kata.", cat:"Vocabulary" },
+  { text:"Listen to the same podcast episode twice: once for gist, once for detail.", sub:"Double listening melatih bottom-up dan top-down listening strategy sekaligus.", cat:"Listening" },
+  { text:"Write 3 sentences about your teaching day in English before sleeping. Just 3 sentences.", sub:"Micro habit yang mudah dimulai. Lama-lama jadi paragraf, lalu halaman penuh.", cat:"Writing" },
+];
+
+const PHRASES = [
+  { en:"I'd like to elaborate on that.", id:"Saya ingin menguraikan hal itu lebih lanjut.", ctx:"Formal meetings / presentations" },
+  { en:"That's a valid point, however...", id:"Itu poin yang valid, namun...", ctx:"Debating / discussion" },
+  { en:"I'm swamped with work right now.", id:"Saya sedang sangat sibuk sekarang.", ctx:"Casual / informal" },
+  { en:"Could you shed some light on this?", id:"Bisakah Anda menjelaskan ini lebih lanjut?", ctx:"Asking for clarification" },
+  { en:"It's on the tip of my tongue.", id:"Sudah di ujung lidah / hampir ingat.", ctx:"When forgetting a word" },
+  { en:"Let's touch base tomorrow.", id:"Mari kita koordinasi lagi besok.", ctx:"Business / professional" },
+  { en:"I'm inclined to agree with you.", id:"Saya cenderung setuju dengan Anda.", ctx:"Polite agreement" },
+  { en:"That goes without saying.", id:"Itu sudah jelas / tidak perlu dikatakan.", ctx:"Emphasizing obvious points" },
+  { en:"I'll take that on board.", id:"Saya akan mempertimbangkan masukan itu.", ctx:"Receiving feedback professionally" },
+  { en:"To put it in a nutshell...", id:"Singkatnya / Intinya...", ctx:"Summarizing" },
+  { en:"I'm on the fence about this.", id:"Saya masih ragu / belum memutuskan.", ctx:"Expressing uncertainty" },
+  { en:"Don't reinvent the wheel.", id:"Tidak perlu membuat sesuatu dari nol jika sudah ada solusinya.", ctx:"Practical advice" },
+];
+
+/* ── Data helpers ── */
+function getEngData() {
+  try { return JSON.parse(localStorage.getItem(ENG_KEY) || '{}'); } catch { return {}; }
+}
+function saveEngData(d) {
+  try { localStorage.setItem(ENG_KEY, JSON.stringify(d)); } catch {}
+}
+
+function calcStreak(datesObj) {
+  const today = new Date();
+  let streak = 0;
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const key = d.toISOString().slice(0,10);
+    if (datesObj[key]) streak++;
+    else if (i > 0) break; // Allow today to be incomplete
+  }
+  return streak;
+}
+
+function getLevel(xp) {
+  for (let i = LEVEL_SYSTEM.length - 1; i >= 0; i--) {
+    if (xp >= LEVEL_SYSTEM[i].min) return { ...LEVEL_SYSTEM[i], idx: i };
+  }
+  return { ...LEVEL_SYSTEM[0], idx: 0 };
+}
+
+function getTodayDayId() {
+  const d = new Date().getDay(); // 0=Sun,1=Mon,...6=Sat
+  return ENG_WEEKLY[DAY_ID_MAP[d]];
+}
+
+function getWeekDates() {
+  const today = new Date();
+  const day   = today.getDay();
+  const diff  = day === 0 ? -6 : 1 - day;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + diff);
+  return Array.from({length:7}, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d.toISOString().slice(0,10);
+  });
+}
+
+/* ── Render ── */
+function initEnglish() {
+  const raw       = getEngData();
+  const dates     = raw.dates     || {};
+  const totalXP   = raw.totalXP   || 0;
+  const bySkill   = raw.bySkill   || {};
+  const total     = Object.values(dates).filter(Boolean).length;
+  const streak    = calcStreak(dates);
+  const todayKey  = new Date().toISOString().slice(0,10);
+  const todayId   = getTodayDayId();
+  const level     = getLevel(totalXP);
+  const nextLevel = LEVEL_SYSTEM[Math.min(level.idx+1, LEVEL_SYSTEM.length-1)];
+  const xpInLevel = totalXP - level.min;
+  const xpNeeded  = nextLevel.min - level.min;
+  const xpPct     = Math.min(100, Math.round((xpInLevel / xpNeeded) * 100));
+
+  // ── Hero card ──
+  const el = s => document.getElementById(s);
+  if (el('eng-streak'))     el('eng-streak').textContent     = streak;
+  if (el('eng-streak-lbl')) el('eng-streak-lbl').textContent = streak === 0 ? 'hari streak · Mulai hari ini!' : `hari streak berturut-turut${streak >= 7 ? ' 🔥' : ''}`;
+  if (el('eng-streak-fire')) el('eng-streak-fire').textContent = streak >= 7 ? '🔥' : streak >= 3 ? '⚡' : '📚';
+  if (el('eng-badge'))      el('eng-badge').textContent      = level.badge;
+  if (el('eng-badge-title')) el('eng-badge-title').textContent = level.title;
+  if (el('eng-total-days')) el('eng-total-days').textContent = total;
+  if (el('eng-xp-label'))   el('eng-xp-label').textContent  = `${totalXP} XP`;
+  if (el('eng-xp-bar'))     el('eng-xp-bar').style.width    = xpPct + '%';
+  if (el('eng-level-pill')) el('eng-level-pill').textContent = `${level.title} → ${nextLevel.title} (${xpPct}%)`;
+
+  // Week dots
+  const weekDates = getWeekDates();
+  const dotsEl    = el('eng-week-dots');
+  if (dotsEl) {
+    dotsEl.innerHTML = '';
+    const dayLabels  = ['S','S','R','K','J','S','M'];
+    weekDates.forEach((dt, i) => {
+      const dot = document.createElement('div');
+      const isToday  = dt === todayKey;
+      const isDone   = dates[dt];
+      dot.className  = 'eng-week-dot' + (isDone ? ' done' : '') + (isToday ? ' today-dot' : '');
+      dot.textContent = isDone ? '✓' : dayLabels[i];
+      dot.title       = dt;
+      dotsEl.appendChild(dot);
+    });
+  }
+
+  // ── Today card ──
+  const sched = ENG_SCHEDULE[todayId] || ENG_SCHEDULE.senin;
+  const isDoneToday = dates[todayKey];
+  if (el('eng-today-day')) el('eng-today-day').textContent = sched.name;
+  if (el('eng-today-body')) {
+    el('eng-today-body').innerHTML = `
+      <div class="eng-today-focus-text">${sched.focus}</div>
+      <div class="eng-today-tasks">
+        ${sched.tasks.map(t => `<div class="eng-task-chip">→ ${t}</div>`).join('')}
+      </div>
+    `;
+  }
+  const doneBtn = el('eng-done-btn');
+  if (doneBtn) {
+    doneBtn.textContent = isDoneToday ? `✅ Selesai! (+${sched.xp} XP)` : `○ Tandai Selesai (+${sched.xp} XP)`;
+    doneBtn.className   = 'eng-done-btn' + (isDoneToday ? ' done-state' : '');
+  }
+
+  // Highlight today's day card
+  ENG_WEEKLY.forEach(id => {
+    const card = document.getElementById('edc-'+id);
+    if (card) {
+      card.classList.toggle('today-highlight', id === todayId);
+      const tag = document.getElementById('done-' + id);
+      // Mark done if any date this week matches this day
+      const dayIdx    = ENG_WEEKLY.indexOf(id);
+      const dateOfDay = weekDates[dayIdx];
+      if (tag) {
+        tag.textContent = '✓ Selesai';
+        tag.classList.toggle('visible', !!dates[dateOfDay]);
+      }
+    }
+  });
+
+  // ── Progress tab ──
+  renderEngProgress(dates, todayKey);
+
+  // ── Achievements ──
+  const achEl = el('eng-achievements');
+  if (achEl) {
+    const stats = { total, streak, bySkill };
+    achEl.innerHTML = ACHIEVEMENTS.map(a => {
+      const unlocked = a.req(stats);
+      return `<div class="eng-ach ${unlocked ? 'unlocked' : ''}">
+        <span class="eng-ach-icon ${unlocked ? '' : 'eng-ach-locked'}">${a.icon}</span>
+        <div><div style="font-size:12px;font-weight:${unlocked?'700':'500'}">${a.name}</div>
+        <div style="font-size:10px;opacity:.65">${a.desc}</div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Tips tab ──
+  renderEngTips();
+}
+
+function renderEngProgress(dates, todayKey) {
+  const grid = document.getElementById('eng-progress-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  // Show last 5 weeks + current
+  const today   = new Date();
+  const day     = today.getDay();
+  const diff    = day === 0 ? -6 : 1 - day;
+  const thisMonday = new Date(today);
+  thisMonday.setDate(today.getDate() + diff);
+
+  for (let w = 4; w >= 0; w--) {
+    const monday = new Date(thisMonday);
+    monday.setDate(thisMonday.getDate() - w * 7);
+
+    // Week label
+    const lbl = document.createElement('div');
+    lbl.className = 'eng-prog-week-label';
+    const opts = {day:'numeric',month:'short'};
+    const end  = new Date(monday); end.setDate(monday.getDate()+6);
+    lbl.textContent = w === 0 ? `Minggu ini · ${monday.toLocaleDateString('id-ID',opts)}` : monday.toLocaleDateString('id-ID',opts) + ' – ' + end.toLocaleDateString('id-ID',opts);
+    grid.appendChild(lbl);
+
+    const dayLabels = ['S','S','R','K','J','S','M'];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday); d.setDate(monday.getDate()+i);
+      const key = d.toISOString().slice(0,10);
+      const div = document.createElement('div');
+      const isDone  = dates[key];
+      const isToday = key === todayKey;
+      const isFuture = d > today;
+      div.className = 'eng-prog-day' + (isDone ? ' done-day' : '') + (isToday ? ' today-prog' : '');
+      div.textContent = isDone ? '✓' : dayLabels[i];
+      div.style.opacity = isFuture ? '0.35' : '1';
+      div.title = key;
+      grid.appendChild(div);
+    }
+  }
+}
+
+function renderEngTips() {
+  // Daily tip — rotates by day of year
+  const doy = Math.floor((new Date() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+  const tip  = TIPS_POOL[doy % TIPS_POOL.length];
+  const tipEl = document.getElementById('eng-tip-of-day');
+  if (tipEl) {
+    tipEl.innerHTML = `
+      <div class="eng-tip-label">💡 Tip Hari Ini · ${tip.cat}</div>
+      <div class="eng-tip-text">${tip.text}</div>
+      <div class="eng-tip-sub">${tip.sub}</div>
+    `;
+  }
+
+  // Phrases — show 6 random ones based on day
+  const phraseEl = document.getElementById('eng-phrases');
+  if (phraseEl) {
+    const shuffled = [...PHRASES].sort((a,b) => {
+      const seed = doy * 7;
+      return (PHRASES.indexOf(a) * 31 + seed) % 100 - (PHRASES.indexOf(b) * 17 + seed) % 100;
+    }).slice(0, 6);
+    phraseEl.innerHTML = shuffled.map(p => `
+      <div class="eng-phrase-item">
+        <div class="eng-phrase-en">${p.en}</div>
+        <div class="eng-phrase-id">${p.id}</div>
+        <div class="eng-phrase-context">📌 ${p.ctx}</div>
+      </div>
+    `).join('');
+  }
+}
+
+window.showEngTab = function(tab, btn) {
+  document.querySelectorAll('.eng-sub-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.eng-tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('eng-tab-'+tab)?.classList.add('active');
+  if (tab === 'progress') renderEngProgress(
+    (getEngData().dates || {}), new Date().toISOString().slice(0,10)
+  );
+  if (tab === 'tips') renderEngTips();
+};
+
+window.saveEngStreak = function() {
+  const todayKey = new Date().toISOString().slice(0,10);
+  const todayId  = getTodayDayId();
+  const raw      = getEngData();
+  const dates    = raw.dates   || {};
+  const bySkill  = raw.bySkill || {};
+  let   totalXP  = raw.totalXP || 0;
+
+  const wasOff   = !dates[todayKey];
+  dates[todayKey] = wasOff;   // toggle
+
+  if (wasOff) {
+    // Adding XP
+    totalXP += ENG_SCHEDULE[todayId]?.xp || 10;
+    bySkill[todayId] = (bySkill[todayId] || 0) + 1;
+  } else {
+    // Removing XP
+    totalXP = Math.max(0, totalXP - (ENG_SCHEDULE[todayId]?.xp || 10));
+    bySkill[todayId] = Math.max(0, (bySkill[todayId] || 1) - 1);
+  }
+
+  saveEngData({ dates, totalXP, bySkill });
+  initEnglish();
+};
+
+window.resetEngWeek = function() {
+  if (!confirm('Reset data minggu ini?')) return;
+  const raw    = getEngData();
+  const dates  = raw.dates || {};
+  getWeekDates().forEach(d => { delete dates[d]; });
+  saveEngData({ ...raw, dates });
+  initEnglish();
+};
+
+window.resetEngAll = function() {
+  if (!confirm('Hapus SEMUA data streak English? Ini tidak bisa dibatalkan.')) return;
+  localStorage.removeItem(ENG_KEY);
+  initEnglish();
+};
+
+/* ================================================
+   MINDSET HARIAN — Keluarga tab
+   Rotasi harian + refresh manual
+   ================================================ */
+const MINDSET_LIST = [
+  { cat:'Keluarga', old:'Nanti saja ngurusin anak kalau sudah tidak capek.', baru:'Hadir 30 menit penuh sekarang lebih berharga dari 3 jam sambil main HP.', quote:'❤️' },
+  { cat:'Keluarga', old:'Salma pasti mengerti kalau aku sibuk.', baru:'Jumat malam adalah tanggal — jadikan prioritas, bukan kalau sempat.', quote:'💑' },
+  { cat:'Produktivitas', old:'Scroll dulu, baru kerja.', baru:'Kerja dulu 45 menit, scroll boleh 10 menit sebagai reward.', quote:'⚡' },
+  { cat:'Ibadah', old:'Sholat nanti saja setelah selesai ini.', baru:'Sholat di awal waktu = energi dan berkah untuk semua yang sesudahnya.', quote:'🌙' },
+  { cat:'Kesehatan', old:'Olahraga besok saja, hari ini capek.', baru:'20 menit workout = stamina lebih baik untuk keluarga & kerja seharian.', quote:'💪' },
+  { cat:'Bisnis', old:'Cek toko kalau ada waktu luang.', baru:'30 menit terfokus pada toko = lebih produktif dari 3 jam sambil terdistraksi.', quote:'🏪' },
+  { cat:'Growth', old:'Nanti belajar Inggris kalau sudah ada waktu.', baru:'20 menit tiap hari = fluent dalam 1–2 tahun. Tidak ada waktu = tidak ada kemajuan.', quote:'📚' },
+  { cat:'Ayah', old:'Anak masih kecil, nanti juga dekat sendiri.', baru:'Kelekatan (attachment) dibangun dari 0–5 tahun. Waktu itu sekarang.', quote:'👨‍👦' },
+  { cat:'Mindfulness', old:'Istirahat artinya rebahan sambil scroll.', baru:'Istirahat sejati = meletakkan HP, lakukan satu hal, atau tidak melakukan apa-apa.', quote:'🧘' },
+  { cat:'Keluarga', old:'Nanti ada waktu liburan kalau ada uang lebih.', baru:'Alun-alun Kediri gratis. Anak butuh kehadiranmu, bukan destinasinya.', quote:'🌳' },
+  { cat:'Finansial', old:'Belanja dulu, menabung dari sisanya.', baru:'Tabung dulu 20%, belanja dari sisanya. Urutan itu yang mengubah segalanya.', quote:'💰' },
+  { cat:'Produktivitas', old:'Multi-tasking biar lebih cepat selesai.', baru:'Single-tasking = hasil 2× lebih baik dengan waktu 2× lebih cepat.', quote:'🎯' },
+  { cat:'Ayah', old:'Anak baik-baik saja ditinggal sebentar pakai gadget.', baru:'Gadget adalah pengasuh terburuk. 40 menit focus play > 4 jam gadget.', quote:'👦' },
+  { cat:'Growth', old:'Sudah cukup ilmu mengajar dari pengalaman.', baru:'Guru terbaik adalah murid seumur hidup. Apa yang kamu pelajari minggu ini?', quote:'🎓' },
+  { cat:'Ibadah', old:'Sedekah nanti kalau sudah banyak rezekinya.', baru:'Sedekah membuka rezeki, bukan sebaliknya. Mulai dari yang kecil, rutin.', quote:'🤲' },
+  { cat:'Kesehatan', old:'Tidur itu menyia-nyiakan waktu produktif.', baru:'Tidur 7–8 jam = decision making lebih baik, emosi lebih stabil, lebih sabar ke keluarga.', quote:'😴' },
+  { cat:'Keluarga', old:'Istri sudah mengerti kalau aku lelah pulang kerja.', baru:'\'Aku capek\' bukan alasan — \'aku pilih hadir meski capek\' adalah karakter.', quote:'💪' },
+  { cat:'Bisnis', old:'Toko jalan sendiri, tidak perlu evaluasi rutin.', baru:'Evaluasi mingguan 30 menit Sabtu = tren masalah ketahuan sebelum jadi krisis.', quote:'📊' },
+  { cat:'Growth', old:'Saya bukan tipe orang yang bisa bahasa Inggris.', baru:'Bahasa Inggris adalah skill, bukan bakat. Dilatih tiap hari, pasti bisa.', quote:'🌏' },
+  { cat:'Mindfulness', old:'Buka HP dulu di pagi hari untuk cek notifikasi.', baru:'Mulai hari dengan dzikir & tilawah — atur agenda, jangan diatur notifikasi.', quote:'🌅' },
+  { cat:'Produktivitas', old:'Kalau mood bagus baru produktif.', baru:'Produktivitas adalah disiplin, bukan menunggu mood. Action dulu, mood menyusul.', quote:'🔥' },
+  { cat:'Ayah', old:'Anak laki-laki tidak perlu terlalu dimanja.', baru:'Kasih sayang dari ayah membentuk rasa aman yang menjadi fondasi kepercayaan dirinya seumur hidup.', quote:'🏡' },
+];
+
+let mindsetManualIdx = -1; // -1 berarti gunakan rotasi harian
+
+function getMindsetIdx() {
+  if (mindsetManualIdx >= 0) return mindsetManualIdx;
+  // Rotasi berdasarkan hari (berubah tiap hari, bukan random setiap refresh)
+  const doy = Math.floor((new Date() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+  return doy % MINDSET_LIST.length;
+}
+
+function renderMindset() {
+  const idx  = getMindsetIdx();
+  const m    = MINDSET_LIST[idx];
+  const el   = document.getElementById('mindset-content');
+  const ctr  = document.getElementById('mindset-counter');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="mindset-old">❌ <em>"${m.old}"</em></div>
+    <div class="mindset-new">
+      <div class="mindset-quote">${m.quote}</div>
+      <div class="mindset-category">${m.cat}</div>
+      <em>"${m.baru}"</em>
+    </div>
+  `;
+  if (ctr) ctr.textContent = `${idx+1} / ${MINDSET_LIST.length}`;
+}
+
+window.refreshMindset = function() {
+  const cur = getMindsetIdx();
+  mindsetManualIdx = (cur + 1) % MINDSET_LIST.length;
+  renderMindset();
+};
+
+/* ================================================
+   Override showView — init all sub-views
+   ================================================ */
+const _origShowView2 = window.showView;
+window.showView = function(id) {
+  _origShowView2(id);
+  if (id === 'today')    setTimeout(initHariIni, 50);
+  if (id === 'english')  setTimeout(initEnglish, 50);
+  if (id === 'keluarga') setTimeout(renderMindset, 50);
+};
+
+// Auto-update Hari Ini stat clock every minute
+setInterval(() => {
+  const panel = document.getElementById('view-today');
+  if (panel && panel.classList.contains('active')) {
+    const now = new Date();
+    const el  = document.getElementById('d-stat-jam');
+    if (el) el.textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  }
+}, 60000);
+
+// Init mindset on page load (for keluarga tab default state)
+document.addEventListener('DOMContentLoaded', () => {
+  renderMindset();
+});

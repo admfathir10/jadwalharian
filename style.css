@@ -2226,6 +2226,132 @@ body:not(.app-unlocked) .pin-lock-screen {
   .fin-summary-strip { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ================================================
+   ENGLISH — Daily checklist materi
+   ================================================ */
+
+#eng-checklist-wrap {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid #c4b5fd;
+  margin-bottom: 1.1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(109,99,212,0.08);
+}
+
+.eng-checklist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.15rem 0.5rem;
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+}
+
+.eng-checklist-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3730a3;
+}
+
+.eng-checklist-prog {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #6d63d4;
+  background: rgba(109,99,212,0.12);
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+.eng-prog-bar-wrap {
+  height: 5px;
+  background: #e0daf8;
+  margin: 0;
+}
+
+.eng-prog-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6d63d4, #4f46e5);
+  border-radius: 0 3px 3px 0;
+  transition: width 0.4s ease;
+}
+
+.eng-checklist-items {
+  padding: 0.6rem 1.15rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eng-check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border: 1px solid transparent;
+}
+
+.eng-check-item:hover {
+  background: #f5f3ff;
+  border-color: #e0daf8;
+}
+
+.eng-check-item.checked {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.eng-check-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid #c4b5fd;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: transparent;
+  background: #fff;
+  transition: all 0.18s;
+  margin-top: 1px;
+}
+
+.eng-check-item.checked .eng-check-box {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border-color: #16a34a;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(34,197,94,0.28);
+}
+
+.eng-check-label {
+  font-size: 12.5px;
+  color: var(--text-primary);
+  line-height: 1.45;
+  flex: 1;
+  transition: color 0.15s;
+}
+
+.eng-check-item.checked .eng-check-label {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.eng-all-done {
+  margin: 0 1.15rem 0.85rem;
+  padding: 9px 14px;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  border: 1px solid #86efac;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #15803d;
+  text-align: center;
+}
+
 /* ── Mobile-specific tweaks ── */
 @media (max-width: 600px) {
   .eng-streak-num { font-size: 40px; }

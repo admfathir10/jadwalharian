@@ -923,3 +923,293 @@ function initMenu() {
     initMenuLocal();
   }
 }
+
+/* ================================================
+   HARI INI — Dashboard harian
+   ================================================ */
+
+const JADWAL_SUAMI = {
+  senin:  [
+    {t:'03.00',a:'Bangun — persiapan ibadah malam'},{t:'03.15',a:'Tahajud, Witir, doa'},
+    {t:'03.40',a:'Sahur'},{t:'04.10',a:'Tilawah Al-Qur\'an'},{t:'04.45',a:'Sholat Subuh + Dzikir pagi'},
+    {t:'05.10',a:'Mengaji'},{t:'05.30',a:'Workout pagi (20 menit)'},{t:'05.50',a:'Mandi, berpakaian rapi'},
+    {t:'06.20',a:'Berangkat ke SMAN 8 Kota Kediri'},{t:'06.45',a:'Tiba di sekolah'},
+    {t:'07.00',a:'Jadwal sesuai pelajaran'},{t:'09.00',a:'Istirahat — Sholat Dhuha'},
+    {t:'09.30',a:'Jadwal sesuai pelajaran'},{t:'11.30',a:'Sholat Dzuhur berjamaah (puasa)'},
+    {t:'12.15',a:'Jadwal sesuai pelajaran'},{t:'15.00',a:'Sholat Ashar'},
+    {t:'15.30',a:'Absensi pulang — perjalanan ke rumah'},{t:'16.20',a:'Bermain dengan anak'},
+    {t:'17.00',a:'Istirahat / persiapan berbuka'},{t:'17.45',a:'Maghrib — berbuka puasa'},
+    {t:'18.30',a:'Makan malam bersama keluarga'},{t:'19.15',a:'Sholat Isya + Dzikir malam'},
+    {t:'20.00',a:'Cek Artilerianstore'},{t:'20.30',a:'Coding / membaca / nulis artikel'},{t:'21.30',a:'Tidur'}
+  ],
+  selasa: [
+    {t:'03.45',a:'Bangun — Tahajud, Witir, doa'},{t:'04.30',a:'Sahur ringan / minum'},
+    {t:'04.45',a:'Sholat Subuh + Dzikir pagi'},{t:'05.10',a:'Mengaji / Tilawah'},
+    {t:'05.35',a:'Workout pagi (25 menit)'},{t:'06.00',a:'Mandi + sarapan'},
+    {t:'06.20',a:'Berangkat ke sekolah'},{t:'06.45',a:'Tiba di sekolah'},
+    {t:'07.00',a:'Jadwal sesuai pelajaran'},{t:'09.00',a:'Istirahat — Sholat Dhuha + snack'},
+    {t:'09.30',a:'Jadwal sesuai pelajaran'},{t:'11.30',a:'Sholat Dzuhur + makan siang'},
+    {t:'12.15',a:'Jadwal sesuai pelajaran'},{t:'15.00',a:'Sholat Ashar'},
+    {t:'15.30',a:'Absensi pulang'},{t:'16.00',a:'Fotografi / videografi sore'},
+    {t:'16.45',a:'Mandi + istirahat'},{t:'18.00',a:'Maghrib + Tilawah'},
+    {t:'18.30',a:'Makan malam bersama keluarga'},{t:'19.15',a:'Isya'},
+    {t:'19.45',a:'Nulis artikel / edit foto-video / cek toko'},{t:'21.30',a:'Tidur'}
+  ],
+  rabu: [
+    {t:'03.45',a:'Bangun — Tahajud, Witir, doa'},{t:'04.30',a:'Sahur ringan / minum'},
+    {t:'04.45',a:'Sholat Subuh + Dzikir + Tilawah'},{t:'05.10',a:'Mengaji'},
+    {t:'05.35',a:'Workout pagi (20 menit)'},{t:'06.00',a:'Mandi + sarapan'},
+    {t:'06.20',a:'Berangkat ke sekolah'},{t:'06.45',a:'Tiba di sekolah'},
+    {t:'07.00',a:'Jadwal sesuai pelajaran'},{t:'09.00',a:'Istirahat — Sholat Dhuha'},
+    {t:'09.30',a:'Jadwal sesuai pelajaran'},{t:'11.30',a:'Sholat Dzuhur + makan siang'},
+    {t:'12.15',a:'Jadwal sesuai pelajaran'},{t:'15.00',a:'Sholat Ashar'},
+    {t:'15.30',a:'Absensi pulang — segera pulang'},{t:'15.45',a:'Makan ringan + persiapan madin'},
+    {t:'16.30',a:'Mengajar Madin / TPA (hingga 19.00)'},{t:'19.00',a:'Selesai madin — Sholat Maghrib'},
+    {t:'19.30',a:'Sholat Isya'},{t:'19.45',a:'Makan malam + istirahat ringan'},
+    {t:'20.30',a:'Santai: baca / coding ringan / cek toko'},{t:'21.30',a:'Tidur'}
+  ],
+  kamis: [
+    {t:'03.00',a:'Bangun — persiapan ibadah malam'},{t:'03.15',a:'Tahajud, Witir, doa'},
+    {t:'03.40',a:'Sahur'},{t:'04.10',a:'Tilawah Al-Qur\'an'},{t:'04.45',a:'Sholat Subuh + Dzikir pagi'},
+    {t:'05.10',a:'Mengaji'},{t:'05.30',a:'Workout pagi (20 menit)'},{t:'05.50',a:'Mandi, berpakaian rapi'},
+    {t:'06.20',a:'Berangkat ke sekolah'},{t:'06.45',a:'Tiba di sekolah'},
+    {t:'07.00',a:'Jadwal sesuai pelajaran'},{t:'09.00',a:'Sholat Dhuha (2–4 rakaat)'},
+    {t:'09.30',a:'Jadwal sesuai pelajaran'},{t:'11.30',a:'Sholat Dzuhur berjamaah (puasa)'},
+    {t:'12.15',a:'Jadwal sesuai pelajaran'},{t:'15.00',a:'Sholat Ashar'},
+    {t:'15.30',a:'Absensi pulang'},{t:'16.20',a:'Bermain dengan anak'},
+    {t:'17.00',a:'Istirahat / persiapan berbuka'},{t:'17.45',a:'Maghrib — berbuka puasa'},
+    {t:'18.30',a:'Makan malam bersama keluarga'},{t:'19.15',a:'Sholat Isya + Dzikir malam'},
+    {t:'20.00',a:'Cek Artilerianstore'},{t:'20.30',a:'Coding / membaca / nulis artikel'},{t:'21.30',a:'Tidur'}
+  ],
+  jumat: [
+    {t:'03.45',a:'Bangun — Tahajud, Witir, doa'},{t:'04.30',a:'Sahur ringan / minum'},
+    {t:'04.45',a:'Subuh + Dzikir (sunnah baca Al-Kahfi)'},{t:'05.10',a:'Mengaji / Tilawah'},
+    {t:'05.35',a:'Workout pagi (25 menit)'},{t:'06.00',a:'Mandi + sarapan'},
+    {t:'06.20',a:'Berangkat ke sekolah'},{t:'06.45',a:'Tiba di sekolah'},
+    {t:'07.00',a:'Jadwal sesuai pelajaran'},{t:'09.00',a:'Sholat Dhuha + istirahat'},
+    {t:'09.30',a:'Jadwal sesuai pelajaran'},{t:'11.00',a:'Persiapan Sholat Jumat'},
+    {t:'11.30',a:'Berangkat ke Masjid — Sholat Jumat'},{t:'13.00',a:'Jadwal sesuai pelajaran'},
+    {t:'15.00',a:'Ashar'},{t:'16.00',a:'Absensi pulang + pulang'},
+    {t:'16.30',a:'Workout sore / mancing sore'},{t:'17.00',a:'Mandi + istirahat'},
+    {t:'18.00',a:'Maghrib + Tilawah'},{t:'18.30',a:'Nongki malam / makan malam bersama istri'},
+    {t:'19.15',a:'Isya'},{t:'20.00',a:'Quality time keluarga / cek toko'},{t:'21.30',a:'Tidur'}
+  ],
+  sabtu: [
+    {t:'04.30',a:'Subuh + Tilawah + Dzikir'},{t:'05.15',a:'Jogging / workout pagi (45–60 menit)'},
+    {t:'06.15',a:'Bantu istri mandikan anak'},{t:'06.45',a:'Sarapan bersama keluarga'},
+    {t:'07.30',a:'Merawat tanaman & aquascape'},{t:'08.30',a:'Bersih-bersih sekitar rumah'},
+    {t:'09.30',a:'Sholat Dhuha'},{t:'09.45',a:'Fotografi / Coding / nulis artikel'},
+    {t:'11.30',a:'Dzuhur'},{t:'12.00',a:'Makan siang + tidur siang (1–1.5 jam)'},
+    {t:'13.30',a:'Evaluasi toko Shopee — brief karyawan'},{t:'14.30',a:'Jalan-jalan keluarga / wisata kuliner'},
+    {t:'15.00',a:'Ashar'},{t:'15.30',a:'Mancing sore / nongki santai'},
+    {t:'17.30',a:'Mandi + istirahat'},{t:'18.00',a:'Maghrib + Tilawah'},
+    {t:'18.30',a:'Kuliner malam / nongkrong bareng istri'},{t:'19.15',a:'Isya'},
+    {t:'20.00',a:'Baca buku / nonton film / masak bareng istri'},{t:'22.00',a:'Tidur'}
+  ],
+  minggu: [
+    {t:'05.00',a:'Subuh (boleh agak telat bangun — weekend rest)'},{t:'05.30',a:'Tidur lagi / rebahan santai'},
+    {t:'07.00',a:'Bangun — bantu mandikan anak, sarapan keluarga'},{t:'08.00',a:'Jogging pagi bersama keluarga'},
+    {t:'09.00',a:'Sholat Dhuha'},{t:'09.30',a:'Liburan keluarga / wisata / jalan-jalan'},
+    {t:'11.30',a:'Dzuhur'},{t:'12.00',a:'Makan siang + tidur siang (2 jam)'},
+    {t:'14.00',a:'Family time — bermain dengan anak / jalan sore'},{t:'15.00',a:'Ashar'},
+    {t:'15.30',a:'Hobi bebas: mancing / aquascape / baca buku'},{t:'17.30',a:'Mandi + persiapan malam'},
+    {t:'18.00',a:'Maghrib + Tilawah'},{t:'18.30',a:'Cek toko Shopee — evaluasi & set target'},
+    {t:'19.00',a:'Makan malam keluarga + ngobrol santai'},{t:'19.30',a:'Isya'},
+    {t:'20.00',a:'Me-time: baca / nulis / coding / evaluasi mingguan'},{t:'21.00',a:'Tidur'}
+  ]
+};
+
+const REMINDER_PER_HARI = {
+  senin:  '🌙 Puasa Sunnah Senin. Bangun 03.00 untuk Tahajud + Sahur. Batas HP kerja 16.00.',
+  selasa: '📸 Hari untuk konten kreatif — bawa kamera/hp bagus sore. Batas HP kerja 16.00.',
+  rabu:   '⚠️ Hari tersibuk! Pulang cepat untuk Madin 16.30. Workout sore ditiadakan. Jaga stamina.',
+  kamis:  '🌙 Puasa Sunnah Kamis. Berbuka Maghrib 17.45. Batas HP kerja 16.00.',
+  jumat:  '📖 Baca Al-Kahfi pagi. Sholat Jumat berjamaah 11.30. Date Night Salma malam ini 💑',
+  sabtu:  '🌿 Libur produktif! Evaluasi toko Shopee siang. Jalan-jalan keluarga sore.',
+  minggu: '🏡 Hari keluarga & istirahat penuh. Evaluasi mingguan malam untuk persiapan Senin.'
+};
+
+const CHECKLIST_ITEMS = [
+  'Sholat Subuh ✓','Dzikir pagi ✓','Workout / olahraga ✓','Tilawah Al-Qur\'an ✓',
+  'Sholat Dhuha ✓','Cek toko Artilerianstore ✓','Sholat Dzuhur ✓','Sholat Ashar ✓',
+  'Quality time keluarga ✓','Sholat Maghrib ✓','Sholat Isya ✓','Baca buku / belajar ✓'
+];
+
+const DCHECKS_KEY = 'dchecks_' + new Date().toISOString().slice(0,10);
+
+function parseTimeMin(str) {
+  const p = str.replace(',','.').split('.');
+  return p.length < 2 ? NaN : +p[0]*60 + +p[1];
+}
+
+function initHariIni() {
+  const now     = new Date();
+  const todayId = ID_HARI[now.getDay()];
+  const curMin  = now.getHours()*60 + now.getMinutes();
+
+  // Stat cards
+  const statHari = document.getElementById('d-stat-hari');
+  const statJam  = document.getElementById('d-stat-jam');
+  if (statHari) statHari.textContent = NAMA_HARI[now.getDay()];
+  if (statJam)  statJam.textContent  = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  // Timeline
+  const tl   = document.getElementById('d-timeline');
+  const sched = JADWAL_SUAMI[todayId] || [];
+  if (tl) {
+    tl.innerHTML = '';
+    sched.forEach((item, i) => {
+      const startM = parseTimeMin(item.t);
+      const endM   = i+1 < sched.length ? parseTimeMin(sched[i+1].t) : startM+60;
+      const isLive = curMin >= startM && curMin < endM;
+      const row    = document.createElement('div');
+      row.className = 'dash-tl-row' + (isLive ? ' live-row' : '');
+      row.innerHTML = `<span class="dash-tl-time">${item.t}</span><span class="dash-tl-text">${item.a}${isLive ? ' <span style="font-size:9px;background:#f0c060;color:#7a4800;border-radius:8px;padding:1px 6px;margin-left:4px;font-weight:700">▶ sekarang</span>' : ''}</span>`;
+      tl.appendChild(row);
+      if (isLive) setTimeout(() => row.scrollIntoView({block:'center',behavior:'smooth'}), 200);
+    });
+  }
+
+  // Checklist
+  const checksEl = document.getElementById('d-checks');
+  if (checksEl) {
+    checksEl.innerHTML = '';
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(DCHECKS_KEY) || '{}'); } catch{}
+    CHECKLIST_ITEMS.forEach((label, i) => {
+      const done = saved[i] || false;
+      const item = document.createElement('div');
+      item.className = 'dash-check-item' + (done ? ' checked' : '');
+      item.setAttribute('data-idx', i);
+      item.innerHTML = `<div class="dash-check-box">${done ? '✓' : ''}</div><span class="dash-check-label">${label}</span>`;
+      item.onclick = () => {
+        item.classList.toggle('checked');
+        const box = item.querySelector('.dash-check-box');
+        const isNowChecked = item.classList.contains('checked');
+        box.textContent = isNowChecked ? '✓' : '';
+      };
+      checksEl.appendChild(item);
+    });
+  }
+
+  // Reminder
+  const remEl = document.getElementById('d-reminder');
+  if (remEl) {
+    remEl.innerHTML = `<div class="dash-reminder-title">📌 Catatan Hari ${NAMA_HARI[now.getDay()]}</div>${REMINDER_PER_HARI[todayId] || 'Selamat beraktivitas!'}`;
+  }
+}
+
+window.saveDChecks = function() {
+  const items = document.querySelectorAll('#d-checks .dash-check-item');
+  const data  = {};
+  items.forEach((item, i) => { data[i] = item.classList.contains('checked'); });
+  try { localStorage.setItem(DCHECKS_KEY, JSON.stringify(data)); } catch{}
+  // brief visual feedback
+  const btn = document.querySelector('[onclick="saveDChecks()"]');
+  if (btn) { const orig = btn.textContent; btn.textContent = '✓ Tersimpan!'; setTimeout(()=> btn.textContent = orig, 1200); }
+};
+
+window.resetDChecks = function() {
+  try { localStorage.removeItem(DCHECKS_KEY); } catch{}
+  document.querySelectorAll('#d-checks .dash-check-item').forEach(item => {
+    item.classList.remove('checked');
+    item.querySelector('.dash-check-box').textContent = '';
+  });
+};
+
+/* ================================================
+   ENGLISH LEARNING TRACKER
+   ================================================ */
+const ENG_KEY = 'eng_streak_v2';
+
+function getEngData() {
+  try { return JSON.parse(localStorage.getItem(ENG_KEY) || '{}'); } catch { return {}; }
+}
+function saveEngData(d) {
+  try { localStorage.setItem(ENG_KEY, JSON.stringify(d)); } catch{}
+}
+
+function initEnglish() {
+  const data  = getEngData();
+  const week  = getWeekDaysStr();
+  const today = new Date().toISOString().slice(0,10);
+
+  // Count done this week
+  const doneDays = week.filter(d => data[d]);
+  const streak   = doneDays.length;
+
+  const numEl   = document.getElementById('eng-streak');
+  const lblEl   = document.getElementById('eng-streak-lbl');
+  const dotsEl  = document.getElementById('eng-week-dots');
+  const badgeEl = document.getElementById('eng-badge');
+
+  if (numEl)   numEl.textContent   = streak;
+  if (lblEl)   lblEl.textContent   = streak === 0 ? 'hari · Mulai hari ini!' : `hari minggu ini · ${streak >= 5 ? 'Luar biasa! 🔥' : 'Terus semangat!'}`;
+  if (badgeEl) badgeEl.textContent = streak >= 6 ? '🏆' : streak >= 4 ? '🔥' : streak >= 2 ? '⭐' : '🌱';
+
+  if (dotsEl) {
+    dotsEl.innerHTML = '';
+    week.forEach(d => {
+      const dot = document.createElement('div');
+      dot.className = 'eng-week-dot' + (data[d] ? ' done' : '');
+      dot.title = d;
+      dotsEl.appendChild(dot);
+    });
+  }
+}
+
+function getWeekDaysStr() {
+  const today = new Date();
+  const day   = today.getDay();
+  const diff  = day === 0 ? -6 : 1 - day;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + diff);
+  return Array.from({length:7}, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d.toISOString().slice(0,10);
+  });
+}
+
+window.saveEngStreak = function() {
+  const today = new Date().toISOString().slice(0,10);
+  const data  = getEngData();
+  data[today] = !data[today]; // toggle
+  saveEngData(data);
+  initEnglish();
+  const btn = document.querySelector('[onclick="saveEngStreak()"]');
+  if (btn) {
+    const data2 = getEngData();
+    btn.textContent = data2[today] ? '✅ Sudah ditandai!' : '☐ Tandai Hari Ini Selesai';
+    if (data2[today]) btn.style.background = 'linear-gradient(135deg,#16a34a,#22c55e)';
+    else btn.style.background = '';
+  }
+};
+
+window.resetEngWeek = function() {
+  const week = getWeekDaysStr();
+  const data = getEngData();
+  week.forEach(d => delete data[d]);
+  saveEngData(data);
+  initEnglish();
+};
+
+/* ================================================
+   Override showView to init sub-views
+   ================================================ */
+const _origShowView2 = window.showView;
+window.showView = function(id) {
+  _origShowView2(id);
+  if (id === 'today')   setTimeout(initHariIni,  50);
+  if (id === 'english') setTimeout(initEnglish,  50);
+};
+
+// Auto-update stat time every minute
+setInterval(() => {
+  const panel = document.getElementById('view-today');
+  if (panel && panel.classList.contains('active')) {
+    const now   = new Date();
+    const el    = document.getElementById('d-stat-jam');
+    if (el) el.textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  }
+}, 60000);

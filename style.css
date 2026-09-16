@@ -2352,6 +2352,141 @@ body:not(.app-unlocked) .pin-lock-screen {
   text-align: center;
 }
 
+/* ================================================
+   MINDSET HARIAN — card berganti tiap hari
+   ================================================ */
+
+.mindset-wrap {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border-color: #c4b5fd;
+}
+
+.mindset-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid #ddd6fe;
+}
+
+.mindset-ico {
+  font-size: 28px;
+  width: 48px;
+  height: 48px;
+  background: rgba(109,99,212,0.12);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1.5px solid #c4b5fd;
+}
+
+.mindset-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.mindset-tema-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #6d63d4;
+  background: rgba(109,99,212,0.12);
+  border-radius: 20px;
+  padding: 2px 9px;
+  margin-top: 4px;
+}
+
+.mindset-ganti {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: right;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+.mindset-ganti strong {
+  color: #6d63d4;
+  display: block;
+  font-size: 11px;
+}
+
+.mindset-lama {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 12px;
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.15);
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.mindset-x { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+.mindset-lama-text {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.mindset-baru {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 11px 12px;
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border: 1px solid #86efac;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.mindset-check { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+.mindset-baru-text {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #065f46;
+  line-height: 1.55;
+  font-style: italic;
+}
+
+.mindset-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  gap: 8px;
+}
+
+.mindset-nav-btn {
+  padding: 5px 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: var(--font);
+  border: 1.5px solid #c4b5fd;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.7);
+  color: #4338ca;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mindset-nav-btn:hover {
+  background: #ede9fe;
+  border-color: #6d63d4;
+}
+
+.mindset-counter {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ── Mobile-specific tweaks ── */
 @media (max-width: 600px) {
   .eng-streak-num { font-size: 40px; }
@@ -2360,4 +2495,5 @@ body:not(.app-unlocked) .pin-lock-screen {
   .dash-stat-num  { font-size: 22px; }
   .eng-day-card   { flex-wrap: wrap; }
   .eng-time-tag   { margin-left: 0; }
+  .mindset-ganti  { display: none; }
 }

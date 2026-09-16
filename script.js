@@ -547,6 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initFirebase();
   renderEngStreak();
   renderHariIni();
+  renderMindset();
   setInterval(updateClock, 1000);
   setInterval(highlightLiveBlocks, 30000);
   setInterval(renderHariIni, 60000); // update every minute
@@ -1420,4 +1421,203 @@ window.resetDChecks = function() {
   const CKEY = 'hari_ini_checks_' + todayStr();
   try { localStorage.removeItem(CKEY); } catch {}
   renderHariIni();
+};
+
+/* ================================================
+   MINDSET HARIAN — berganti tiap hari
+   ================================================ */
+
+const MINDSET_LIST = [
+  {
+    lama: "Rebahan dulu, nanti ngurusin keluarga kalau sudah tenang.",
+    baru: "Keluarga dulu 40 menit, baru boleh rebahan.",
+    icon: "❤️",
+    tema: "Keluarga"
+  },
+  {
+    lama: "Capek kerja, nanti saja bermain sama anak.",
+    baru: "Anak butuh hadir, bukan sempurna. 10 menit penuh fokus lebih berharga dari 2 jam sambil pegang HP.",
+    icon: "👦",
+    tema: "Hadir"
+  },
+  {
+    lama: "Tunggu penghasilan besar dulu, baru investasi.",
+    baru: "Mulai kecil hari ini. Konsistensi kecil mengalahkan niat besar yang tidak dimulai.",
+    icon: "💰",
+    tema: "Finansial"
+  },
+  {
+    lama: "Nanti saja belajar Inggris kalau ada waktu.",
+    baru: "30 menit sehari sudah cukup. Waktu tidak datang — waktu dibuat.",
+    icon: "🇬🇧",
+    tema: "Belajar"
+  },
+  {
+    lama: "Sholat nanti saja, masih banyak urusan.",
+    baru: "Urusan tidak akan pernah habis. Sholat dulu, urusan mengikut.",
+    icon: "🕌",
+    tema: "Ibadah"
+  },
+  {
+    lama: "Salma pasti mengerti kalau saya sibuk.",
+    baru: "Date night bukan kemewahan — itu kebutuhan. Jumat malam adalah investasi pernikahan.",
+    icon: "💑",
+    tema: "Pernikahan"
+  },
+  {
+    lama: "Olahraga bisa nanti, masih muda masih sehat.",
+    baru: "Tubuh sehat adalah amanah. 20 menit pagi hari membangun energi seharian.",
+    icon: "💪",
+    tema: "Kesehatan"
+  },
+  {
+    lama: "Toko bisa nomor satu dulu, keluarga menyusul.",
+    baru: "Toko adalah alat, bukan tujuan. Tujuan adalah keluarga yang bahagia.",
+    icon: "🛍️",
+    tema: "Prioritas"
+  },
+  {
+    lama: "Nanti kalau sudah tenang baru bersyukur.",
+    baru: "Syukur bukan kondisi — syukur adalah pilihan. Mulai dari hal terkecil hari ini.",
+    icon: "🌿",
+    tema: "Syukur"
+  },
+  {
+    lama: "Susah bangun malam, mending tidur terus.",
+    baru: "Tahajud adalah percakapan paling sepi tapi paling didengar. Bangun 5 menit dulu.",
+    icon: "🌙",
+    tema: "Tahajud"
+  },
+  {
+    lama: "Stres kerja, wajar kalau kurang sabar sama anak.",
+    baru: "Anak menyerap energi yang kita bawa pulang. Ambil napas sebelum masuk pintu rumah.",
+    icon: "🏠",
+    tema: "Sabar"
+  },
+  {
+    lama: "Nanti saja tilawah, sekarang masih banyak kerjaan.",
+    baru: "Al-Qur'an adalah penawar, bukan penambah beban. 10 ayat setelah Subuh sudah cukup.",
+    icon: "📖",
+    tema: "Al-Qur'an"
+  },
+  {
+    lama: "Dana darurat bisa nanti, kebutuhan sekarang lebih mendesak.",
+    baru: "Dana darurat adalah ketenangan pikiran. Sisihkan sebelum dipakai, bukan dari sisa.",
+    icon: "🛡️",
+    tema: "Dana Darurat"
+  },
+  {
+    lama: "Nanti kalau anak sudah besar baru diajarin agama.",
+    baru: "Anak belajar dari apa yang dilihat setiap hari. Jadilah guru terbaik di rumah sendiri.",
+    icon: "🌱",
+    tema: "Mendidik"
+  },
+  {
+    lama: "Saya kurang bakat berbahasa Inggris.",
+    baru: "Bakat adalah mitos. Konsistensi 30 menit sehari lebih kuat dari bakat apapun.",
+    icon: "⭐",
+    tema: "Percaya Diri"
+  },
+  {
+    lama: "Artilerianstore bisa dikerjakan sendiri semua.",
+    baru: "Delegasi bukan kelemahan — itu kecerdasan. Fokus pada yang hanya bisa kamu lakukan.",
+    icon: "🎯",
+    tema: "Delegasi"
+  },
+  {
+    lama: "Kalau sudah kaya baru bisa sedekah banyak.",
+    baru: "Sedekah bukan dari lebihnya harta, tapi dari keikhlasan hati. Mulai dari yang ada.",
+    icon: "🤲",
+    tema: "Sedekah"
+  },
+  {
+    lama: "Liburan keluarga butuh biaya besar.",
+    baru: "Alun-alun Kediri bersama keluarga lebih berharga dari resort tanpa hadir penuh.",
+    icon: "🌳",
+    tema: "Family Trip"
+  },
+  {
+    lama: "Nanti saja evaluasi diri, masih sibuk.",
+    baru: "Tanpa evaluasi, kerja keras hanya mengulang kesalahan. 10 menit malam ini sudah cukup.",
+    icon: "🔍",
+    tema: "Evaluasi"
+  },
+  {
+    lama: "HP harus selalu dipegang, takut ketinggalan info.",
+    baru: "Yang paling penting ada di depan mata — bukan di layar. HP bisa tunggu, momen tidak.",
+    icon: "📵",
+    tema: "Digital Detox"
+  },
+];
+
+function renderMindset() {
+  const el = document.getElementById('mindset-card');
+  if (!el) return;
+
+  // Pilih mindset berdasarkan tanggal — berganti setiap hari
+  const dayIndex = Math.floor(Date.now() / 86400000); // hari sejak epoch
+  const mindset  = MINDSET_LIST[dayIndex % MINDSET_LIST.length];
+
+  // Hitung berapa hari lagi mindset berganti
+  const msUntilMidnight = 86400000 - (Date.now() % 86400000);
+  const jamLagi = Math.floor(msUntilMidnight / 3600000);
+  const menitLagi = Math.floor((msUntilMidnight % 3600000) / 60000);
+  const gantiLabel = jamLagi > 0 ? `${jamLagi} jam ${menitLagi} menit lagi` : `${menitLagi} menit lagi`;
+
+  el.innerHTML = `
+    <div class="dash-card mindset-wrap">
+      <div class="mindset-header">
+        <div class="mindset-ico">${mindset.icon}</div>
+        <div class="mindset-meta">
+          <div class="dash-card-title" style="margin-bottom:0;border:none;padding:0">🧠 Mindset Hari Ini</div>
+          <div class="mindset-tema-tag">${mindset.tema}</div>
+        </div>
+        <div class="mindset-ganti">🔄 Ganti dalam<br><strong>${gantiLabel}</strong></div>
+      </div>
+      <div class="mindset-lama">
+        <span class="mindset-x">❌</span>
+        <span class="mindset-lama-text">Lama: <em>"${mindset.lama}"</em></span>
+      </div>
+      <div class="mindset-baru">
+        <span class="mindset-check">✅</span>
+        <span class="mindset-baru-text">"${mindset.baru}"</span>
+      </div>
+      <div class="mindset-nav">
+        <button class="mindset-nav-btn" onclick="shiftMindset(-1)" title="Mindset sebelumnya">‹ Sebelumnya</button>
+        <span class="mindset-counter" id="mindset-pos"></span>
+        <button class="mindset-nav-btn" onclick="shiftMindset(1)" title="Mindset berikutnya">Berikutnya ›</button>
+      </div>
+    </div>
+  `;
+
+  updateMindsetPos(dayIndex % MINDSET_LIST.length);
+}
+
+let mindsetOffset = 0;
+
+function updateMindsetPos(base) {
+  const el = document.getElementById('mindset-pos');
+  if (el) {
+    const cur = ((base + mindsetOffset) % MINDSET_LIST.length + MINDSET_LIST.length) % MINDSET_LIST.length;
+    el.textContent = `${cur + 1} / ${MINDSET_LIST.length}`;
+  }
+}
+
+window.shiftMindset = function(dir) {
+  mindsetOffset += dir;
+  const dayIndex = Math.floor(Date.now() / 86400000);
+  const idx = ((dayIndex + mindsetOffset) % MINDSET_LIST.length + MINDSET_LIST.length) % MINDSET_LIST.length;
+  const mindset = MINDSET_LIST[idx];
+
+  const lama = document.querySelector('.mindset-lama-text');
+  const baru = document.querySelector('.mindset-baru-text');
+  const ico  = document.querySelector('.mindset-ico');
+  const tema = document.querySelector('.mindset-tema-tag');
+
+  if (lama) lama.innerHTML = `Lama: <em>"${mindset.lama}"</em>`;
+  if (baru) baru.textContent = `"${mindset.baru}"`;
+  if (ico)  ico.textContent  = mindset.icon;
+  if (tema) tema.textContent = mindset.tema;
+
+  updateMindsetPos(dayIndex % MINDSET_LIST.length);
 };

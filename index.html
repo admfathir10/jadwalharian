@@ -1,2076 +1,746 @@
-/* ============================================
-   JADWAL KELUARGA — style.css (Premium Edition)
-   ============================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-:root {
-  --font: 'Inter', system-ui, sans-serif;
-  --radius: 10px;
-  --radius-lg: 16px;
-
-  /* === Palette === */
-  --navy:        #0f1628;
-  --navy-mid:    #1a2540;
-  --navy-soft:   #243050;
-  --green-dark:  #0d2818;
-  --green-mid:   #153d24;
-
-  --gold:        #f0c060;
-  --gold-soft:   #fad98a;
-
-  --text-on-dark: #f0eeea;
-  --text-sub:     rgba(240,238,234,0.55);
-
-  --bg-page:     #f2f0eb;
-  --bg-card:     #ffffff;
-  --bg-surface:  #f8f7f4;
-
-  --text-primary:   #1a1a18;
-  --text-secondary: #52524e;
-  --text-muted:     #9e9d98;
-
-  --border:       rgba(0,0,0,0.07);
-  --border-med:   rgba(0,0,0,0.12);
-
-  /* Tab active */
-  --tab-active-bg:    #ede9fe;
-  --tab-active-color: #4338ca;
-  --tab-active-border:#818cf8;
-
-  /* Col headers */
-  --col-suami-a: #0f1628;
-  --col-suami-b: #1e3a5f;
-  --col-istri-a: #0d2818;
-  --col-istri-b: #1a5c35;
-}
-
-/* ===========================
-   Block Colors — premium tint
-   =========================== */
-.blk-ibadah    { background: linear-gradient(135deg,#edf7e0,#d8f0c0); color: #1a4010; border-color: #52a030; }
-.blk-olahraga  { background: linear-gradient(135deg,#e8f4fd,#cce5f8); color: #0a3d6b; border-color: #3b8fd4; }
-.blk-kerja     { background: linear-gradient(135deg,#eeeeff,#dddafe); color: #2e2882; border-color: #6d63d4; }
-.blk-istirahat { background: linear-gradient(135deg,#f3f2ed,#e8e6df); color: #3d3d38; border-color: #9e9c94; }
-.blk-sosial    { background: linear-gradient(135deg,#fef4df,#fde9b0); color: #5c3800; border-color: #c08010; }
-.blk-hobby     { background: linear-gradient(135deg,#fdf0e8,#f8dcc8); color: #5c2510; border-color: #c06030; }
-.blk-keluarga  { background: linear-gradient(135deg,#fce8f2,#f8cfea); color: #5c1838; border-color: #c04878; }
-.blk-toko      { background: linear-gradient(135deg,#e0f8ee,#baeeda); color: #064030; border-color: #18a068; }
-.blk-madin     { background: linear-gradient(135deg,#eeebff,#ddd8ff); color: #200c60; border-color: #6050c8; }
-.blk-tidur     { background: linear-gradient(135deg,#f0eeea,#e4e2dc); color: #4a4a46; border-color: #c0bdb6; }
-
-/* === Block hover lift === */
-.block {
-  border-radius: 7px;
-  padding: 6px 10px;
-  font-size: 12.5px;
-  font-weight: 400;
-  line-height: 1.45;
-  border-left: 3px solid transparent;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
-  cursor: default;
-}
-.block:hover {
-  transform: translateX(3px);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.10);
-  filter: brightness(0.97);
-}
-
-/* ========================
-   Live "sedang berlangsung"
-   ======================== */
-.block.live-now {
-  position: relative;
-  box-shadow: 0 0 0 2px #f0c060, 0 4px 16px rgba(240,192,96,0.25);
-  transform: translateX(3px);
-}
-
-.live-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  font-weight: 600;
-  color: #7a4800;
-  background: linear-gradient(90deg, #fde68a, #fcd34d);
-  border-radius: 20px;
-  padding: 2px 7px;
-  margin-left: 7px;
-  vertical-align: middle;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-.live-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #d97706;
-  display: inline-block;
-  animation: pulse-dot 1.4s ease-in-out infinite;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.5; transform: scale(0.7); }
-}
-
-/* ========================
-   Base & Body
-   ======================== */
-body {
-  font-family: var(--font);
-  background: var(--bg-page);
-  color: var(--text-primary);
-  min-height: 100vh;
-}
-
-/* ========================
-   Header
-   ======================== */
-.site-header {
-  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 100%);
-  color: var(--text-on-dark);
-  padding: 1.4rem 1.75rem 0;
-  position: relative;
-  overflow: hidden;
-}
-
-/* subtle decorative glow behind header */
-.site-header::before {
-  content: '';
-  position: absolute;
-  top: -60px; right: -60px;
-  width: 220px; height: 220px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(240,192,96,0.12) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.site-header h1 {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  margin-bottom: 3px;
-}
-
-.site-header p {
-  font-size: 12px;
-  color: var(--text-sub);
-  margin-bottom: 1.1rem;
-  font-style: italic;
-}
-
-/* Live clock in header */
-.header-clock {
-  position: absolute;
-  top: 1.2rem;
-  right: 1.75rem;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--gold-soft);
-  letter-spacing: 0.02em;
-  font-variant-numeric: tabular-nums;
-}
-
-.header-clock-day {
-  display: block;
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-sub);
-  text-align: right;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  margin-top: 1px;
-}
-
-/* Main tabs */
-.main-tabs {
-  display: flex;
-  gap: 4px;
-}
-
-.main-tabs button {
-  padding: 8px 20px;
-  border: none;
-  border-radius: 8px 8px 0 0;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: var(--font);
-  cursor: pointer;
-  background: rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.6);
-  transition: background 0.18s, color 0.18s;
-  letter-spacing: 0.01em;
-}
-
-.main-tabs button:hover {
-  background: rgba(255,255,255,0.18);
-  color: #fff;
-}
-
-.main-tabs button.active {
-  background: var(--bg-page);
-  color: var(--tab-active-color);
-  font-weight: 700;
-}
-
-/* ========================
-   Legend bar
-   ======================== */
-.legend-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-  padding: 0.55rem 1.75rem;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border-med);
-}
-
-.leg {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.leg-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 3px;
-  flex-shrink: 0;
-}
-
-/* ========================
-   Main content
-   ======================== */
-.main-content {
-  padding: 1.25rem 1.75rem 2rem;
-  max-width: 1240px;
-  margin: 0 auto;
-}
-
-.view-panel { display: none; }
-.view-panel.active { display: block; }
-
-/* ========================
-   Dual grid
-   ======================== */
-.dual-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  align-items: start;
-}
-
-@media (max-width: 820px) {
-  .dual-grid { grid-template-columns: 1fr; }
-  .header-clock { display: none; }
-}
-
-/* ========================
-   Column cards
-   ======================== */
-.col-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  border: 1px solid var(--border-med);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
-  transition: box-shadow 0.2s;
-}
-
-.col-card:hover {
-  box-shadow: 0 6px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06);
-}
-
-/* Column headers with gradient */
-.col-header {
-  padding: 1rem 1.15rem;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.col-header.suami {
-  background: linear-gradient(135deg, var(--col-suami-a) 0%, var(--col-suami-b) 100%);
-  color: var(--text-on-dark);
-}
-
-.col-header.istri {
-  background: linear-gradient(135deg, var(--col-istri-a) 0%, var(--col-istri-b) 100%);
-  color: var(--text-on-dark);
-}
-
-.col-header .avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.15);
-  border: 1.5px solid rgba(255,255,255,0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: 700;
-  flex-shrink: 0;
-  backdrop-filter: blur(4px);
-}
-
-.col-header .col-meta { flex: 1; }
-
-.col-header .col-name {
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
-
-.col-header .col-sub {
-  font-size: 11px;
-  opacity: 0.55;
-  margin-top: 2px;
-}
-
-.col-day-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  padding: 0.65rem 1rem 0.4rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.col-body {
-  padding: 0.85rem 1rem 1rem;
-}
-
-/* ========================
-   Day tabs (suami)
-   ======================== */
-.day-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-bottom: 0.85rem;
-  background: var(--bg-surface);
-  border-radius: 8px;
-  padding: 4px;
-}
-
-.day-tabs button {
-  flex: 1;
-  min-width: 36px;
-  padding: 5px 4px;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: var(--font);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  background: transparent;
-  color: var(--text-secondary);
-  transition: all 0.15s;
-  letter-spacing: 0.01em;
-}
-
-.day-tabs button:hover {
-  background: rgba(99,82,220,0.08);
-  color: var(--tab-active-color);
-}
-
-.day-tabs button.active {
-  background: var(--bg-card);
-  color: var(--tab-active-color);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
-}
-
-.day-panel { display: none; }
-.day-panel.active { display: block; }
-
-/* ========================
-   Istri tabs
-   ======================== */
-.istri-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 0.85rem;
-  background: var(--bg-surface);
-  border-radius: 8px;
-  padding: 4px;
-}
-
-.istri-tabs button {
-  flex: 1;
-  padding: 6px 0;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: var(--font);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  background: transparent;
-  color: var(--text-secondary);
-  transition: all 0.15s;
-}
-
-.istri-tabs button.active {
-  background: var(--bg-card);
-  color: #065f46;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
-}
-
-/* Tab puasa istri — warna bulan emas */
-.istri-tabs button[onclick*="puasa"].active {
-  background: linear-gradient(135deg, #1a1328, #3b2160);
-  color: #fde68a;
-  box-shadow: 0 1px 6px rgba(59,33,96,0.4);
-}
-
-.istri-panel { display: none; }
-.istri-panel.active { display: block; }
-
-/* ========================
-   Timeline rows
-   ======================== */
-.timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.row {
-  display: grid;
-  grid-template-columns: 58px 1fr;
-  gap: 8px;
-  align-items: start;
-  min-height: 28px;
-}
-
-.time {
-  font-size: 11px;
-  color: var(--text-muted);
-  padding-top: 6px;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
-  white-space: nowrap;
-  letter-spacing: 0.02em;
-}
-
-/* ========================
-   Note box
-   ======================== */
-.note {
-  font-size: 11.5px;
-  color: var(--text-secondary);
-  background: linear-gradient(135deg, #fffbeb, #fef9e7);
-  border-radius: 8px;
-  padding: 0.6rem 0.85rem;
-  margin-top: 0.75rem;
-  border: 1px solid #fde68a;
-  line-height: 1.5;
-}
-
-/* ========================
-   Section title
-   ======================== */
-.section-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 1.1rem 0 0.5rem;
-  padding-bottom: 0.3rem;
-  border-bottom: 1px solid var(--border-med);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-
-/* ========================
-   Momen Bersama grid
-   ======================== */
-.together-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.1rem;
-}
-
-@media (max-width: 640px) {
-  .together-grid { grid-template-columns: 1fr; }
-}
-
-.together-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-med);
-  padding: 1rem 1.1rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  transition: box-shadow 0.2s, transform 0.2s;
-}
-
-.together-card:hover {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.10);
-  transform: translateY(-2px);
-}
-
-.together-card h3 {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.65rem;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--border-med);
-  letter-spacing: 0.01em;
-}
-
-/* ========================
-   Footer
-   ======================== */
-.site-footer {
-  text-align: center;
-  font-size: 11px;
-  color: var(--text-muted);
-  padding: 1.5rem;
-  margin-top: 0.5rem;
-  letter-spacing: 0.02em;
-}
-
-/* ================================================
-   TO-DO LIST PANEL — Premium Edition
-   ================================================ */
-
-.todo-panel {
-  margin-top: 1.25rem;
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-med);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
-  overflow: hidden;
-  transition: box-shadow 0.2s;
-}
-
-.todo-panel:hover {
-  box-shadow: 0 6px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06);
-}
-
-/* ── Header ── */
-.todo-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-  background: linear-gradient(135deg, #1a1f3a 0%, #2d3561 100%);
-  color: #fff;
-  gap: 1rem;
-  position: relative;
-  overflow: hidden;
-}
-
-/* decorative glow sama seperti site-header */
-.todo-header::before {
-  content: '';
-  position: absolute;
-  bottom: -40px; right: -40px;
-  width: 160px; height: 160px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(240,192,96,0.12) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.todo-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.todo-icon {
-  font-size: 22px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.12);
-  border: 1.5px solid rgba(255,255,255,0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.todo-title-text {
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  color: #fff;
-}
-
-.todo-title-sub {
-  font-size: 11px;
-  color: rgba(255,255,255,0.5);
-  margin-top: 2px;
-}
-
-.todo-date-badge {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.7);
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 20px;
-  padding: 4px 13px;
-  flex-shrink: 0;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  backdrop-filter: blur(4px);
-}
-
-/* ── Input area ── */
-.todo-input-area {
-  padding: 1rem 1.25rem 0.85rem;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-surface);
-}
-
-.todo-who-select {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 0.7rem;
-  background: var(--bg-card);
-  border-radius: 10px;
-  padding: 4px;
-}
-
-.who-btn {
-  flex: 1;
-  padding: 6px 8px;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: var(--font);
-  border: none;
-  border-radius: 7px;
-  cursor: pointer;
-  background: transparent;
-  color: var(--text-secondary);
-  transition: all 0.15s;
-  text-align: center;
-}
-
-.who-btn:hover { background: rgba(99,82,220,0.08); color: #4338ca; }
-
-.who-btn.active[data-who="suami"] {
-  background: linear-gradient(135deg, #1a2540, #1e3a5f);
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(26,37,64,0.35);
-}
-.who-btn.active[data-who="istri"] {
-  background: linear-gradient(135deg, #0d2818, #1a5c35);
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(13,40,24,0.35);
-}
-.who-btn.active[data-who="bersama"] {
-  background: linear-gradient(135deg, #3730a3, #4f46e5);
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(55,48,163,0.35);
-}
-
-.todo-input-row {
-  display: flex;
-  gap: 8px;
-}
-
-.todo-input {
-  flex: 1;
-  padding: 9px 14px;
-  font-size: 13px;
-  font-family: var(--font);
-  border: 1.5px solid var(--border-med);
-  border-radius: 9px;
-  background: var(--bg-card);
-  color: var(--text-primary);
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.todo-input::placeholder { color: var(--text-muted); }
-
-.todo-input:focus {
-  border-color: #6d63d4;
-  box-shadow: 0 0 0 3px rgba(109,99,212,0.12);
-}
-
-.todo-add-btn {
-  padding: 9px 20px;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: var(--font);
-  border: none;
-  border-radius: 9px;
-  cursor: pointer;
-  background: linear-gradient(135deg, #3730a3, #6d63d4);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(55,48,163,0.3);
-  transition: opacity 0.15s, transform 0.12s, box-shadow 0.15s;
-  white-space: nowrap;
-}
-
-.todo-add-btn:hover  { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(55,48,163,0.35); }
-.todo-add-btn:active { transform: translateY(0); }
-
-/* ── Filter bar ── */
-.todo-filters {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 0.6rem 1.25rem;
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
-  background: var(--bg-card);
-}
-
-.filter-btn {
-  padding: 4px 13px;
-  font-size: 11.5px;
-  font-weight: 500;
-  font-family: var(--font);
-  border: 1px solid var(--border-med);
-  border-radius: 20px;
-  cursor: pointer;
-  background: var(--bg-surface);
-  color: var(--text-secondary);
-  transition: all 0.15s;
-}
-
-.filter-btn:hover  { border-color: #6d63d4; color: #4338ca; background: #ede9fe; }
-.filter-btn.active { background: linear-gradient(135deg, #3730a3, #6d63d4); color: #fff; border-color: transparent; box-shadow: 0 2px 6px rgba(55,48,163,0.28); }
-
-.todo-clear-btn {
-  margin-left: auto;
-  padding: 4px 12px;
-  font-size: 11px;
-  font-weight: 500;
-  font-family: var(--font);
-  border: 1px solid #fca5a5;
-  border-radius: 20px;
-  cursor: pointer;
-  background: #fff1f2;
-  color: #b91c1c;
-  transition: all 0.15s;
-}
-
-.todo-clear-btn:hover { background: #fee2e2; border-color: #f87171; }
-
-/* ── List ── */
-.todo-list {
-  padding: 0.85rem 1.25rem;
-  min-height: 90px;
-  max-height: 380px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  background: var(--bg-card);
-}
-
-.todo-list::-webkit-scrollbar { width: 4px; }
-.todo-list::-webkit-scrollbar-track { background: transparent; }
-.todo-list::-webkit-scrollbar-thumb { background: var(--border-med); border-radius: 2px; }
-
-/* ── Empty state ── */
-.todo-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 2.5rem 1rem;
-  color: var(--text-muted);
-  font-size: 13px;
-  text-align: center;
-}
-
-.todo-empty-icon {
-  font-size: 32px;
-  opacity: 0.5;
-}
-
-/* ── Todo item ── */
-.todo-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 13px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--bg-surface);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s;
-  animation: todoSlideIn 0.2s ease;
-  position: relative;
-}
-
-@keyframes todoSlideIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.todo-item:hover {
-  background: #fff;
-  border-color: var(--border-med);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-  transform: translateX(2px);
-}
-
-/* accent kiri per pemilik */
-.todo-item[data-who="suami"]   { border-left: 3px solid #3b82f6; }
-.todo-item[data-who="istri"]   { border-left: 3px solid #22c55e; }
-.todo-item[data-who="bersama"] { border-left: 3px solid #8b5cf6; }
-
-/* selesai — redup */
-.todo-item.done {
-  background: #f9f8f5;
-  opacity: 0.75;
-}
-
-/* ── Checkbox ── */
-.todo-check {
-  width: 20px;
-  height: 20px;
-  border-radius: 6px;
-  border: 2px solid #d1cfc8;
-  flex-shrink: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 1px;
-  transition: all 0.18s;
-  background: #fff;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
-}
-
-.todo-check:hover {
-  border-color: #6d63d4;
-  box-shadow: 0 0 0 3px rgba(109,99,212,0.1);
-}
-
-.todo-item.done .todo-check {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  border-color: #16a34a;
-  box-shadow: 0 2px 6px rgba(34,197,94,0.3);
-}
-
-.todo-check-mark {
-  display: none;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.todo-item.done .todo-check-mark { display: block; }
-
-/* ── Item text ── */
-.todo-body { flex: 1; min-width: 0; }
-
-.todo-text {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-primary);
-  line-height: 1.45;
-  word-break: break-word;
-  transition: all 0.2s;
-}
-
-.todo-item.done .todo-text {
-  text-decoration: line-through;
-  color: var(--text-muted);
-  font-weight: 400;
-}
-
-.todo-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 4px;
-}
-
-.todo-who-tag {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
-  letter-spacing: 0.02em;
-}
-
-.tag-suami   { background: #dbeafe; color: #1e40af; }
-.tag-istri   { background: #dcfce7; color: #15803d; }
-.tag-bersama { background: #ede9fe; color: #5b21b6; }
-
-.todo-time-tag {
-  font-size: 10px;
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.todo-done-at {
-  font-size: 10px;
-  color: #16a34a;
-  font-weight: 600;
-}
-
-/* ── Delete button ── */
-.todo-delete {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
-  color: #c4c2bb;
-  cursor: pointer;
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.15s;
-  line-height: 1;
-}
-
-.todo-delete:hover {
-  background: #fee2e2;
-  color: #b91c1c;
-  transform: scale(1.1);
-}
-
-/* ── Footer ── */
-.todo-footer-info {
-  text-align: center;
-  font-size: 10.5px;
-  color: var(--text-muted);
-  padding: 0.5rem 1rem;
-  border-top: 1px solid var(--border);
-  background: var(--bg-surface);
-  letter-spacing: 0.02em;
-}
-
-/* ── Mobile ── */
-@media (max-width: 600px) {
-  .todo-clear-btn { margin-left: 0; width: 100%; text-align: center; }
-  .todo-input-row { flex-direction: column; }
-  .todo-add-btn   { width: 100%; text-align: center; }
-  .todo-who-select { gap: 4px; }
-}
-
-/* ================================================
-   DEADLINE — input, badge, item states
-   ================================================ */
-
-/* Input deadline di samping text input */
-.todo-deadline-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  flex-shrink: 0;
-}
-
-.deadline-label {
-  font-size: 9.5px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.5);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding-left: 2px;
-}
-
-.todo-deadline {
-  padding: 8px 10px;
-  font-size: 12px;
-  font-family: var(--font);
-  border: 1.5px solid var(--border-med);
-  border-radius: 9px;
-  background: var(--bg-card);
-  color: var(--text-primary);
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  min-width: 130px;
-}
-
-.todo-deadline:focus {
-  border-color: #6d63d4;
-  box-shadow: 0 0 0 3px rgba(109,99,212,0.12);
-}
-
-/* Deadline badge di dalam item */
-.deadline-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-}
-
-.dl-overdue  { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
-.dl-today    { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-.dl-soon     { background: #fff7ed; color: #c2410c; border: 1px solid #fdba74; }
-.dl-future   { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
-.dl-done     { background: #dcfce7; color: #15803d; border: 1px solid #86efac; opacity: 0.7; }
-
-/* Item states berdasarkan deadline */
-.todo-item.overdue {
-  border-color: #fca5a5 !important;
-  background: linear-gradient(135deg, #fff5f5, #fef2f2) !important;
-}
-
-.todo-item.overdue:hover {
-  background: #fff !important;
-  box-shadow: 0 2px 10px rgba(239,68,68,0.12) !important;
-}
-
-.todo-item.today {
-  border-color: #fde68a !important;
-  background: linear-gradient(135deg, #fffdf0, #fefce8) !important;
-}
-
-.todo-item.today:hover {
-  background: #fff !important;
-  box-shadow: 0 2px 10px rgba(234,179,8,0.12) !important;
-}
-
-/* Responsive: deadline wrap di bawah input jika layar kecil */
-@media (max-width: 600px) {
-  .todo-deadline-wrap { width: 100%; }
-  .todo-deadline { width: 100%; }
-}
-
-/* ── Sync status (Firebase) ── */
-.todo-header-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 5px;
-  flex-shrink: 0;
-}
-
-.todo-sync-status {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 10.5px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.6);
-}
-
-.sync-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #888;
-  flex-shrink: 0;
-  transition: background 0.3s, box-shadow 0.3s;
-}
-
-.sync-dot.connected    { background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,0.55); }
-.sync-dot.offline      { background: #fb923c; }
-.sync-dot.error        { background: #f87171; }
-
-/* ================================================
-   TODO SECTION — posisi di atas jadwal
-   ================================================ */
-
-.todo-section {
-  /* Padding kiri-kanan SELALU identik dengan .main-content (1.75rem)
-     di semua ukuran layar (tanpa breakpoint terpisah), supaya lebar
-     box To-Do selalu sama persis dengan card Jadwal Suami/Istri. */
-  padding: 1.1rem 1.75rem 0;
-  max-width: 1240px;
-  margin: 0 auto;
-  box-sizing: border-box;
-}
-
-.todo-section .todo-panel {
-  margin-top: 0;
-  width: 100%;
-}
-
-.todo-section .todo-list {
-  max-height: 260px;
-}
-
-/* Jadwal sekarang langsung setelah todo, beri jarak atas */
-.main-content {
-  padding-top: 1rem;
-}
-
-/* ================================================
-   MENU MASAKAN — Tab, Grid, Modal, Bahan
-   ================================================ */
-
-/* ── Week header ── */
-.menu-week-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 0 1rem;
-  max-width: 1240px;
-  margin: 0 auto;
-}
-
-.week-nav-btn {
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  border: 1.5px solid var(--border-med);
-  background: var(--bg-card);
-  color: var(--text-primary);
-  font-size: 20px; line-height: 1;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .15s;
-  flex-shrink: 0;
-}
-.week-nav-btn:hover { background: #ede9fe; border-color: #6d63d4; color: #4338ca; }
-
-.week-label {
-  font-size: 14px; font-weight: 700;
-  color: var(--text-primary);
-  flex: 1; text-align: center;
-}
-
-.week-reset-btn {
-  padding: 5px 14px;
-  font-size: 12px; font-weight: 600;
-  font-family: var(--font);
-  border: 1.5px solid var(--border-med);
-  border-radius: 20px;
-  background: var(--bg-card);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all .15s;
-}
-.week-reset-btn:hover { background: #ede9fe; border-color: #6d63d4; color: #4338ca; }
-
-/* ── 7-column day grid ── */
-.menu-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 10px;
-  max-width: 1240px;
-  margin: 0 auto 1.5rem;
-}
-
-@media (max-width: 900px) { .menu-grid { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 560px) { .menu-grid { grid-template-columns: repeat(2, 1fr); } }
-
-/* ── Day card ── */
-.menu-day-card {
-  background: var(--bg-card);
-  border-radius: 12px;
-  border: 1px solid var(--border-med);
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  transition: box-shadow .2s;
-}
-.menu-day-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
-
-.menu-day-card.today .menu-day-label {
-  background: linear-gradient(135deg, #3730a3, #6d63d4);
-  color: #fff;
-}
-
-.menu-day-label {
-  font-size: 11px; font-weight: 700;
-  letter-spacing: .06em; text-transform: uppercase;
-  padding: 7px 10px;
-  background: var(--bg-surface);
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
-  text-align: center;
-}
-
-.menu-day-date {
-  font-size: 9px; font-weight: 500;
-  opacity: .7; display: block; margin-top: 1px;
-}
-
-/* ── Slot (Sarapan / Makan Siang / Makan Malam) ── */
-.menu-slots { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
-
-.menu-slot {
-  border-radius: 8px;
-  border: 1.5px dashed var(--border-med);
-  background: var(--bg-surface);
-  padding: 6px 8px;
-  transition: all .15s;
-  min-height: 52px;
-  display: flex; flex-direction: column; gap: 3px;
-  position: relative;
-}
-.menu-slot:hover { border-color: #6d63d4; background: #ede9fe22; }
-.menu-slot.filled { border-style: solid; border-color: var(--border-med); background: var(--bg-card); }
-
-.slot-label {
-  font-size: 9px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .05em;
-  color: var(--text-muted); margin-bottom: 1px;
-}
-.slot-label.sarapan  { color: #b45309; }
-.slot-label.siang    { color: #0369a1; }
-.slot-label.malam    { color: #4338ca; }
-
-/* List multi-menu */
-.slot-menu-list {
-  display: flex; flex-direction: column; gap: 2px;
-}
-.slot-menu-item {
-  display: flex; align-items: center; gap: 4px;
-  background: #f0edfa;
-  border-radius: 5px;
-  padding: 2px 4px 2px 6px;
-  border-left: 2.5px solid #818cf8;
-}
-.slot-menu-item:nth-child(2) { border-left-color: #6d63d4; background: #ede9fe; }
-.slot-menu-item:nth-child(3) { border-left-color: #4f46e5; background: #e8e5fb; }
-.slot-menu-text {
-  font-size: 11px; font-weight: 500;
-  color: var(--text-primary); line-height: 1.3;
-  flex: 1; cursor: pointer;
-}
-.slot-menu-text:hover { color: #4338ca; text-decoration: underline; }
-.slot-menu-remove {
-  background: none; border: none; cursor: pointer;
-  font-size: 8px; color: #aaa; padding: 1px 2px;
-  border-radius: 3px; line-height: 1;
-  opacity: 0; transition: opacity .12s, color .12s;
-}
-.slot-menu-item:hover .slot-menu-remove { opacity: 1; }
-.slot-menu-remove:hover { color: #e53e3e; background: #fee2e2; }
-
-.slot-empty {
-  font-size: 10.5px; color: var(--text-muted);
-  font-style: italic; cursor: pointer;
-  padding: 2px 0;
-  transition: color .12s;
-}
-.slot-empty:hover { color: #6d63d4; }
-
-/* ── Modal ── */
-.menu-modal-overlay {
-  display: none;
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.45);
-  z-index: 1000;
-  align-items: center; justify-content: center;
-  backdrop-filter: blur(3px);
-}
-.menu-modal-overlay.open { display: flex; }
-
-.menu-modal {
-  background: var(--bg-card);
-  border-radius: 16px;
-  width: min(480px, 94vw);
-  max-height: 80vh;
-  display: flex; flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-  overflow: hidden;
-  animation: modalIn .2s ease;
-}
-@keyframes modalIn {
-  from { opacity:0; transform: scale(.95) translateY(8px); }
-  to   { opacity:1; transform: scale(1)  translateY(0); }
-}
-
-.menu-modal-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 1rem 1.25rem .75rem;
-  border-bottom: 1px solid var(--border);
-  font-size: 14px; font-weight: 700; color: var(--text-primary);
-}
-
-.menu-modal-close {
-  width: 28px; height: 28px; border-radius: 6px;
-  border: none; background: var(--bg-surface);
-  color: var(--text-secondary); font-size: 13px;
-  cursor: pointer; transition: all .15s;
-  display: flex; align-items: center; justify-content: center;
-}
-.menu-modal-close:hover { background: #fee2e2; color: #b91c1c; }
-
-.menu-modal-search {
-  margin: .75rem 1.25rem .5rem;
-  padding: 8px 12px;
-  font-size: 13px; font-family: var(--font);
-  border: 1.5px solid var(--border-med);
-  border-radius: 8px;
-  background: var(--bg-surface);
-  outline: none;
-  transition: border-color .15s, box-shadow .15s;
-}
-.menu-modal-search:focus {
-  border-color: #6d63d4;
-  box-shadow: 0 0 0 3px rgba(109,99,212,.12);
-}
-
-.menu-modal-list {
-  flex: 1; overflow-y: auto;
-  padding: .25rem .75rem .5rem;
-  display: flex; flex-direction: column; gap: 3px;
-}
-.menu-modal-list::-webkit-scrollbar { width: 4px; }
-.menu-modal-list::-webkit-scrollbar-thumb { background: var(--border-med); border-radius: 2px; }
-
-.menu-option {
-  padding: 9px 12px;
-  border-radius: 8px;
-  font-size: 13px; font-weight: 500;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all .12s;
-  border: 1px solid transparent;
-}
-.menu-option:hover { background: #ede9fe; border-color: #c4b5fd; color: #4338ca; }
-.menu-option.selected { background: linear-gradient(135deg,#3730a3,#6d63d4); color: #fff; border-color: transparent; }
-.menu-option.already-picked { color: var(--text-muted); font-style: italic; }
-.menu-option.already-picked:hover { background: #f8f7f4; border-color: var(--border); color: var(--text-secondary); }
-
-.menu-modal-footer {
-  padding: .65rem 1.25rem .85rem;
-  border-top: 1px solid var(--border);
-}
-.menu-modal-clear {
-  width: 100%; padding: 7px;
-  font-size: 12px; font-weight: 600; font-family: var(--font);
-  border: 1px solid #fca5a5; border-radius: 8px;
-  background: #fff1f2; color: #b91c1c;
-  cursor: pointer; transition: all .15s;
-}
-.menu-modal-clear:hover { background: #fee2e2; }
-
-/* ── Bahan section ── */
-.bahan-section {
-  max-width: 1240px;
-  margin: 0 auto;
-  background: var(--bg-card);
-  border-radius: 16px;
-  border: 1px solid var(--border-med);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  overflow: hidden;
-}
-
-.bahan-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 1rem 1.25rem;
-  background: linear-gradient(135deg, #1a3828, #2d6146);
-  color: #fff; gap: 1rem; flex-wrap: wrap;
-}
-.bahan-title { display: flex; align-items: center; gap: 12px; }
-.bahan-title > span { font-size: 22px; }
-.bahan-title-text { font-size: 14px; font-weight: 700; }
-.bahan-title-sub  { font-size: 11px; opacity: .55; margin-top: 2px; }
-
-.bahan-actions { display: flex; gap: 8px; flex-shrink: 0; }
-.bahan-act-btn {
-  padding: 5px 14px;
-  font-size: 11.5px; font-weight: 600; font-family: var(--font);
-  border-radius: 20px; border: 1.5px solid rgba(255,255,255,.25);
-  background: rgba(255,255,255,.1); color: rgba(255,255,255,.85);
-  cursor: pointer; transition: all .15s;
-}
-.bahan-act-btn:hover { background: rgba(255,255,255,.22); }
-
-/* Category label */
-.bahan-category {
-  padding: .5rem 1.25rem .25rem;
-  font-size: 10px; font-weight: 700;
-  letter-spacing: .07em; text-transform: uppercase;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
-}
-
-.bahan-grid {
-  padding: .75rem 1.25rem 1.25rem;
-  display: flex; flex-direction: column; gap: 0;
-}
-
-/* Category group */
-.bahan-group { margin-bottom: .75rem; }
-.bahan-group-label {
-  font-size: 10px; font-weight: 700;
-  letter-spacing: .07em; text-transform: uppercase;
-  color: var(--text-muted);
-  padding: .4rem 0 .3rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: .4rem;
-}
-
-.bahan-items { display: flex; flex-wrap: wrap; gap: 6px; }
-
-/* Individual bahan pill */
-.bahan-pill {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 5px 11px;
-  border-radius: 20px;
-  border: 1.5px solid var(--border-med);
-  background: var(--bg-surface);
-  font-size: 12px; font-weight: 500;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all .15s;
-  user-select: none;
-}
-.bahan-pill:hover { border-color: #6d63d4; background: #ede9fe22; }
-
-.bahan-pill.ada {
-  background: #dcfce7; border-color: #86efac; color: #15803d;
-}
-.bahan-pill.habis {
-  background: #fee2e2; border-color: #fca5a5; color: #b91c1c;
-  text-decoration: line-through;
-}
-
-.bahan-pill-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--border-med); flex-shrink: 0;
-  transition: background .15s;
-}
-.bahan-pill.ada   .bahan-pill-dot { background: #22c55e; }
-.bahan-pill.habis .bahan-pill-dot { background: #ef4444; }
-
-/* ── View-menu wrapper padding ── */
-#view-menu { padding: 0; }
-#view-menu .main-content-inner {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 1.25rem 1.75rem 2rem;
-}
-
-@media (max-width: 600px) {
-  .menu-week-header, .menu-grid, .bahan-section { margin-left: 1rem; margin-right: 1rem; }
-  .bahan-header { flex-direction: column; align-items: flex-start; }
-}
-
-/* ================================================
-   PIN LOCK SCREEN — proteksi privasi keluarga
-   ================================================ */
-
-/* Sembunyikan semua konten asli selama belum unlock */
-body:not(.app-unlocked) > *:not(.pin-lock-screen) {
-  display: none !important;
-}
-body:not(.app-unlocked) {
-  overflow: hidden;
-}
-.pin-lock-screen {
-  display: none;
-}
-body:not(.app-unlocked) .pin-lock-screen {
-  display: flex;
-}
-
-.pin-lock-screen {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 60%, var(--green-dark) 100%);
-  padding: 1.5rem;
-}
-
-.pin-lock-box {
-  width: 100%;
-  max-width: 340px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: var(--radius-lg);
-  padding: 2rem 1.75rem 1.75rem;
-  text-align: center;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-}
-
-.pin-lock-box.shake {
-  animation: pinShake 0.4s;
-}
-
-@keyframes pinShake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-8px); }
-  40%, 80% { transform: translateX(8px); }
-}
-
-.pin-lock-icon {
-  font-size: 34px;
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 0.9rem;
-  border-radius: 50%;
-  background: rgba(240,192,96,0.12);
-  border: 1.5px solid rgba(240,192,96,0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.pin-lock-box h2 {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text-on-dark);
-  margin-bottom: 4px;
-}
-
-.pin-lock-box p {
-  font-size: 12px;
-  color: var(--text-sub);
-  margin-bottom: 1.4rem;
-}
-
-.pin-dots {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 1.5rem;
-}
-
-.pin-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255,255,255,0.35);
-  background: transparent;
-  transition: background 0.15s, transform 0.15s, border-color 0.15s;
-}
-
-.pin-dot.filled {
-  background: var(--gold);
-  border-color: var(--gold);
-  transform: scale(1.1);
-}
-
-.pin-hidden-input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  height: 0;
-  width: 0;
-}
-
-.pin-keypad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 1rem;
-}
-
-.pin-key {
-  padding: 14px 0;
-  font-size: 17px;
-  font-weight: 600;
-  font-family: var(--font);
-  color: var(--text-on-dark);
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
-}
-
-.pin-key:hover  { background: rgba(255,255,255,0.12); }
-.pin-key:active { transform: scale(0.95); }
-
-.pin-key.pin-key-empty { visibility: hidden; }
-
-.pin-key.pin-key-back {
-  font-size: 15px;
-  color: var(--gold-soft);
-}
-
-.pin-error {
-  min-height: 16px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #f87171;
-  letter-spacing: 0.01em;
-}
-
-.pin-lock-footer {
-  margin-top: 1.1rem;
-  font-size: 10px;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 0.02em;
-}
-
-/* ================================================
-   DASHBOARD — Hari Ini, English, Keluarga, Finansial
-   (CSS yang sebelumnya tidak ada)
-   ================================================ */
-
-/* ── Stat cards ── */
-.dash-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.dash-stat-card {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  border: 1px solid var(--border-med);
-  padding: 1rem 1.25rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  text-align: center;
-}
-
-.dash-stat-num {
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  margin-bottom: 4px;
-  font-variant-numeric: tabular-nums;
-}
-
-.dash-stat-lbl {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* ── Generic card ── */
-.dash-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-med);
-  padding: 1.1rem 1.25rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  margin-bottom: 1rem;
-  transition: box-shadow 0.2s;
-}
-.dash-card:hover {
-  box-shadow: 0 4px 18px rgba(0,0,0,0.09);
-}
-
-.dash-card-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
-  letter-spacing: 0.01em;
-}
-
-/* ── Timeline (Hari Ini) ── */
-.dash-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  max-height: 320px;
-  overflow-y: auto;
-}
-.dash-timeline::-webkit-scrollbar { width: 3px; }
-.dash-timeline::-webkit-scrollbar-thumb { background: var(--border-med); border-radius: 2px; }
-
-.dash-tl-row {
-  display: grid;
-  grid-template-columns: 52px 1fr;
-  gap: 8px;
-  align-items: start;
-}
-.dash-tl-time {
-  font-size: 10.5px;
-  color: var(--text-muted);
-  font-weight: 600;
-  text-align: right;
-  padding-top: 5px;
-  font-variant-numeric: tabular-nums;
-}
-.dash-tl-text {
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: var(--bg-surface);
-  border-left: 3px solid var(--border-med);
-  line-height: 1.4;
-}
-.dash-tl-row.live-row .dash-tl-text {
-  background: linear-gradient(135deg, #fffbeb, #fef3c7);
-  border-left-color: #f0c060;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-/* ── Checklist Harian ── */
-.dash-check-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--border);
-  cursor: pointer;
-  user-select: none;
-}
-.dash-check-item:last-child { border-bottom: none; }
-.dash-check-box {
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  border: 2px solid #d1cfc8;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  font-size: 10px;
-  color: #fff;
-  transition: all 0.15s;
-}
-.dash-check-item.checked .dash-check-box {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  border-color: #16a34a;
-}
-.dash-check-label {
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  flex: 1;
-  transition: all 0.15s;
-}
-.dash-check-item.checked .dash-check-label {
-  text-decoration: line-through;
-  color: var(--text-muted);
-}
-
-/* ── Buttons ── */
-.dash-btn {
-  padding: 7px 18px;
-  font-size: 12.5px;
-  font-weight: 600;
-  font-family: var(--font);
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.dash-btn-primary {
-  background: linear-gradient(135deg, #3730a3, #6d63d4);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(55,48,163,0.25);
-}
-.dash-btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-.dash-btn-ghost {
-  background: var(--bg-surface);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-med);
-}
-.dash-btn-ghost:hover { background: var(--bg-card); border-color: #6d63d4; color: #4338ca; }
-
-/* ── Section label ── */
-.dash-section-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin: 1.1rem 0 0.6rem;
-  padding-bottom: 0.3rem;
-  border-bottom: 1px solid var(--border);
-}
-
-/* ── Reminder card ── */
-.dash-reminder-card {
-  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-  border: 1px solid #86efac;
-  border-radius: var(--radius);
-  padding: 1rem 1.25rem;
-  font-size: 13px;
-  color: #065f46;
-  line-height: 1.7;
-  margin-bottom: 1rem;
-}
-.dash-reminder-title {
-  font-weight: 700;
-  font-size: 12px;
-  margin-bottom: 6px;
-  color: #064e3b;
-}
-
-/* ================================================
-   ENGLISH LEARNING
-   ================================================ */
-.eng-streak-card {
-  background: linear-gradient(135deg, #1a1f3a 0%, #2d3561 100%);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem 1.5rem;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  margin-bottom: 1rem;
-  box-shadow: 0 4px 20px rgba(26,31,58,0.3);
-}
-.eng-streak-num {
-  font-size: 42px;
-  font-weight: 800;
-  color: var(--gold);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.eng-streak-sub {
-  font-size: 12px;
-  color: rgba(255,255,255,0.55);
-  margin-top: 2px;
-}
-.eng-week-dots {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
-}
-.eng-week-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.15);
-  border: 1.5px solid rgba(255,255,255,0.2);
-  transition: all 0.2s;
-}
-.eng-week-dot.done {
-  background: var(--gold);
-  border-color: var(--gold);
-  box-shadow: 0 0 8px rgba(240,192,96,0.5);
-}
-.eng-badge-big {
-  font-size: 52px;
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
-  flex-shrink: 0;
-}
-
-.eng-day-card {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  border: 1px solid var(--border-med);
-  padding: 0.85rem 1rem;
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  transition: box-shadow 0.15s, transform 0.15s;
-  position: relative;
-}
-.eng-day-card:hover {
-  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-  transform: translateX(2px);
-}
-
-.eng-ico {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-}
-
-.eng-day-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-}
-.eng-day-focus {
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-weight: 500;
-  margin-bottom: 3px;
-}
-.eng-day-detail {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  line-height: 1.5;
-}
-
-.eng-time-tag {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.85rem;
-  font-size: 10.5px;
-  font-weight: 600;
-  background: linear-gradient(135deg, #ede9fe, #ddd8ff);
-  color: #4338ca;
-  padding: 3px 9px;
-  border-radius: 12px;
-}
-
-/* ================================================
-   KELUARGA
-   ================================================ */
-.fam-alert-card {
-  background: linear-gradient(135deg, #1a1f3a, #2a1a4a);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 1rem;
-  color: #fff;
-  border-left: 4px solid #f0c060;
-  box-shadow: 0 4px 20px rgba(26,31,58,0.3);
-}
-.fam-alert-title {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(255,255,255,0.6);
-  margin-bottom: 4px;
-}
-.fam-alert-time {
-  font-size: 44px;
-  font-weight: 800;
-  color: var(--gold);
-  line-height: 1;
-  margin-bottom: 8px;
-  font-variant-numeric: tabular-nums;
-}
-.fam-alert-sub {
-  font-size: 12.5px;
-  color: rgba(255,255,255,0.65);
-  line-height: 1.6;
-}
-
-.fam-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border);
-}
-.fam-item:last-child { border-bottom: none; }
-.fam-ico {
-  font-size: 22px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-med);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.fam-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 3px;
-}
-.fam-desc {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.55;
-}
-
-/* ================================================
-   FINANSIAL
-   ================================================ */
-.fin-prog-item {
-  margin-bottom: 0.85rem;
-}
-.fin-prog-item:last-child { margin-bottom: 0; }
-
-.fin-prog-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-.fin-prio {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-.fin-prog-bar {
-  height: 8px;
-  background: var(--bg-surface);
-  border-radius: 20px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-}
-.fin-prog-fill {
-  height: 100%;
-  border-radius: 20px;
-  transition: width 0.6s ease;
-}
-
-.fin-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-@media (max-width: 640px) {
-  .fin-grid-2 { grid-template-columns: 1fr; }
-  .dash-grid-2 { grid-template-columns: 1fr; }
-}
-
-.fin-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 12.5px;
-  color: var(--text-secondary);
-}
-.fin-row:last-child { border-bottom: none; }
-.fin-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 6px;
-  flex-shrink: 0;
-}
-.fin-badge {
-  font-size: 10.5px;
-  font-weight: 600;
-  padding: 2px 9px;
-  border-radius: 10px;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-/* ================================================
-   View panels fix — ensure they sit inside flow
-   ================================================ */
-.view-panel {
-  width: 100%;
-}
-.view-panel .main-content {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 1.25rem 1.75rem 2rem;
-}
-
-@media (max-width: 600px) {
-  .dash-stat-num { font-size: 22px; }
-  .eng-streak-num { font-size: 32px; }
-  .fam-alert-time { font-size: 34px; }
-  .fin-grid-2 { grid-template-columns: 1fr; }
-}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jadwal Keluarga — Fathir & Salma</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script></head>
+<body>
+
+<!-- ===================== PIN LOCK SCREEN ===================== -->
+<!-- Dikontrol oleh CSS: body:not(.app-unlocked) .pin-lock-screen { display: flex } -->
+<div class="pin-lock-screen">
+  <div class="pin-lock-box" id="pin-lock-box">
+    <div class="pin-lock-icon">📅</div>
+    <h2>Jadwal Keluarga</h2>
+    <p>Fathir & Salma · Masukkan PIN 6 digit</p>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="pinPress('1')">1</button>
+      <button class="pin-key" onclick="pinPress('2')">2</button>
+      <button class="pin-key" onclick="pinPress('3')">3</button>
+      <button class="pin-key" onclick="pinPress('4')">4</button>
+      <button class="pin-key" onclick="pinPress('5')">5</button>
+      <button class="pin-key" onclick="pinPress('6')">6</button>
+      <button class="pin-key" onclick="pinPress('7')">7</button>
+      <button class="pin-key" onclick="pinPress('8')">8</button>
+      <button class="pin-key" onclick="pinPress('9')">9</button>
+      <button class="pin-key pin-key-empty"></button>
+      <button class="pin-key" onclick="pinPress('0')">0</button>
+      <button class="pin-key pin-key-back" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="pin-lock-footer">Privasi keluarga · PIN 6 digit</div>
+  </div>
+</div>
+
+
+
+<!-- ===================== HEADER + MAIN TABS ===================== -->
+<header class="site-header">
+  <h1>📅 Jadwal Keluarga</h1>
+  <p>Keluarga Kecil Kami - Tumbuh dan Merekah, Bismillah</p>
+  <nav class="main-tabs">
+    <button id="mtab-jadwal" class="active" onclick="showView('jadwal')">Jadwal Harian</button>
+    <button id="mtab-bersama" onclick="showView('bersama')">🤝 Momen Bersama</button>
+    <button id="mtab-menu" onclick="showView('menu')">🍳 Menu Masakan</button>
+    <button id="mtab-today" onclick="showView('today')">📋 Hari Ini</button>
+    <button id="mtab-english" onclick="showView('english')">🇬🇧 English</button>
+    <button id="mtab-keluarga" onclick="showView('keluarga')">❤️ Keluarga</button>
+    <button id="mtab-finansial" onclick="showView('finansial')">💰 Finansial</button>
+  </nav>
+</header>
+
+<!-- ===================== LEGEND ===================== -->
+<div class="legend-bar">
+  <div class="leg"><div class="leg-dot" style="background:#639922"></div>Ibadah</div>
+  <div class="leg"><div class="leg-dot" style="background:#378add"></div>Olahraga</div>
+  <div class="leg"><div class="leg-dot" style="background:#7f77dd"></div>Kerja/Sekolah</div>
+  <div class="leg"><div class="leg-dot" style="background:#888780"></div>Istirahat/Makan</div>
+  <div class="leg"><div class="leg-dot" style="background:#ba7517"></div>Nongki/Sosial</div>
+  <div class="leg"><div class="leg-dot" style="background:#d85a30"></div>Hobi & Kreatif</div>
+  <div class="leg"><div class="leg-dot" style="background:#d4537e"></div>Keluarga</div>
+  <div class="leg"><div class="leg-dot" style="background:#1d9e75"></div>Toko Shopee</div>
+</div>
+
+<!-- ===================== TO-DO KELUARGA ===================== -->
+<section class="todo-section">
+  <div class="todo-panel">
+      <div class="todo-header">
+        <div class="todo-title">
+          <span class="todo-icon">✅</span>
+          <div>
+            <div class="todo-title-text">To-Do Keluarga</div>
+            <div class="todo-title-sub">Rencana bersama — centang kalau sudah selesai</div>
+          </div>
+        </div>
+        <div class="todo-header-right">
+          <div class="todo-sync-status" id="todo-sync-status">
+            <span class="sync-dot" id="sync-dot"></span>
+            <span id="sync-text">Menghubungkan...</span>
+          </div>
+          <div class="todo-date-badge" id="todo-date-badge"></div>
+        </div>
+      </div>
+
+      <!-- Input area -->
+      <div class="todo-input-area">
+        <div class="todo-who-select">
+          <button class="who-btn active" data-who="suami" onclick="setWho('suami',this)">👨 Fathir</button>
+          <button class="who-btn" data-who="istri" onclick="setWho('istri',this)">👩 Salma</button>
+          <button class="who-btn" data-who="bersama" onclick="setWho('bersama',this)">👨‍👩‍👦 Bersama</button>
+        </div>
+        <div class="todo-input-row">
+          <input
+            type="text"
+            id="todo-input"
+            class="todo-input"
+            placeholder="Tulis rencana atau tugas..."
+            maxlength="120"
+            onkeydown="if(event.key==='Enter') addTodo()"
+          />
+          <div class="todo-deadline-wrap">
+            <label class="deadline-label">Target</label>
+            <input type="date" id="todo-deadline" class="todo-deadline" />
+          </div>
+          <button class="todo-add-btn" onclick="addTodo()">+ Tambah</button>
+        </div>
+      </div>
+
+      <!-- Filter tabs -->
+      <div class="todo-filters">
+        <button class="filter-btn active" onclick="setFilter('semua',this)">Semua</button>
+        <button class="filter-btn" onclick="setFilter('hari-ini',this)">📅 Hari ini</button>
+        <button class="filter-btn" onclick="setFilter('terlambat',this)">🔴 Terlambat</button>
+        <button class="filter-btn" onclick="setFilter('suami',this)">👨 Fathir</button>
+        <button class="filter-btn" onclick="setFilter('istri',this)">👩 Salma</button>
+        <button class="filter-btn" onclick="setFilter('bersama',this)">👨‍👩‍👦 Bersama</button>
+        <button class="filter-btn" onclick="setFilter('selesai',this)">✅ Selesai</button>
+        <button class="todo-clear-btn" onclick="clearDone()">Hapus yang selesai</button>
+      </div>
+
+      <!-- List -->
+      <div class="todo-list" id="todo-list">
+        <div class="todo-empty" id="todo-empty">
+          <div class="todo-empty-icon">📋</div>
+          <div>Belum ada rencana. Yuk tambahkan!</div>
+        </div>
+      </div>
+
+      <div class="todo-footer-info">
+        Data tersimpan permanen · tugas belum selesai tetap muncul sampai dicentang atau dihapus
+      </div>
+    </div>
+</section>
+
+<!-- ===================== MAIN CONTENT ===================== -->
+<main class="main-content">
+
+  <!-- ========== VIEW: JADWAL HARIAN ========== -->
+  <div id="view-jadwal" class="view-panel active">
+    <div class="dual-grid">
+
+      <!-- ===== KOLOM SUAMI ===== -->
+      <div class="col-card">
+        <div class="col-header suami">
+          <div class="avatar">S</div>
+          <div class="col-meta">
+            <div class="col-name">Suami — Guru PPPK</div>
+            <div class="col-sub">SMAN 8 Kediri - Artilerianstore Owner- Aruma Studio Owner</div>
+          </div>
+        </div>
+
+        <div class="col-body">
+          <!-- Tab hari -->
+          <div class="day-tabs">
+            <button data-day="senin"   onclick="showDay('senin',this)">Sen</button>
+            <button data-day="selasa"  onclick="showDay('selasa',this)">Sel</button>
+            <button data-day="rabu"    onclick="showDay('rabu',this)">Rab</button>
+            <button data-day="kamis"   onclick="showDay('kamis',this)">Kam</button>
+            <button data-day="jumat"   onclick="showDay('jumat',this)">Jum</button>
+            <button data-day="sabtu"   onclick="showDay('sabtu',this)">Sab</button>
+            <button data-day="minggu"  onclick="showDay('minggu',this)">Min</button>
+          </div>
+
+          <!-- SENIN -->
+          <div class="day-panel" id="day-senin">
+            <div class="col-day-label">Senin — Hari Kerja + Puasa Sunnah</div>
+            <div class="timeline">
+              <div class="row"><span class="time">03.00</span><div class="block blk-ibadah">Bangun — persiapan ibadah malam</div></div>
+              <div class="row"><span class="time">03.15</span><div class="block blk-ibadah">Tahajud, Witir, doa</div></div>
+              <div class="row"><span class="time">03.40</span><div class="block blk-istirahat">Sahur</div></div>
+              <div class="row"><span class="time">04.10</span><div class="block blk-ibadah">Tilawah Al-Qur'an</div></div>
+              <div class="row"><span class="time">04.45</span><div class="block blk-ibadah">Sholat Subuh + Dzikir pagi</div></div>
+              <div class="row"><span class="time">05.10</span><div class="block blk-ibadah">Mengaji</div></div>
+              <div class="row"><span class="time">05.30</span><div class="block blk-olahraga">Workout pagi — bodyweight / lari ringan (20 menit)</div></div>
+              <div class="row"><span class="time">05.50</span><div class="block blk-istirahat">Mandi, berpakaian rapi</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke SMAN 8 Kota Kediri</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah — absensi pagi</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Istirahat — Sholat Dhuha (2–4 rakaat)</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur berjamaah (puasa — tidak makan siang)</div></div>
+              <div class="row"><span class="time">12.15</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-kerja">Absensi pulang — perjalanan ke rumah</div></div>
+              <div class="row"><span class="time">16.20</span><div class="block blk-keluarga">Bermain dengan anak</div></div>
+              <div class="row"><span class="time">17.00</span><div class="block blk-istirahat">Istirahat / persiapan berbuka</div></div>
+              <div class="row"><span class="time">17.45</span><div class="block blk-ibadah">Maghrib — berbuka puasa</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga</div></div>
+              <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Sholat Isya + Dzikir malam</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-toko">Cek Artilerianstore</div></div>
+              <div class="row"><span class="time">20.30</span><div class="block blk-hobby">Coding / membaca / nulis artikel</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur</div></div>
+            </div>
+            <div class="note">🌙 Senin = puasa sunnah Senin–Kamis. Bangun 03.00 untuk Tahajud + Sahur. Workout diperpendek agar tidak kelelahan saat puasa.</div>
+          </div>
+
+          <!-- SELASA -->
+          <div class="day-panel" id="day-selasa">
+            <div class="col-day-label">Selasa — Hari Kerja</div>
+            <div class="timeline">
+              <div class="row"><span class="time">03.45</span><div class="block blk-ibadah">Bangun — Tahajud, Witir, doa</div></div>
+              <div class="row"><span class="time">04.30</span><div class="block blk-istirahat">Sahur ringan / minum</div></div>
+              <div class="row"><span class="time">04.45</span><div class="block blk-ibadah">Sholat Subuh + Dzikir pagi</div></div>
+              <div class="row"><span class="time">05.10</span><div class="block blk-ibadah">Mengaji / Tilawah</div></div>
+              <div class="row"><span class="time">05.35</span><div class="block blk-olahraga">Workout pagi (25 menit)</div></div>
+              <div class="row"><span class="time">06.00</span><div class="block blk-istirahat">Mandi + sarapan</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke sekolah</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Istirahat — Sholat Dhuha + snack</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur + makan siang</div></div>
+              <div class="row"><span class="time">12.15</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-kerja">Absensi pulang</div></div>
+              <div class="row"><span class="time">16.00</span><div class="block blk-hobby">Fotografi / videografi sore (konten kreatif)</div></div>
+              <div class="row"><span class="time">16.45</span><div class="block blk-istirahat">Mandi + istirahat</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga</div></div>
+              <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">19.45</span><div class="block blk-hobby">Nulis artikel / edit foto-video / baca buku / cek toko</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur</div></div>
+            </div>
+          </div>
+
+          <!-- RABU -->
+          <div class="day-panel" id="day-rabu">
+            <div class="col-day-label">Rabu — Hari Kerja + Madin/TPA</div>
+            <div class="timeline">
+              <div class="row"><span class="time">03.45</span><div class="block blk-ibadah">Bangun — Tahajud, Witir, doa</div></div>
+              <div class="row"><span class="time">04.30</span><div class="block blk-istirahat">Sahur ringan / minum</div></div>
+              <div class="row"><span class="time">04.45</span><div class="block blk-ibadah">Sholat Subuh + Dzikir + Tilawah</div></div>
+              <div class="row"><span class="time">05.10</span><div class="block blk-ibadah">Mengaji</div></div>
+              <div class="row"><span class="time">05.35</span><div class="block blk-olahraga">Workout pagi (20 menit — ringkas, malam ada madin)</div></div>
+              <div class="row"><span class="time">06.00</span><div class="block blk-istirahat">Mandi + sarapan</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke sekolah</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Istirahat — Sholat Dhuha</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur + makan siang</div></div>
+              <div class="row"><span class="time">12.15</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-kerja">Absensi pulang — segera pulang</div></div>
+              <div class="row"><span class="time">15.45</span><div class="block blk-istirahat">Makan ringan + persiapan mengajar madin</div></div>
+              <div class="row"><span class="time">16.30</span><div class="block blk-madin">Mengajar Madin / TPA (hingga 19.00)</div></div>
+              <div class="row"><span class="time">19.00</span><div class="block blk-ibadah">Selesai madin — Sholat Maghrib</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Sholat Isya</div></div>
+              <div class="row"><span class="time">19.45</span><div class="block blk-istirahat">Makan malam + istirahat ringan</div></div>
+              <div class="row"><span class="time">20.30</span><div class="block blk-hobby">Santai: baca / coding ringan / cek toko (maks. 1 jam)</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur lebih awal — Rabu hari yang padat</div></div>
+            </div>
+            <div class="note">⚠️ Rabu adalah hari tersibuk. Workout sore ditiadakan. Prioritaskan stamina.</div>
+          </div>
+
+                    <!-- KAMIS -->
+          <div class="day-panel" id="day-kamis">
+            <div class="col-day-label">Kamis — Hari Kerja + Puasa Sunnah</div>
+            <div class="timeline">
+              <div class="row"><span class="time">03.00</span><div class="block blk-ibadah">Bangun — persiapan ibadah malam</div></div>
+              <div class="row"><span class="time">03.15</span><div class="block blk-ibadah">Tahajud, Witir, doa</div></div>
+              <div class="row"><span class="time">03.40</span><div class="block blk-istirahat">Sahur</div></div>
+              <div class="row"><span class="time">04.10</span><div class="block blk-ibadah">Tilawah Al-Qur'an</div></div>
+              <div class="row"><span class="time">04.45</span><div class="block blk-ibadah">Sholat Subuh + Dzikir pagi</div></div>
+              <div class="row"><span class="time">05.10</span><div class="block blk-ibadah">Mengaji</div></div>
+              <div class="row"><span class="time">05.30</span><div class="block blk-olahraga">Workout pagi (20 menit)</div></div>
+              <div class="row"><span class="time">05.50</span><div class="block blk-istirahat">Mandi, berpakaian rapi</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke sekolah</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Sholat Dhuha (2–4 rakaat)</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur berjamaah (puasa — tidak makan siang)</div></div>
+              <div class="row"><span class="time">12.15</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-kerja">Absensi pulang — perjalanan ke rumah</div></div>
+              <div class="row"><span class="time">16.20</span><div class="block blk-keluarga">Bermain dengan anak</div></div>
+              <div class="row"><span class="time">17.00</span><div class="block blk-istirahat">Istirahat / persiapan berbuka</div></div>
+              <div class="row"><span class="time">17.45</span><div class="block blk-ibadah">Maghrib — berbuka puasa</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga</div></div>
+              <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Sholat Isya + Dzikir malam</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-toko">Cek Artilerianstore</div></div>
+              <div class="row"><span class="time">20.30</span><div class="block blk-hobby">Coding / membaca / nulis artikel</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur</div></div>
+            </div>
+            <div class="note">🌙 Kamis = puasa sunnah Senin–Kamis. Jadwal identik dengan Senin: bangun 03.00, Tahajud, Sahur, berbuka Maghrib 17.45.</div>
+          </div>
+
+                    <!-- JUMAT -->
+          <div class="day-panel" id="day-jumat">
+            <div class="col-day-label">Jumat — Hari Kerja Spesial</div>
+            <div class="timeline">
+              <div class="row"><span class="time">03.45</span><div class="block blk-ibadah">Bangun — Tahajud, Witir, doa</div></div>
+              <div class="row"><span class="time">04.30</span><div class="block blk-istirahat">Sahur ringan / minum</div></div>
+              <div class="row"><span class="time">04.45</span><div class="block blk-ibadah">Subuh + Dzikir (sunnah baca Al-Kahfi pagi Jumat)</div></div>
+              <div class="row"><span class="time">05.10</span><div class="block blk-ibadah">Mengaji / Tilawah</div></div>
+              <div class="row"><span class="time">05.35</span><div class="block blk-olahraga">Workout pagi (25 menit)</div></div>
+              <div class="row"><span class="time">06.00</span><div class="block blk-istirahat">Mandi + sarapan</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke sekolah</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Sholat Dhuha + istirahat</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">11.00</span><div class="block blk-ibadah">Persiapan Sholat Jumat (mandi Jumat sebelum ke masjid)</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Berangkat ke Masjid — Sholat Jumat</div></div>
+              <div class="row"><span class="time">13.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Ashar</div></div>
+              <div class="row"><span class="time">16.00</span><div class="block blk-kerja">Absensi pulang + pulang</div></div>
+              <div class="row"><span class="time">16.30</span><div class="block blk-olahraga">Workout sore / mancing sore (hobi)</div></div>
+              <div class="row"><span class="time">17.00</span><div class="block blk-istirahat">Mandi + istirahat</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-sosial">Nongki malam / makan malam bersama istri</div></div>
+              <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-keluarga">Quality time keluarga / ngobrol santai / cek toko</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur</div></div>
+            </div>
+            <div class="note">📖 Jumat: sunnah baca Al-Kahfi pagi hari. Sholat Jumat berjamaah di masjid jam 11.30.</div>
+          </div>
+
+                    <!-- SABTU -->
+          <div class="day-panel" id="day-sabtu">
+            <div class="col-day-label">Sabtu — Hari Libur Produktif</div>
+            <div class="timeline">
+              <div class="row"><span class="time">04.30</span><div class="block blk-ibadah">Subuh + Tilawah + Dzikir (lebih santai)</div></div>
+              <div class="row"><span class="time">05.15</span><div class="block blk-olahraga">Jogging / workout pagi lebih lama (45–60 menit)</div></div>
+              <div class="row"><span class="time">06.15</span><div class="block blk-keluarga">Bantu istri mandikan anak</div></div>
+              <div class="row"><span class="time">06.45</span><div class="block blk-istirahat">Sarapan bersama keluarga</div></div>
+              <div class="row"><span class="time">07.30</span><div class="block blk-hobby">Merawat tanaman & aquascape (rutin mingguan)</div></div>
+              <div class="row"><span class="time">08.30</span><div class="block blk-hobby">Bersih-bersih sekitar rumah</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-ibadah">Sholat Dhuha</div></div>
+              <div class="row"><span class="time">09.45</span><div class="block blk-hobby">Fotografi / Coding / nulis artikel</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Dzuhur</div></div>
+              <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Makan siang + tidur siang (1–1.5 jam)</div></div>
+              <div class="row"><span class="time">13.30</span><div class="block blk-toko">Evaluasi toko Shopee — brief karyawan mingguan</div></div>
+              <div class="row"><span class="time">14.30</span><div class="block blk-keluarga">Jalan-jalan keluarga / wisata kuliner kota Kediri</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-hobby">Mancing sore / nongki santai</div></div>
+              <div class="row"><span class="time">17.30</span><div class="block blk-istirahat">Mandi + istirahat</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-sosial">Kuliner malam / nongkrong bareng istri</div></div>
+              <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-hobby">Baca buku / nonton film / masak bareng istri</div></div>
+              <div class="row"><span class="time">22.00</span><div class="block blk-tidur">Tidur (boleh lebih malam — besok Minggu)</div></div>
+            </div>
+            <div class="note">🌿 Sabtu = recharge + produktif. Jika ada rencana liburan keluar kota, geser aktivitas rumah ke Minggu pagi.</div>
+          </div>
+
+                    <!-- MINGGU -->
+          <div class="day-panel" id="day-minggu">
+            <div class="col-day-label">Minggu — Hari Istirahat & Keluarga</div>
+            <div class="timeline">
+              <div class="row"><span class="time">05.00</span><div class="block blk-ibadah">Subuh (boleh agak telat bangun — weekend rest)</div></div>
+              <div class="row"><span class="time">05.30</span><div class="block blk-tidur">Tidur lagi / rebahan santai</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-keluarga">Bangun — bantu mandikan anak, sarapan keluarga</div></div>
+              <div class="row"><span class="time">08.00</span><div class="block blk-olahraga">Jogging pagi bersama keluarga</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Sholat Dhuha</div></div>
+              <div class="row"><span class="time">09.30</span><div class="block blk-keluarga">Liburan keluarga / wisata / jalan-jalan (jika ada rencana)</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Dzuhur</div></div>
+              <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Makan siang + tidur siang (2 jam)</div></div>
+              <div class="row"><span class="time">14.00</span><div class="block blk-keluarga">Family time — bermain dengan anak / jalan sore</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-hobby">Hobi bebas: mancing / aquascape / tanaman / baca buku</div></div>
+              <div class="row"><span class="time">17.30</span><div class="block blk-istirahat">Mandi + persiapan malam</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-toko">Cek toko Shopee — evaluasi & set target mingguan</div></div>
+              <div class="row"><span class="time">19.00</span><div class="block blk-keluarga">Makan malam keluarga + ngobrol santai</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-hobby">Me-time: baca / nulis / coding / evaluasi mingguan</div></div>
+              <div class="row"><span class="time">21.00</span><div class="block blk-tidur">Tidur lebih awal — besok Senin mulai kerja</div></div>
+            </div>
+            <div class="note">🏡 Minggu = keluarga & istirahat. Evaluasi mingguan malam Minggu untuk persiapan pekan depan.</div>
+          </div>
+
+        </div><!-- /col-body suami -->
+      </div><!-- /col-card suami -->
+
+      <!-- ===== KOLOM ISTRI ===== -->
+      <div class="col-card">
+        <div class="col-header istri">
+          <div class="avatar">I</div>
+          <div class="col-meta">
+            <div class="col-name">Istri — IRT Produktif</div>
+            <div class="col-sub">Salmarket owner - Atsar's Mom</div>
+          </div>
+        </div>
+
+        <div class="col-body">
+          <!-- Sub-tab istri -->
+          <div class="istri-tabs">
+            <button class="active" onclick="showIstri('kerja',this)">Senin–Jumat</button>
+            <button onclick="showIstri('weekend',this)">Sabtu–Minggu</button>
+            <button onclick="showIstri('puasa',this)">🌙 Puasa Sen & Kam</button>
+          </div>
+
+          <!-- ISTRI: HARI KERJA -->
+          <div class="istri-panel active" id="istri-kerja">
+            <div class="col-day-label">Hari Kerja — Rutinitas Harian</div>
+            <div class="timeline">
+              <div class="row"><span class="time">05.00</span><div class="block blk-ibadah">Bangun — Subuh + Dzikir pagi</div></div>
+              <div class="row"><span class="time">05.30</span><div class="block blk-keluarga">Siapkan suami berangkat (sarapan, bekal jika perlu)</div></div>
+              <div class="row"><span class="time">06.00</span><div class="block blk-keluarga">Merawat & menyusui anak, aktivitas pagi bayi</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-istirahat">Sarapan + mandi pagi</div></div>
+              <div class="row"><span class="time">07.30</span><div class="block blk-toko">Cek toko Shopee salmarket — balas chat, proses pesanan</div></div>
+              <div class="row"><span class="time">08.30</span><div class="block blk-keluarga">Menemani & stimulasi anak (bermain, belajar motorik)</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-keluarga">Berangkat ke rumah ibu — bantu jaga toko offline</div></div>
+              <div class="row"><span class="time">11.00</span><div class="block blk-keluarga">Pulang ke rumah / anak tidur siang</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur</div></div>
+              <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Makan siang + istirahat / tidur siang bersama anak</div></div>
+              <div class="row"><span class="time">13.30</span><div class="block blk-toko">Kelola toko salmarket — update stok, foto produk, desain konten</div></div>
+              <div class="row"><span class="time">14.30</span><div class="block blk-olahraga">Workout IRT: yoga / pilates / senam ringan (20–30 menit)</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.15</span><div class="block blk-keluarga">Siapkan mandi anak sore + bermain sore</div></div>
+              <div class="row"><span class="time">16.00</span><div class="block blk-istirahat">Masak untuk makan malam keluarga</div></div>
+              <div class="row"><span class="time">17.00</span><div class="block blk-hobby">Me-time: konten kreatif / belajar hal baru online / skincare</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Sambut suami pulang — makan malam bersama</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-keluarga">Quality time: nonton bersama / ngobrol / skincare ritual</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur — menyesuaikan ritme anak</div></div>
+            </div>
+            <div class="note">💡 Waktu toko & me-time fleksibel mengikuti tidur siang anak. Jika anak tidak tidur siang, prioritaskan menemani anak dulu.</div>
+          </div>
+
+          <!-- ISTRI: WEEKEND -->
+          <div class="istri-panel" id="istri-weekend">
+            <div class="col-day-label">Sabtu & Minggu — Hari Keluarga</div>
+            <div class="timeline">
+              <div class="row"><span class="time">05.00</span><div class="block blk-ibadah">Subuh + Dzikir</div></div>
+              <div class="row"><span class="time">06.00</span><div class="block blk-olahraga">Workout pagi bersama suami (atau jalan pagi keluarga)</div></div>
+              <div class="row"><span class="time">07.00</span><div class="block blk-keluarga">Mandikan anak bersama suami</div></div>
+              <div class="row"><span class="time">08.00</span><div class="block blk-hobby">Masak sarapan / eksperimen resep / bersih rumah bersama</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-toko">Evaluasi mingguan toko salmarket — laporan & target</div></div>
+              <div class="row"><span class="time">10.00</span><div class="block blk-keluarga">Jalan-jalan keluarga / liburan bersama</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Dzuhur</div></div>
+              <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Makan siang + tidur siang (istirahat lebih panjang dari hari kerja)</div></div>
+              <div class="row"><span class="time">14.00</span><div class="block blk-hobby">Me-time: belajar skill baru / konten kreatif / skincare / baca</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Ashar</div></div>
+              <div class="row"><span class="time">15.30</span><div class="block blk-keluarga">Aktivitas sore bersama anak (taman / bermain di rumah)</div></div>
+              <div class="row"><span class="time">18.00</span><div class="block blk-ibadah">Maghrib + Tilawah</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-hobby">Quality time / nonton / ngobrol santai</div></div>
+              <div class="row"><span class="time">22.00</span><div class="block blk-tidur">Tidur</div></div>
+            </div>
+          </div>
+
+          <!-- ISTRI: PUASA SENIN & KAMIS -->
+          <div class="istri-panel" id="istri-puasa">
+            <div class="col-day-label">Senin & Kamis — Puasa Sunnah</div>
+            <div class="timeline">
+              <div class="row"><span class="time">03.00</span><div class="block blk-ibadah">Bangun bersama suami</div></div>
+              <div class="row"><span class="time">03.15</span><div class="block blk-ibadah">Tahajud, Witir, doa</div></div>
+              <div class="row"><span class="time">03.35</span><div class="block blk-istirahat">Sahur bersama — siapkan makanan untuk suami & diri sendiri</div></div>
+              <div class="row"><span class="time">04.10</span><div class="block blk-ibadah">Tilawah Al-Qur'an</div></div>
+              <div class="row"><span class="time">04.45</span><div class="block blk-ibadah">Sholat Subuh + Dzikir pagi</div></div>
+              <div class="row"><span class="time">05.30</span><div class="block blk-keluarga">Siapkan suami berangkat — merawat anak pagi</div></div>
+              <div class="row"><span class="time">06.30</span><div class="block blk-istirahat">Mandi + istirahat</div></div>
+              <div class="row"><span class="time">07.30</span><div class="block blk-toko">Cek toko Shopee salmarket — balas chat, proses pesanan</div></div>
+              <div class="row"><span class="time">08.30</span><div class="block blk-keluarga">Menemani & stimulasi anak (bermain, belajar motorik)</div></div>
+              <div class="row"><span class="time">09.00</span><div class="block blk-keluarga">Bantu toko offline orang tua (jika kondisi memungkinkan)</div></div>
+              <div class="row"><span class="time">11.00</span><div class="block blk-keluarga">Pulang — anak tidur siang</div></div>
+              <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Sholat Dzuhur (puasa — tidak makan siang)</div></div>
+              <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Tidur siang bersama anak (agar kuat berpuasa)</div></div>
+              <div class="row"><span class="time">13.30</span><div class="block blk-toko">Kelola toko salmarket — update stok, desain konten</div></div>
+              <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
+              <div class="row"><span class="time">15.15</span><div class="block blk-keluarga">Bermain bersama anak sore hari</div></div>
+              <div class="row"><span class="time">16.30</span><div class="block blk-istirahat">Siapkan menu berbuka untuk keluarga</div></div>
+              <div class="row"><span class="time">17.45</span><div class="block blk-ibadah">Maghrib — berbuka puasa bersama suami</div></div>
+              <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga</div></div>
+              <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Isya</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-keluarga">Quality time bersama suami & anak</div></div>
+              <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur — istirahat setelah puasa seharian</div></div>
+            </div>
+            <div class="note">🌙 Hari puasa: bangun lebih awal bersama suami. Tidur siang sangat dianjurkan agar tubuh tetap bertenaga. Siapkan menu berbuka sederhana tapi bergizi.</div>
+          </div>
+
+        </div><!-- /col-body istri -->
+      </div><!-- /col-card istri -->
+
+    </div><!-- /dual-grid -->
+
+  </div><!-- /view-jadwal -->
+
+
+  <!-- ========== VIEW: MOMEN BERSAMA ========== -->
+  <div id="view-bersama" class="view-panel">
+    <div class="together-grid">
+
+      <div class="together-card">
+        <h3>🍽️ Rutinitas Harian Bersama</h3>
+        <div class="timeline">
+          <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama — setiap hari (setelah suami pulang)</div></div>
+          <div class="row"><span class="time">20.00</span><div class="block blk-keluarga">Quality time: nonton / ngobrol / bermain dengan anak</div></div>
+        </div>
+      </div>
+
+      <div class="together-card">
+        <h3>🏠 Pembagian Rumah Tangga</h3>
+        <div class="timeline">
+          <div class="row"><span class="time">Pagi</span><div class="block blk-istirahat"><b>Cuci baju</b> — istri tiap pagi hari kerja (07.00–07.30) atau mesin cuci timer malam</div></div>
+          <div class="row"><span class="time">Malam</span><div class="block blk-istirahat"><b>Lipat baju</b> — bersama setelah makan malam (Sen/Rab/Jum) atau Minggu sore sambil nonton</div></div>
+          <div class="row"><span class="time">16.00</span><div class="block blk-istirahat"><b>Masak malam</b> — istri Senin–Kamis. Jumat & weekend: bersama atau beli di luar</div></div>
+          <div class="row"><span class="time">Sabtu</span><div class="block blk-keluarga"><b>Bersih rumah</b> — bersama pagi Sabtu (08.30–09.30). Istri: dalam rumah. Suami: halaman & luar</div></div>
+        </div>
+      </div>
+
+      <div class="together-card">
+        <h3>📍 Keluar Bersama (Mingguan)</h3>
+        <div class="timeline">
+          <div class="row"><span class="time">Jum malam</span><div class="block blk-keluarga">Makan malam di luar / nongki berdua (tanpa atau bawa anak)</div></div>
+          <div class="row"><span class="time">Sab sore</span><div class="block blk-keluarga">Jalan-jalan keluarga bertiga — kuliner / taman / mall Kediri</div></div>
+          <div class="row"><span class="time">Min pagi</span><div class="block blk-keluarga">Sarapan di luar / car free day / pasar pagi bersama</div></div>
+        </div>
+      </div>
+
+      <div class="together-card">
+        <h3>✈️ Jadwal Liburan</h3>
+        <div class="timeline">
+          <div class="row"><span class="time">Sab–Min</span><div class="block blk-keluarga">Liburan keluar kota — 1–2× sebulan. Rencanakan H-7: destinasi Jawa Timur, pantai, gunung</div></div>
+          <div class="row"><span class="time">Libur panjang</span><div class="block blk-keluarga">Trip keluarga besar / wisata lebih jauh — manfaatkan libur nasional</div></div>
+        </div>
+        <div class="note">✨ Komunikasi malam sebelumnya tentang rencana esok hari. Update via chat keluarga untuk penyesuaian jadwal anak dan toko.</div>
+      </div>
+
+    </div>
+  </div><!-- /view-bersama -->
+
+</main>
+
+
+  <!-- ========== VIEW: MENU MASAKAN ========== -->
+  <div id="view-menu" class="view-panel">
+  <div class="main-content" style="padding-bottom:2rem;">
+
+    <!-- ── Minggu selector ── -->
+    <div class="menu-week-header" style="max-width:100%;padding:0 0 1rem;">
+      <button class="week-nav-btn" onclick="shiftWeek(-1)">&#8249;</button>
+      <div class="week-label" id="week-label">Minggu ini</div>
+      <button class="week-nav-btn" onclick="shiftWeek(1)">&#8250;</button>
+      <button class="week-reset-btn" onclick="resetWeek()">Hari ini</button>
+    </div>
+
+    <!-- ── 7 kolom hari ── -->
+    <div class="menu-grid" id="menu-grid"></div>
+
+    <!-- ── Bahan & Bumbu ── -->
+    <div class="bahan-section">
+      <div class="bahan-header">
+        <div class="bahan-title">
+          <span>🧺</span>
+          <div>
+            <div class="bahan-title-text">Stok Bahan & Bumbu</div>
+            <div class="bahan-title-sub">Centang yang tersedia — merah berarti perlu dibeli</div>
+          </div>
+        </div>
+        <div class="bahan-actions">
+          <button class="bahan-act-btn all-ada" onclick="setAllBahan(true)">✓ Semua Ada</button>
+          <button class="bahan-act-btn all-habis" onclick="setAllBahan(false)">✕ Semua Habis</button>
+        </div>
+      </div>
+      <div class="bahan-grid" id="bahan-grid"></div>
+    </div>
+
+    <!-- ── Modal picker menu ── -->
+    <div class="menu-modal-overlay" id="menu-modal" onclick="closeMenuModal(event)">
+      <div class="menu-modal">
+        <div class="menu-modal-header">
+          <div id="modal-title">Pilih Menu</div>
+          <button class="menu-modal-close" onclick="closeMenuModal()">✕</button>
+        </div>
+        <input type="text" id="modal-search" class="menu-modal-search" placeholder="🔍 Cari menu..." oninput="filterMenuModal()" />
+        <div class="menu-modal-list" id="modal-list"></div>
+        <div class="menu-modal-footer">
+          <button class="menu-modal-clear" onclick="clearSlot()">Hapus menu ini dari slot</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content inner -->
+  </div><!-- /view-menu -->
+
+  <!-- ═══ HARI INI ═══ -->
+  <div id="view-today" class="view-panel">
+  <div class="main-content" style="padding-bottom:2rem">
+
+    <div class="dash-grid-2">
+      <div class="dash-stat-card" style="border-top:3px solid #3b82f6">
+        <div class="dash-stat-num" id="d-stat-hari" style="color:#3b82f6">—</div>
+        <div class="dash-stat-lbl">Hari ini</div>
+      </div>
+      <div class="dash-stat-card" style="border-top:3px solid #10b981">
+        <div class="dash-stat-num" id="d-stat-jam" style="color:#10b981">—</div>
+        <div class="dash-stat-lbl">Waktu sekarang</div>
+      </div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-card-title">⏰ Agenda Hari Ini</div>
+      <div class="dash-timeline" id="d-timeline"></div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-card-title">✅ Checklist Harian</div>
+      <div id="d-checks"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="dash-btn dash-btn-primary" onclick="saveDChecks()">Simpan</button>
+        <button class="dash-btn dash-btn-ghost" onclick="resetDChecks()">Reset</button>
+      </div>
+    </div>
+
+    <div class="dash-card" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#86efac">
+      <div class="dash-card-title" style="color:#065f46">💬 Pengingat Hari Ini</div>
+      <div id="d-reminder" style="font-size:13px;color:#065f46;line-height:1.7"></div>
+    </div>
+
+  </div>
+  </div><!-- /view-today -->
+
+  <!-- ═══ ENGLISH ═══ -->
+  <div id="view-english" class="view-panel">
+  <div class="main-content" style="padding-bottom:2rem">
+
+    <div class="eng-streak-card">
+      <div style="flex:1">
+        <div style="font-size:11px;opacity:.65;margin-bottom:4px">Streak belajar minggu ini</div>
+        <div class="eng-streak-num" id="eng-streak">0</div>
+        <div class="eng-streak-sub" id="eng-streak-lbl">hari · Mulai hari ini!</div>
+        <div class="eng-week-dots" id="eng-week-dots"></div>
+      </div>
+      <div class="eng-badge-big" id="eng-badge">🌱</div>
+    </div>
+
+    <div class="dash-section-label">Jadwal 30 Menit Harian</div>
+
+    <div class="eng-day-card"><div class="eng-ico" style="background:#eff6ff">🎧</div><div style="flex:1"><div class="eng-day-name">Senin — Listening</div><div class="eng-day-focus">Podcast BBC / TED-Ed 20' + Anki 10'</div><div class="eng-day-detail">Dengarkan sambil commute motor. Catat 3 frasa baru, tambah ke Anki.</div></div><span class="eng-time-tag">20.00</span></div>
+    <div class="eng-day-card"><div class="eng-ico" style="background:#ecfdf5">✍️</div><div style="flex:1"><div class="eng-day-name">Selasa — Writing</div><div class="eng-day-focus">Jurnal / Paragraf 150 kata 20' + Grammar 10'</div><div class="eng-day-detail">Tulis pengalaman hari ini dalam Inggris. Tidak perlu sempurna — tulis saja.</div></div><span class="eng-time-tag">19.45</span></div>
+    <div class="eng-day-card" style="border-color:#fecaca"><div class="eng-ico" style="background:#fef2f2">⚡</div><div style="flex:1"><div class="eng-day-name">Rabu — Micro (Hari Padat)</div><div class="eng-day-focus">Anki saja 10 menit</div><div class="eng-day-detail">Rabu = hari tersibuk. Cukup Anki di perjalanan. Konsistensi lebih penting dari durasi.</div></div><span class="eng-time-tag">Pagi</span></div>
+    <div class="eng-day-card"><div class="eng-ico" style="background:#eff6ff">📖</div><div style="flex:1"><div class="eng-day-name">Kamis — Reading</div><div class="eng-day-focus">Artikel edukasi / Islam 20' + Vocab 10'</div><div class="eng-day-detail">BBC Education, The Guardian, atau jurnal Islamic Studies berbahasa Inggris.</div></div><span class="eng-time-tag">20.00</span></div>
+    <div class="eng-day-card"><div class="eng-ico" style="background:#fffbeb">🎙️</div><div style="flex:1"><div class="eng-day-name">Jumat — Speaking</div><div class="eng-day-focus">Shadowing / Monolog 2 menit 20' + Pronunciation 10'</div><div class="eng-day-detail">Rekam suara sendiri, dengar ulang. Atau tirukan kalimat dari YouTube.</div></div><span class="eng-time-tag">20.30</span></div>
+    <div class="eng-day-card"><div class="eng-ico" style="background:#f0fdfa">🌿</div><div style="flex:1"><div class="eng-day-name">Sabtu — Bebas</div><div class="eng-day-focus">Nonton YouTube tanpa sub / Caption konten toko</div><div class="eng-day-detail">Buat caption Artilerianstore dalam Inggris. Belajar sambil bisnis.</div></div><span class="eng-time-tag">Bebas</span></div>
+    <div class="eng-day-card" style="background:#f9f8f5"><div class="eng-ico" style="background:#e5e7eb">🏠</div><div style="flex:1"><div class="eng-day-name">Minggu — Istirahat</div><div class="eng-day-focus">Review Anki ringan saja (opsional)</div><div class="eng-day-detail">Hari keluarga. Otak yang istirahat menyerap lebih baik pekan depan.</div></div><span class="eng-time-tag" style="background:#e5e7eb;color:#6b7280">Opsional</span></div>
+
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="dash-btn dash-btn-primary" onclick="saveEngStreak()">✅ Tandai Hari Ini Selesai</button>
+      <button class="dash-btn dash-btn-ghost" onclick="resetEngWeek()">Reset minggu ini</button>
+    </div>
+
+  </div>
+  </div><!-- /view-english -->
+
+  <!-- ═══ KELUARGA ═══ -->
+  <div id="view-keluarga" class="view-panel">
+  <div class="main-content" style="padding-bottom:2rem">
+
+    <div class="fam-alert-card">
+      <div class="fam-alert-title">✋ Batas HP Kerja</div>
+      <div class="fam-alert-time">16.00</div>
+      <div class="fam-alert-sub">Setelah jam ini: WA siswa → balas besok pagi<br>Toko → ada admin. Deadline admin → Kamis malam.<br>Darurat = siswa sakit / kecelakaan saja.</div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-card-title">❤️ Quality Time Mingguan</div>
+      <div class="fam-item"><div class="fam-ico">👦</div><div><div class="fam-name">Senin &amp; Kamis 16.20–17.00</div><div class="fam-desc">Main bareng anak — tanpa HP, tanpa TV. 40 menit fokus penuh.</div></div></div>
+      <div class="fam-item"><div class="fam-ico">💑</div><div><div class="fam-name">Jumat malam 18.30 — Date Night Salma</div><div class="fam-desc">Warung favorit, jalan-jalan, atau nonton berdua setelah anak tidur. Konsisten tiap Jumat.</div></div></div>
+      <div class="fam-item"><div class="fam-ico">👨‍👩‍👦</div><div><div class="fam-name">Sabtu 14.30 &amp; Minggu 09.30 — Family Trip</div><div class="fam-desc">Sesederhana taman kota atau alun-alun Kediri. Yang penting bersama dan hadir penuh.</div></div></div>
+      <div class="fam-item"><div class="fam-ico">🌙</div><div><div class="fam-name">Setiap malam — Doa sebelum tidur anak</div><div class="fam-desc">5 menit bacakan doa dan surat pendek. Momen paling murah tapi paling mahal nilainya.</div></div></div>
+      <div class="fam-item" style="border:none"><div class="fam-ico">🛁</div><div><div class="fam-name">Sabtu pagi — Ambil alih mandikan anak</div><div class="fam-desc">Beri Salma 1 jam bebas untuk dirinya sendiri.</div></div></div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-card-title">🧠 Mindset Baru</div>
+      <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:8px">❌ Lama: <em>"Rebahan dulu, nanti ngurusin keluarga kalau sudah tenang."</em></div>
+      <div style="font-size:13px;color:#065f46;font-weight:600;background:#ecfdf5;border-radius:8px;padding:10px 12px">✅ Baru: <em>"Keluarga dulu 40 menit, baru boleh rebahan."</em></div>
+    </div>
+
+  </div>
+  </div><!-- /view-keluarga -->
+
+  <!-- ═══ FINANSIAL ═══ -->
+  <div id="view-finansial" class="view-panel">
+  <div class="main-content" style="padding-bottom:2rem">
+
+    <div class="dash-card">
+      <div class="dash-card-title">💰 Prioritas Finansial</div>
+      <div class="fin-prog-item">
+        <div class="fin-prog-head"><span>🟢 Dana Darurat (3–6× pengeluaran)</span><span class="fin-prio" style="color:#10b981">Prioritas 1</span></div>
+        <div class="fin-prog-bar"><div class="fin-prog-fill" style="width:35%;background:#10b981"></div></div>
+      </div>
+      <div class="fin-prog-item">
+        <div class="fin-prog-head"><span>🟡 Tabungan Haji</span><span class="fin-prio" style="color:#f59e0b">Prioritas 2</span></div>
+        <div class="fin-prog-bar"><div class="fin-prog-fill" style="width:20%;background:#f59e0b"></div></div>
+      </div>
+      <div class="fin-prog-item">
+        <div class="fin-prog-head"><span>🔵 Investasi Bibit (auto)</span><span class="fin-prio" style="color:#3b82f6">Prioritas 3</span></div>
+        <div class="fin-prog-bar"><div class="fin-prog-fill" style="width:50%;background:#3b82f6"></div></div>
+      </div>
+      <div class="fin-prog-item">
+        <div class="fin-prog-head"><span>🟠 DP KPR / Rumah</span><span class="fin-prio" style="color:#f43f5e">Prioritas 4</span></div>
+        <div class="fin-prog-bar"><div class="fin-prog-fill" style="width:10%;background:#f43f5e"></div></div>
+      </div>
+    </div>
+
+    <div class="fin-grid-2">
+      <div class="dash-card">
+        <div class="dash-card-title">📥 Sumber Penghasilan</div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#3b82f6"></span>Gaji PPPK Guru</span><span class="fin-badge" style="background:#eff6ff;color:#1d4ed8">Utama</span></div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#10b981"></span>Honor Madin (Rabu)</span><span class="fin-badge" style="background:#ecfdf5;color:#065f46">Tambahan</span></div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#f59e0b"></span>Artilerianstore</span><span class="fin-badge" style="background:#fffbeb;color:#92400e">Bisnis</span></div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#8b5cf6"></span>Freelance Foto/Video</span><span class="fin-badge" style="background:#f5f3ff;color:#5b21b6">Freelance</span></div>
+        <div class="fin-row" style="border:none"><span><span class="fin-dot" style="background:#9ca3af"></span>Affiliate Shopee</span><span class="fin-badge" style="background:#f3f4f6;color:#6b7280">Pasif</span></div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">📤 Pengeluaran Rutin</div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#f43f5e"></span>Kebutuhan pokok</span><span style="font-size:11px;color:var(--text-muted)">Harian</span></div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#3b82f6"></span>Paket data (2 provider)</span><span style="font-size:11px;color:var(--text-muted)">Bulanan</span></div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#f59e0b"></span>Servis motor (3 unit)</span><span style="font-size:11px;color:var(--text-muted)">Berkala</span></div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#10b981"></span>Sedekah / Shadaqah</span><span style="font-size:11px;color:var(--text-muted)">Rutin</span></div>
+        <div class="fin-row"><span><span class="fin-dot" style="background:#8b5cf6"></span>Pakan kucing + Galon air</span><span style="font-size:11px;color:var(--text-muted)">Mingguan</span></div>
+        <div class="fin-row" style="border:none"><span><span class="fin-dot" style="background:#9ca3af"></span>BBM kendaraan</span><span style="font-size:11px;color:var(--text-muted)">Mingguan</span></div>
+      </div>
+    </div>
+
+  </div>
+  </div><!-- /view-finansial -->
+
+<footer class="site-footer">
+  Jadwal Keluarga · dibuat dengan ❤️ · diperbarui sesuai kebutuhan
+</footer>
+
+</div><!-- /app-content -->
+
+
+<script src="script.js"></script>
+</body>
+</html>

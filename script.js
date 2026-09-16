@@ -928,18 +928,69 @@ function initMenu() {
 }
 
 /* ================================================
-   ENGLISH STREAK — Fungsional dengan localStorage
+   ENGLISH STREAK — Checklist per hari (3–5 materi)
    ================================================ */
 
-const ENG_STREAK_KEY = 'eng_streak_v1';
-// Day names for the week starting Monday
+const ENG_STREAK_KEY = 'eng_streak_v2';
 const ENG_DAY_LABELS = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+
+// Checklist materi per hari (3–5 item)
+const ENG_CHECKLIST = {
+  // idx 0 = Senin
+  0: [
+    { id:'a', label:'🎧 Dengarkan Podcast BBC / TED-Ed 20 menit' },
+    { id:'b', label:'📝 Catat 3 frasa / kosa kata baru' },
+    { id:'c', label:'🃏 Review Anki 10 menit' },
+    { id:'d', label:'💬 Ucapkan ulang frasa yang didengar (shadowing singkat)' },
+  ],
+  // idx 1 = Selasa
+  1: [
+    { id:'a', label:'✍️ Tulis jurnal / paragraf 150 kata dalam Inggris' },
+    { id:'b', label:'📚 Pelajari 1 grammar point hari ini (10 menit)' },
+    { id:'c', label:'🃏 Review Anki 10 menit' },
+    { id:'d', label:'🔁 Baca ulang tulisan & koreksi sendiri' },
+  ],
+  // idx 2 = Rabu (hari padat — cukup 3 item ringan)
+  2: [
+    { id:'a', label:'🃏 Anki 10 menit (di perjalanan / istirahat)' },
+    { id:'b', label:'👁️ Baca 1 kalimat Inggris & terjemahkan dalam hati' },
+    { id:'c', label:'🔤 Hafal 2 kata baru hari ini' },
+  ],
+  // idx 3 = Kamis
+  3: [
+    { id:'a', label:'📖 Baca artikel edukasi / Islam berbahasa Inggris 20 menit' },
+    { id:'b', label:'📝 Catat 3–5 vocab baru dari artikel' },
+    { id:'c', label:'🃏 Review Anki 10 menit' },
+    { id:'d', label:'💡 Buat 1 kalimat sendiri dari vocab baru' },
+  ],
+  // idx 4 = Jumat
+  4: [
+    { id:'a', label:'🎙️ Shadowing 1 video / audio Inggris 20 menit' },
+    { id:'b', label:'🎤 Rekam monolog sendiri 2 menit — topik bebas' },
+    { id:'c', label:'👂 Dengar ulang rekaman & catat kesalahan' },
+    { id:'d', label:'🃏 Review Anki + tambah vocab dari rekaman' },
+    { id:'e', label:'🗣️ Pronunciation drill — tirukan 5 kalimat dari YouTube' },
+  ],
+  // idx 5 = Sabtu (bebas & santai)
+  5: [
+    { id:'a', label:'📺 Nonton YouTube tanpa subtitle 20+ menit' },
+    { id:'b', label:'🛍️ Tulis 1 caption produk Artilerianstore dalam Inggris' },
+    { id:'c', label:'📝 Catat 3 ekspresi natural yang didengar' },
+    { id:'d', label:'🃏 Anki review ringan (opsional)' },
+  ],
+  // idx 6 = Minggu (istirahat — cukup 3 item ringan)
+  6: [
+    { id:'a', label:'🃏 Anki review ringan (opsional)' },
+    { id:'b', label:'🔁 Review vocab minggu ini — mana yang sudah hafal?' },
+    { id:'c', label:'📅 Rencanakan target belajar Inggris minggu depan' },
+  ],
+};
 
 function getEngData() {
   try {
     const raw = localStorage.getItem(ENG_STREAK_KEY);
-    return raw ? JSON.parse(raw) : { days: {}, weekStart: null };
-  } catch { return { days: {}, weekStart: null }; }
+    return raw ? JSON.parse(raw) : { checks: {}, days: {} };
+  } catch { return { checks: {}, days: {} }; }
 }
 
 function saveEngData(data) {
@@ -948,7 +999,7 @@ function saveEngData(data) {
 
 function getMondayOfWeek() {
   const d = new Date();
-  const day = d.getDay(); // 0=Sun
+  const day = d.getDay();
   const diff = day === 0 ? -6 : 1 - day;
   d.setDate(d.getDate() + diff);
   d.setHours(0, 0, 0, 0);
@@ -960,13 +1011,11 @@ function engTodayKey() {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-// Returns 0=Mon ... 6=Sun index for today relative to this week's Monday
 function engTodayIdx() {
-  const day = new Date().getDay(); // 0=Sun
+  const day = new Date().getDay();
   return day === 0 ? 6 : day - 1;
 }
 
-// Get all 7 day date strings for the current week (Mon–Sun)
 function getEngWeekDays() {
   const mon = new Date(getMondayOfWeek() + 'T00:00:00');
   return Array.from({length: 7}, (_, i) => {
@@ -976,38 +1025,68 @@ function getEngWeekDays() {
   });
 }
 
+// Hitung berapa checklist hari ini sudah selesai
+function countTodayChecks() {
+  const data    = getEngData();
+  const today   = engTodayKey();
+  const todayIdx = engTodayIdx();
+  const items   = ENG_CHECKLIST[todayIdx] || [];
+  const saved   = data.checks[today] || {};
+  return { done: items.filter(it => saved[it.id]).length, total: items.length };
+}
+
+// Hari dianggap "selesai" jika semua checklist dicentang
+function isDayDone(dk, dayIdx) {
+  const data  = getEngData();
+  const items = ENG_CHECKLIST[dayIdx] || [];
+  if (!items.length) return false;
+  const saved = data.checks[dk] || {};
+  return items.every(it => saved[it.id]);
+}
+
 function renderEngStreak() {
-  const data = getEngData();
-  const weekStart = getMondayOfWeek();
-  const weekDays  = getEngWeekDays();
-  const todayIdx  = engTodayIdx();
+  const data     = getEngData();
+  const weekDays = getEngWeekDays();
+  const todayIdx = engTodayIdx();
+  const today    = engTodayKey();
 
-  // Count done days this week
+  // Hitung hari selesai minggu ini
   let count = 0;
-  weekDays.forEach(dk => { if (data.days[dk]) count++; });
+  weekDays.forEach((dk, i) => { if (isDayDone(dk, i)) count++; });
 
-  // Badge based on count
+  // Hitung progres hari ini
+  const { done: todayDone, total: todayTotal } = countTodayChecks();
+
   const badges = ['🌱','🌿','🌳','⭐','🔥','💪','🏆'];
   const badge  = badges[Math.min(count, badges.length - 1)];
-  const labels = ['Mulai hari ini!','Bagus, terus!','Hampir setengah!','Setengah jalan!','Hebat!','Hampir sempurna!','Sempurna! 🎉'];
-  const lbl    = labels[Math.min(count, labels.length - 1)];
 
-  const numEl  = document.getElementById('eng-streak');
-  const lblEl  = document.getElementById('eng-streak-lbl');
-  const bdgEl  = document.getElementById('eng-badge');
-  const dotEl  = document.getElementById('eng-week-dots');
+  let streakLbl;
+  if (todayDone === todayTotal && todayTotal > 0) {
+    streakLbl = `hari selesai minggu ini · Hari ini tuntas! 🎉`;
+  } else if (todayDone > 0) {
+    streakLbl = `hari selesai minggu ini · Hari ini: ${todayDone}/${todayTotal} materi`;
+  } else {
+    const dayLabels = ['Mulai hari ini!','Bagus, terus!','Hampir setengah!','Setengah jalan!','Hebat!','Hampir sempurna!','Sempurna! 🎉'];
+    streakLbl = `hari · ${dayLabels[Math.min(count, dayLabels.length - 1)]}`;
+  }
+
+  const numEl = document.getElementById('eng-streak');
+  const lblEl = document.getElementById('eng-streak-lbl');
+  const bdgEl = document.getElementById('eng-badge');
+  const dotEl = document.getElementById('eng-week-dots');
 
   if (numEl) numEl.textContent = count;
-  if (lblEl) lblEl.textContent = `hari · ${lbl}`;
+  if (lblEl) lblEl.textContent = streakLbl;
   if (bdgEl) bdgEl.textContent = badge;
 
+  // Week dots
   if (dotEl) {
     dotEl.innerHTML = '';
     ENG_DAY_LABELS.forEach((label, i) => {
-      const dk  = weekDays[i];
+      const dk      = weekDays[i];
+      const isDone  = isDayDone(dk, i);
+      const isToday = i === todayIdx;
       const div = document.createElement('div');
-      const isDone    = !!data.days[dk];
-      const isToday   = i === todayIdx;
       div.className = 'eng-week-dot'
         + (isDone ? ' done' : '')
         + (!isDone && isToday ? ' today-dot' : '');
@@ -1017,47 +1096,86 @@ function renderEngStreak() {
     });
   }
 
-  // Mark day cards visually
-  const dayCards = document.querySelectorAll('.eng-day-card');
-  if (dayCards.length === 7) {
-    dayCards.forEach((card, i) => {
-      const dk = weekDays[i];
-      card.classList.remove('today-card', 'done-card');
-      if (data.days[dk]) {
-        card.classList.add('done-card');
-      } else if (i === todayIdx) {
-        card.classList.add('today-card');
-      }
-    });
-  }
+  // Render checklist hari ini
+  renderEngChecklist();
 }
 
+function renderEngChecklist() {
+  const container = document.getElementById('eng-checklist-wrap');
+  if (!container) return;
+
+  const data     = getEngData();
+  const today    = engTodayKey();
+  const todayIdx = engTodayIdx();
+  const items    = ENG_CHECKLIST[todayIdx] || [];
+  const saved    = data.checks[today] || {};
+  const doneCnt  = items.filter(it => saved[it.id]).length;
+
+  container.innerHTML = `
+    <div class="eng-checklist-header">
+      <span class="eng-checklist-title">📋 Materi Hari Ini</span>
+      <span class="eng-checklist-prog">${doneCnt}/${items.length} selesai</span>
+    </div>
+    <div class="eng-prog-bar-wrap">
+      <div class="eng-prog-bar-fill" style="width:${items.length ? Math.round(doneCnt/items.length*100) : 0}%"></div>
+    </div>
+    <div class="eng-checklist-items">
+      ${items.map(it => {
+        const checked = !!saved[it.id];
+        return `<div class="eng-check-item ${checked ? 'checked' : ''}" onclick="toggleEngCheck('${it.id}')">
+          <div class="eng-check-box">${checked ? '✓' : ''}</div>
+          <div class="eng-check-label">${it.label}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    ${doneCnt === items.length && items.length > 0
+      ? `<div class="eng-all-done">🎉 Semua materi hari ini selesai! Streak bertambah.</div>`
+      : ''}
+  `;
+}
+
+window.toggleEngCheck = function(itemId) {
+  const data    = getEngData();
+  const today   = engTodayKey();
+  data.checks   = data.checks || {};
+  data.checks[today] = data.checks[today] || {};
+  data.checks[today][itemId] = !data.checks[today][itemId];
+  // Jika semua selesai, tandai hari ini done
+  const todayIdx = engTodayIdx();
+  const items    = ENG_CHECKLIST[todayIdx] || [];
+  data.days      = data.days || {};
+  if (items.length && items.every(it => data.checks[today][it.id])) {
+    data.days[today] = true;
+  } else {
+    delete data.days[today];
+  }
+  saveEngData(data);
+  renderEngStreak();
+};
+
+// Tetap ada tombol "Tandai Selesai" sebagai shortcut selesaikan semua
 window.saveEngStreak = function() {
-  const data = getEngData();
-  const today = engTodayKey();
-  data.days = data.days || {};
+  const data     = getEngData();
+  const today    = engTodayKey();
+  const todayIdx = engTodayIdx();
+  const items    = ENG_CHECKLIST[todayIdx] || [];
+  data.checks    = data.checks || {};
+  data.checks[today] = data.checks[today] || {};
+  items.forEach(it => { data.checks[today][it.id] = true; });
+  data.days      = data.days || {};
   data.days[today] = true;
   saveEngData(data);
   renderEngStreak();
-
-  // Visual feedback
-  const btn = document.querySelector('[onclick="saveEngStreak()"]');
-  if (btn) {
-    const orig = btn.textContent;
-    btn.textContent = '✓ Tersimpan!';
-    btn.style.background = 'linear-gradient(135deg,#16a34a,#22c55e)';
-    setTimeout(() => {
-      btn.textContent = orig;
-      btn.style.background = '';
-    }, 1800);
-  }
 };
 
 window.resetEngWeek = function() {
-  if (!confirm('Reset streak minggu ini?')) return;
-  const data = getEngData();
+  if (!confirm('Reset semua checklist & streak minggu ini?')) return;
+  const data     = getEngData();
   const weekDays = getEngWeekDays();
-  weekDays.forEach(dk => { delete data.days[dk]; });
+  weekDays.forEach(dk => {
+    delete data.days[dk];
+    delete data.checks[dk];
+  });
   saveEngData(data);
   renderEngStreak();
 };
@@ -1185,7 +1303,7 @@ const CHECKLIST_HARIAN = {
 const REMINDER_HARIAN = {
   senin:  ['Puasa Senin — jaga niat & energi','Quality time anak 16.20–17.00','Cek Artilerianstore malam','Batas WA siswa: jam 16.00'],
   selasa: ['Jadwal Writing Inggris malam ini (19.45)','Deadline admin toko → Kamis malam','Quality time anak sore','Batas WA siswa: jam 16.00'],
-  rabu:   ['Hari padat — cukup Anki 10 menit','Honor Madin siang','Istirahat cukup malam ini','Batas WA siswa: jam 16.00'],
+  rabu:   ['Hari padat — cukup Anki 10 menit','Madin','Istirahat cukup malam ini','Batas WA siswa: jam 16.00'],
   kamis:  ['Puasa Kamis — berbuka sore','Baca artikel Inggris malam (Reading)','Deadline admin toko → hari ini','Quality time anak 16.20–17.00'],
   jumat:  ['Baca Al-Kahfi pagi ini','Sholat Jumat 11.30 — siap lebih awal','Date Night Salma malam ini 💑','Speaking Inggris malam (20.30)'],
   sabtu:  ['Evaluasi toko Shopee 13.30','Nonton YouTube tanpa sub (Inggris bebas)','Family trip sore bersama keluarga','Mandikan anak pagi — beri Salma 1 jam'],

@@ -7,7 +7,99 @@
   <link rel="stylesheet" href="style.css" />
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script></head>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <!-- PIN Logic — inline agar tersedia sebelum script.js dimuat -->
+  <script>
+  (function() {
+    var PIN_CODE    = '111213';
+    var STORAGE_KEY = 'jk_pin_unlock';
+    var REMEMBER_MS = 12 * 60 * 60 * 1000;
+    var enteredPin  = '';
+
+    function getDots() { return document.querySelectorAll('#pin-dots .pin-dot'); }
+
+    function refreshDots() {
+      var dots = getDots();
+      dots.forEach(function(dot, i) {
+        dot.classList.toggle('filled', i < enteredPin.length);
+        dot.classList.remove('error');
+      });
+    }
+
+    function showError(msg) {
+      var errEl = document.getElementById('pin-error');
+      var box   = document.getElementById('pin-lock-box');
+      if (errEl) errEl.textContent = msg;
+      if (box) {
+        box.classList.add('shake');
+        setTimeout(function() { box.classList.remove('shake'); }, 400);
+      }
+    }
+
+    function unlockApp() {
+      document.body.classList.add('app-unlocked');
+      try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch(e) {}
+      var screen = document.querySelector('.pin-lock-screen');
+      if (screen) {
+        screen.style.transition = 'opacity 0.35s ease';
+        screen.style.opacity    = '0';
+        setTimeout(function() { screen.style.display = 'none'; }, 380);
+      }
+    }
+
+    function isRemembered() {
+      try {
+        var ts = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+        return ts && (Date.now() - ts < REMEMBER_MS);
+      } catch(e) { return false; }
+    }
+
+    function checkPin() {
+      if (enteredPin === PIN_CODE) {
+        var errEl = document.getElementById('pin-error');
+        if (errEl) errEl.textContent = '';
+        unlockApp();
+      } else {
+        showError('PIN salah, coba lagi');
+        getDots().forEach(function(d) { d.classList.add('error'); });
+        enteredPin = '';
+        setTimeout(refreshDots, 600);
+      }
+    }
+
+    // Expose to global scope — tombol HTML memanggil fungsi ini
+    window.pinPress = function(digit) {
+      if (document.body.classList.contains('app-unlocked')) return;
+      if (enteredPin.length >= 6) return;
+      enteredPin += digit;
+      refreshDots();
+      if (enteredPin.length === 6) setTimeout(checkPin, 140);
+    };
+
+    window.pinDel = window.pinBackspace = function() {
+      enteredPin = enteredPin.slice(0, -1);
+      refreshDots();
+      var errEl = document.getElementById('pin-error');
+      if (errEl) errEl.textContent = '';
+    };
+
+    // Cek sesi tersimpan — jalankan sebelum DOMContentLoaded
+    if (isRemembered()) {
+      // Tandai unlock sebelum DOM render agar CSS langsung pakai .app-unlocked
+      document.addEventListener('DOMContentLoaded', function() {
+        unlockApp();
+      });
+    } else {
+      // Pasang keyboard listener
+      document.addEventListener('keydown', function(e) {
+        if (document.body.classList.contains('app-unlocked')) return;
+        if (e.key >= '0' && e.key <= '9') window.pinPress(e.key);
+        else if (e.key === 'Backspace')    window.pinBackspace();
+      });
+    }
+  })();
+  </script>
+</head>
 <body>
 
 <!-- ===================== PIN LOCK SCREEN ===================== -->

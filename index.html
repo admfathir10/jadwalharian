@@ -631,33 +631,167 @@
   <div id="view-english" class="view-panel">
   <div class="main-content" style="padding-bottom:2rem">
 
-    <div class="eng-streak-card">
-      <div style="flex:1">
-        <div style="font-size:11px;opacity:.65;margin-bottom:4px">Streak belajar minggu ini</div>
-        <div class="eng-streak-num" id="eng-streak">0</div>
-        <div class="eng-streak-sub" id="eng-streak-lbl">hari · Mulai hari ini!</div>
-        <div class="eng-week-dots" id="eng-week-dots"></div>
+    <!-- ── Hero Streak ── -->
+    <div class="eng-hero-card" id="eng-hero-card">
+      <div class="eng-hero-left">
+        <div class="eng-level-pill" id="eng-level-pill">Intermediate → Advanced</div>
+        <div class="eng-streak-big">
+          <span class="eng-streak-fire" id="eng-streak-fire">🔥</span>
+          <span class="eng-streak-num" id="eng-streak">0</span>
+        </div>
+        <div class="eng-streak-label" id="eng-streak-lbl">hari streak berturut-turut</div>
+        <div class="eng-week-row">
+          <div class="eng-week-dots" id="eng-week-dots"></div>
+          <span class="eng-week-label-sm">Sen–Min minggu ini</span>
+        </div>
+        <div class="eng-xp-row">
+          <div class="eng-xp-bar-wrap">
+            <div class="eng-xp-bar" id="eng-xp-bar"></div>
+          </div>
+          <span class="eng-xp-label" id="eng-xp-label">0 XP</span>
+        </div>
       </div>
-      <div class="eng-badge-big" id="eng-badge">🌱</div>
+      <div class="eng-hero-right">
+        <div class="eng-badge-big" id="eng-badge">🌱</div>
+        <div class="eng-badge-title" id="eng-badge-title">Beginner</div>
+        <div class="eng-total-label"><span id="eng-total-days">0</span> hari total</div>
+      </div>
     </div>
 
-    <div class="dash-section-label">Jadwal 30 Menit Harian</div>
+    <!-- ── Today's Task ── -->
+    <div class="eng-today-card" id="eng-today-card">
+      <div class="eng-today-header">
+        <div>
+          <div class="eng-today-label">Tugas Hari Ini</div>
+          <div class="eng-today-day" id="eng-today-day">—</div>
+        </div>
+        <div class="eng-today-check" id="eng-today-check">
+          <button class="eng-done-btn" id="eng-done-btn" onclick="saveEngStreak()">
+            <span id="eng-done-icon">○</span> Tandai Selesai
+          </button>
+        </div>
+      </div>
+      <div class="eng-today-body" id="eng-today-body"></div>
+    </div>
 
-    <div class="eng-day-card"><div class="eng-ico" style="background:#eff6ff">🎧</div><div style="flex:1"><div class="eng-day-name">Senin — Listening</div><div class="eng-day-focus">Podcast BBC / TED-Ed 20' + Anki 10'</div><div class="eng-day-detail">Dengarkan sambil commute motor. Catat 3 frasa baru, tambah ke Anki.</div></div><span class="eng-time-tag">20.00</span></div>
-    <div class="eng-day-card"><div class="eng-ico" style="background:#ecfdf5">✍️</div><div style="flex:1"><div class="eng-day-name">Selasa — Writing</div><div class="eng-day-focus">Jurnal / Paragraf 150 kata 20' + Grammar 10'</div><div class="eng-day-detail">Tulis pengalaman hari ini dalam Inggris. Tidak perlu sempurna — tulis saja.</div></div><span class="eng-time-tag">19.45</span></div>
-    <div class="eng-day-card" style="border-color:#fecaca"><div class="eng-ico" style="background:#fef2f2">⚡</div><div style="flex:1"><div class="eng-day-name">Rabu — Micro (Hari Padat)</div><div class="eng-day-focus">Anki saja 10 menit</div><div class="eng-day-detail">Rabu = hari tersibuk. Cukup Anki di perjalanan. Konsistensi lebih penting dari durasi.</div></div><span class="eng-time-tag">Pagi</span></div>
-    <div class="eng-day-card"><div class="eng-ico" style="background:#eff6ff">📖</div><div style="flex:1"><div class="eng-day-name">Kamis — Reading</div><div class="eng-day-focus">Artikel edukasi / Islam 20' + Vocab 10'</div><div class="eng-day-detail">BBC Education, The Guardian, atau jurnal Islamic Studies berbahasa Inggris.</div></div><span class="eng-time-tag">20.00</span></div>
-    <div class="eng-day-card"><div class="eng-ico" style="background:#fffbeb">🎙️</div><div style="flex:1"><div class="eng-day-name">Jumat — Speaking</div><div class="eng-day-focus">Shadowing / Monolog 2 menit 20' + Pronunciation 10'</div><div class="eng-day-detail">Rekam suara sendiri, dengar ulang. Atau tirukan kalimat dari YouTube.</div></div><span class="eng-time-tag">20.30</span></div>
-    <div class="eng-day-card"><div class="eng-ico" style="background:#f0fdfa">🌿</div><div style="flex:1"><div class="eng-day-name">Sabtu — Bebas</div><div class="eng-day-focus">Nonton YouTube tanpa sub / Caption konten toko</div><div class="eng-day-detail">Buat caption Artilerianstore dalam Inggris. Belajar sambil bisnis.</div></div><span class="eng-time-tag">Bebas</span></div>
-    <div class="eng-day-card" style="background:#f9f8f5"><div class="eng-ico" style="background:#e5e7eb">🏠</div><div style="flex:1"><div class="eng-day-name">Minggu — Istirahat</div><div class="eng-day-focus">Review Anki ringan saja (opsional)</div><div class="eng-day-detail">Hari keluarga. Otak yang istirahat menyerap lebih baik pekan depan.</div></div><span class="eng-time-tag" style="background:#e5e7eb;color:#6b7280">Opsional</span></div>
+    <!-- ── Tabs: Jadwal / Progress / Tips ── -->
+    <div class="eng-sub-tabs">
+      <button class="eng-sub-tab active" onclick="showEngTab('jadwal',this)">📅 Jadwal Harian</button>
+      <button class="eng-sub-tab" onclick="showEngTab('progress',this)">📈 Progress</button>
+      <button class="eng-sub-tab" onclick="showEngTab('tips',this)">💡 Tips & Frasa</button>
+    </div>
 
-    <div style="display:flex;gap:8px;margin-top:14px">
-      <button class="dash-btn dash-btn-primary" onclick="saveEngStreak()">✅ Tandai Hari Ini Selesai</button>
-      <button class="dash-btn dash-btn-ghost" onclick="resetEngWeek()">Reset minggu ini</button>
+    <!-- ── Tab: Jadwal ── -->
+    <div id="eng-tab-jadwal" class="eng-tab-panel active">
+      <div class="eng-day-card" id="edc-senin">
+        <div class="eng-ico" style="background:#eff6ff">🎧</div>
+        <div style="flex:1">
+          <div class="eng-day-name">Senin — Listening</div>
+          <div class="eng-day-focus">Podcast / Video 20' + Anki vocabulary 10'</div>
+          <div class="eng-day-detail">BBC 6 Minute English, TED-Ed, atau YouTube edukasi. Catat 3–5 frasa baru ke Anki. Dengarkan sambil commute motor ke sekolah.</div>
+        </div>
+        <div class="eng-day-right">
+          <span class="eng-time-tag">20.00</span>
+          <span class="eng-done-tag" id="done-senin"></span>
+        </div>
+      </div>
+      <div class="eng-day-card" id="edc-selasa">
+        <div class="eng-ico" style="background:#ecfdf5">✍️</div>
+        <div style="flex:1">
+          <div class="eng-day-name">Selasa — Writing</div>
+          <div class="eng-day-focus">English journal 150+ kata 20' + Grammar practice 10'</div>
+          <div class="eng-day-detail">Tulis kejadian hari ini dalam bahasa Inggris. Tidak perlu sempurna — fokus ke fluency dulu, bukan accuracy. Gunakan Grammarly untuk review.</div>
+        </div>
+        <div class="eng-day-right">
+          <span class="eng-time-tag">19.45</span>
+          <span class="eng-done-tag" id="done-selasa"></span>
+        </div>
+      </div>
+      <div class="eng-day-card" style="border-color:#fecaca" id="edc-rabu">
+        <div class="eng-ico" style="background:#fef2f2">⚡</div>
+        <div style="flex:1">
+          <div class="eng-day-name">Rabu — Micro Day</div>
+          <div class="eng-day-focus">Anki review saja 10 menit (wajib!)</div>
+          <div class="eng-day-detail">Rabu hari tersibuk — ada madin. Cukup buka Anki 10 menit di perjalanan atau sebelum tidur. Konsistensi lebih penting dari durasi.</div>
+        </div>
+        <div class="eng-day-right">
+          <span class="eng-time-tag">Pagi</span>
+          <span class="eng-done-tag" id="done-rabu"></span>
+        </div>
+      </div>
+      <div class="eng-day-card" id="edc-kamis">
+        <div class="eng-ico" style="background:#eff6ff">📖</div>
+        <div style="flex:1">
+          <div class="eng-day-name">Kamis — Reading</div>
+          <div class="eng-day-focus">Artikel English 20' + Vocabulary in context 10'</div>
+          <div class="eng-day-detail">BBC Education, The Guardian, atau artikel Islamic Studies berbahasa Inggris. Underline kata baru, cari maknanya, masukkan ke Anki.</div>
+        </div>
+        <div class="eng-day-right">
+          <span class="eng-time-tag">20.00</span>
+          <span class="eng-done-tag" id="done-kamis"></span>
+        </div>
+      </div>
+      <div class="eng-day-card" id="edc-jumat">
+        <div class="eng-ico" style="background:#fffbeb">🎙️</div>
+        <div style="flex:1">
+          <div class="eng-day-name">Jumat — Speaking</div>
+          <div class="eng-day-focus">Shadowing 15' + Self-recording monolog 2 menit 15'</div>
+          <div class="eng-day-detail">Pilih video YouTube, tirukan intonasi & ritme (shadowing). Lalu rekam diri sendiri bicara tentang topas bebas 2 menit. Dengar ulang, evaluasi.</div>
+        </div>
+        <div class="eng-day-right">
+          <span class="eng-time-tag">20.30</span>
+          <span class="eng-done-tag" id="done-jumat"></span>
+        </div>
+      </div>
+      <div class="eng-day-card" id="edc-sabtu">
+        <div class="eng-ico" style="background:#f0fdfa">🌿</div>
+        <div style="flex:1">
+          <div class="eng-day-name">Sabtu — Applied English</div>
+          <div class="eng-day-focus">Konten bisnis Inggris + YouTube tanpa subtitle</div>
+          <div class="eng-day-detail">Buat caption Artilerianstore & Salmarket dalam bahasa Inggris. Atau nonton YouTube channel favorit tanpa subtitle. Belajar sambil menghasilkan.</div>
+        </div>
+        <div class="eng-day-right">
+          <span class="eng-time-tag">Bebas</span>
+          <span class="eng-done-tag" id="done-sabtu"></span>
+        </div>
+      </div>
+      <div class="eng-day-card" style="background:#f9f8f5" id="edc-minggu">
+        <div class="eng-ico" style="background:#e5e7eb">🏠</div>
+        <div style="flex:1">
+          <div class="eng-day-name">Minggu — Rest & Review</div>
+          <div class="eng-day-focus">Anki ringan (opsional) + evaluasi minggu ini</div>
+          <div class="eng-day-detail">Hari keluarga. Jika sempat, review Anki sambil santai. Evaluasi: skill mana yang paling berkembang minggu ini? Target minggu depan?</div>
+        </div>
+        <div class="eng-day-right">
+          <span class="eng-time-tag" style="background:#e5e7eb;color:#6b7280">Opsional</span>
+          <span class="eng-done-tag" id="done-minggu"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab: Progress ── -->
+    <div id="eng-tab-progress" class="eng-tab-panel">
+      <div class="eng-progress-grid" id="eng-progress-grid"></div>
+      <div class="dash-card" style="margin-top:1rem">
+        <div class="dash-card-title">🏆 Achievement</div>
+        <div class="eng-achievements" id="eng-achievements"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap">
+        <button class="dash-btn dash-btn-ghost" onclick="resetEngWeek()">↺ Reset minggu ini</button>
+        <button class="dash-btn dash-btn-ghost" style="color:#b91c1c;border-color:#fca5a5" onclick="resetEngAll()">🗑 Reset semua data</button>
+      </div>
+    </div>
+
+    <!-- ── Tab: Tips ── -->
+    <div id="eng-tab-tips" class="eng-tab-panel">
+      <div class="eng-tip-of-day" id="eng-tip-of-day"></div>
+      <div class="dash-section-label">Frasa Berguna Intermediate → Advanced</div>
+      <div class="eng-phrases" id="eng-phrases"></div>
     </div>
 
   </div>
   </div><!-- /view-english -->
+
 
   <!-- ═══ KELUARGA ═══ -->
   <div id="view-keluarga" class="view-panel">
@@ -678,10 +812,13 @@
       <div class="fam-item" style="border:none"><div class="fam-ico">🛁</div><div><div class="fam-name">Sabtu pagi — Ambil alih mandikan anak</div><div class="fam-desc">Beri Salma 1 jam bebas untuk dirinya sendiri.</div></div></div>
     </div>
 
-    <div class="dash-card">
-      <div class="dash-card-title">🧠 Mindset Baru</div>
-      <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:8px">❌ Lama: <em>"Rebahan dulu, nanti ngurusin keluarga kalau sudah tenang."</em></div>
-      <div style="font-size:13px;color:#065f46;font-weight:600;background:#ecfdf5;border-radius:8px;padding:10px 12px">✅ Baru: <em>"Keluarga dulu 40 menit, baru boleh rebahan."</em></div>
+    <div class="dash-card" id="mindset-card">
+      <div class="dash-card-title">🧠 Mindset Harian</div>
+      <div id="mindset-content"><!-- diisi JS --></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+        <span style="font-size:10.5px;color:var(--text-muted)" id="mindset-counter"></span>
+        <button class="dash-btn dash-btn-ghost" style="padding:5px 12px;font-size:11.5px" onclick="refreshMindset()">↻ Mindset lain</button>
+      </div>
     </div>
 
   </div>

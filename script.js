@@ -546,11 +546,10 @@ document.addEventListener('DOMContentLoaded', () => {
   highlightLiveBlocks();
   initFirebase();
   renderEngStreak();
-  renderHariIni();
+  renderDailyChecklist();
   renderMindset();
   setInterval(updateClock, 1000);
   setInterval(highlightLiveBlocks, 30000);
-  setInterval(renderHariIni, 60000); // update every minute
 });
 
 /* ================================================
@@ -1554,7 +1553,6 @@ function renderMindset() {
   const el = document.getElementById('mindset-card');
   if (!el) return;
 
-  // Pilih mindset berdasarkan tanggal — berganti otomatis setiap hari
   const dayIndex = Math.floor(Date.now() / 86400000);
   const mindset  = MINDSET_LIST[dayIndex % MINDSET_LIST.length];
 
@@ -1578,3 +1576,83 @@ function renderMindset() {
     </div>
   `;
 }
+
+/* ================================================
+   CHECKLIST HARIAN SEDERHANA — di tab Jadwal Harian
+   ================================================ */
+
+const DAILY_CHECKS_KEY = 'daily_checks_simple_';
+
+function dailyChecksKey() {
+  const d = new Date();
+  return DAILY_CHECKS_KEY + d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+const DAILY_CHECK_ITEMS = [
+  { id: 'subuh',    icon: '🕌', label: 'Sholat Subuh' },
+  { id: 'dhuha',    icon: '☀️', label: 'Sholat Dhuha' },
+  { id: 'dzuhur',   icon: '🕌', label: 'Sholat Dzuhur' },
+  { id: 'ashar',    icon: '🕌', label: 'Sholat Ashar' },
+  { id: 'maghrib',  icon: '🌅', label: 'Sholat Maghrib' },
+  { id: 'isya',     icon: '🌙', label: 'Sholat Isya' },
+  { id: 'tilawah',  icon: '📖', label: 'Baca Al-Qur\'an / Tilawah' },
+  { id: 'dzikir',   icon: '🤲', label: 'Dzikir Pagi & Petang' },
+  { id: 'workout',  icon: '💪', label: 'Olahraga / Workout' },
+  { id: 'keluarga', icon: '❤️', label: 'Quality Time Keluarga' },
+  { id: 'toko',     icon: '🛍️', label: 'Cek Artilerianstore' },
+  { id: 'tahajud',  icon: '🌙', label: 'Tahajud (Senin & Kamis)' },
+];
+
+function renderDailyChecklist() {
+  const el = document.getElementById('daily-checklist-wrap');
+  if (!el) return;
+
+  const key = dailyChecksKey();
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || '{}'); } catch {}
+
+  const doneCnt = DAILY_CHECK_ITEMS.filter(it => saved[it.id]).length;
+  const total   = DAILY_CHECK_ITEMS.length;
+  const pct     = Math.round(doneCnt / total * 100);
+
+  el.innerHTML = `
+    <div class="dash-card daily-cl-card">
+      <div class="daily-cl-header">
+        <div class="daily-cl-title">✅ Checklist Harian</div>
+        <div class="daily-cl-prog-text">${doneCnt}/${total} <span style="color:var(--text-muted);font-weight:500">selesai</span></div>
+      </div>
+      <div class="daily-cl-bar-wrap">
+        <div class="daily-cl-bar-fill" style="width:${pct}%"></div>
+      </div>
+      <div class="daily-cl-grid">
+        ${DAILY_CHECK_ITEMS.map(it => {
+          const done = !!saved[it.id];
+          return `<div class="daily-cl-item ${done ? 'done' : ''}" onclick="toggleDailyCheck('${it.id}')">
+            <div class="daily-cl-ico">${it.icon}</div>
+            <div class="daily-cl-lbl">${it.label}</div>
+            <div class="daily-cl-box">${done ? '✓' : ''}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      ${doneCnt === total ? '<div class="daily-cl-done-msg">🎉 Alhamdulillah — semua amal hari ini tercatat!</div>' : ''}
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="dash-btn dash-btn-ghost" onclick="resetDailyChecklist()" style="font-size:11.5px">Reset hari ini</button>
+      </div>
+    </div>
+  `;
+}
+
+window.toggleDailyCheck = function(id) {
+  const key = dailyChecksKey();
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || '{}'); } catch {}
+  saved[id] = !saved[id];
+  try { localStorage.setItem(key, JSON.stringify(saved)); } catch {}
+  renderDailyChecklist();
+};
+
+window.resetDailyChecklist = function() {
+  if (!confirm('Reset checklist hari ini?')) return;
+  try { localStorage.removeItem(dailyChecksKey()); } catch {}
+  renderDailyChecklist();
+};

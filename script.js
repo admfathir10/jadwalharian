@@ -1554,15 +1554,9 @@ function renderMindset() {
   const el = document.getElementById('mindset-card');
   if (!el) return;
 
-  // Pilih mindset berdasarkan tanggal — berganti setiap hari
-  const dayIndex = Math.floor(Date.now() / 86400000); // hari sejak epoch
+  // Pilih mindset berdasarkan tanggal — berganti otomatis setiap hari
+  const dayIndex = Math.floor(Date.now() / 86400000);
   const mindset  = MINDSET_LIST[dayIndex % MINDSET_LIST.length];
-
-  // Hitung berapa hari lagi mindset berganti
-  const msUntilMidnight = 86400000 - (Date.now() % 86400000);
-  const jamLagi = Math.floor(msUntilMidnight / 3600000);
-  const menitLagi = Math.floor((msUntilMidnight % 3600000) / 60000);
-  const gantiLabel = jamLagi > 0 ? `${jamLagi} jam ${menitLagi} menit lagi` : `${menitLagi} menit lagi`;
 
   el.innerHTML = `
     <div class="dash-card mindset-wrap">
@@ -1572,7 +1566,6 @@ function renderMindset() {
           <div class="dash-card-title" style="margin-bottom:0;border:none;padding:0">🧠 Mindset Hari Ini</div>
           <div class="mindset-tema-tag">${mindset.tema}</div>
         </div>
-        <div class="mindset-ganti">🔄 Ganti dalam<br><strong>${gantiLabel}</strong></div>
       </div>
       <div class="mindset-lama">
         <span class="mindset-x">❌</span>
@@ -1582,42 +1575,6 @@ function renderMindset() {
         <span class="mindset-check">✅</span>
         <span class="mindset-baru-text">"${mindset.baru}"</span>
       </div>
-      <div class="mindset-nav">
-        <button class="mindset-nav-btn" onclick="shiftMindset(-1)" title="Mindset sebelumnya">‹ Sebelumnya</button>
-        <span class="mindset-counter" id="mindset-pos"></span>
-        <button class="mindset-nav-btn" onclick="shiftMindset(1)" title="Mindset berikutnya">Berikutnya ›</button>
-      </div>
     </div>
   `;
-
-  updateMindsetPos(dayIndex % MINDSET_LIST.length);
 }
-
-let mindsetOffset = 0;
-
-function updateMindsetPos(base) {
-  const el = document.getElementById('mindset-pos');
-  if (el) {
-    const cur = ((base + mindsetOffset) % MINDSET_LIST.length + MINDSET_LIST.length) % MINDSET_LIST.length;
-    el.textContent = `${cur + 1} / ${MINDSET_LIST.length}`;
-  }
-}
-
-window.shiftMindset = function(dir) {
-  mindsetOffset += dir;
-  const dayIndex = Math.floor(Date.now() / 86400000);
-  const idx = ((dayIndex + mindsetOffset) % MINDSET_LIST.length + MINDSET_LIST.length) % MINDSET_LIST.length;
-  const mindset = MINDSET_LIST[idx];
-
-  const lama = document.querySelector('.mindset-lama-text');
-  const baru = document.querySelector('.mindset-baru-text');
-  const ico  = document.querySelector('.mindset-ico');
-  const tema = document.querySelector('.mindset-tema-tag');
-
-  if (lama) lama.innerHTML = `Lama: <em>"${mindset.lama}"</em>`;
-  if (baru) baru.textContent = `"${mindset.baru}"`;
-  if (ico)  ico.textContent  = mindset.icon;
-  if (tema) tema.textContent = mindset.tema;
-
-  updateMindsetPos(dayIndex % MINDSET_LIST.length);
-};

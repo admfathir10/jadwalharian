@@ -1561,17 +1561,19 @@ function renderMindset() {
       <div class="mindset-header">
         <div class="mindset-ico">${mindset.icon}</div>
         <div class="mindset-meta">
-          <div class="dash-card-title" style="margin-bottom:0;border:none;padding:0">🧠 Mindset Hari Ini</div>
+          <div class="dash-card-title" style="margin-bottom:0;border:none;padding:0;color:#fff">🧠 Mindset Hari Ini</div>
           <div class="mindset-tema-tag">${mindset.tema}</div>
         </div>
       </div>
-      <div class="mindset-lama">
-        <span class="mindset-x">❌</span>
-        <span class="mindset-lama-text">Lama: <em>"${mindset.lama}"</em></span>
-      </div>
-      <div class="mindset-baru">
-        <span class="mindset-check">✅</span>
-        <span class="mindset-baru-text">"${mindset.baru}"</span>
+      <div class="mindset-body">
+        <div class="mindset-lama">
+          <span class="mindset-x">❌</span>
+          <span class="mindset-lama-text">Lama: <em>"${mindset.lama}"</em></span>
+        </div>
+        <div class="mindset-baru">
+          <span class="mindset-check">✅</span>
+          <span class="mindset-baru-text">"${mindset.baru}"</span>
+        </div>
       </div>
     </div>
   `;
@@ -1618,25 +1620,35 @@ function renderDailyChecklist() {
   el.innerHTML = `
     <div class="dash-card daily-cl-card">
       <div class="daily-cl-header">
-        <div class="daily-cl-title">✅ Checklist Harian</div>
-        <div class="daily-cl-prog-text">${doneCnt}/${total} <span style="color:var(--text-muted);font-weight:500">selesai</span></div>
+        <div class="daily-cl-header-left">
+          <div class="daily-cl-avatar">✅</div>
+          <div>
+            <div class="daily-cl-title">Checklist Harian</div>
+            <div class="daily-cl-title-sub">Amal & rutinitas hari ini — centang yang sudah dikerjakan</div>
+          </div>
+        </div>
+        <div class="daily-cl-prog-wrap">
+          <div class="daily-cl-prog-text">${doneCnt}/${total} <span style="color:rgba(255,255,255,0.5);font-weight:500">selesai</span></div>
+        </div>
       </div>
-      <div class="daily-cl-bar-wrap">
-        <div class="daily-cl-bar-fill" style="width:${pct}%"></div>
-      </div>
-      <div class="daily-cl-grid">
-        ${DAILY_CHECK_ITEMS.map(it => {
-          const done = !!saved[it.id];
-          return `<div class="daily-cl-item ${done ? 'done' : ''}" onclick="toggleDailyCheck('${it.id}')">
-            <div class="daily-cl-ico">${it.icon}</div>
-            <div class="daily-cl-lbl">${it.label}</div>
-            <div class="daily-cl-box">${done ? '✓' : ''}</div>
-          </div>`;
-        }).join('')}
-      </div>
-      ${doneCnt === total ? '<div class="daily-cl-done-msg">🎉 Alhamdulillah — semua amal hari ini tercatat!</div>' : ''}
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="dash-btn dash-btn-ghost" onclick="resetDailyChecklist()" style="font-size:11.5px">Reset hari ini</button>
+      <div class="daily-cl-body">
+        <div class="daily-cl-bar-wrap">
+          <div class="daily-cl-bar-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="daily-cl-grid">
+          ${DAILY_CHECK_ITEMS.map(it => {
+            const done = !!saved[it.id];
+            return `<div class="daily-cl-item ${done ? 'done' : ''}" onclick="toggleDailyCheck('${it.id}')">
+              <div class="daily-cl-ico">${it.icon}</div>
+              <div class="daily-cl-lbl">${it.label}</div>
+              <div class="daily-cl-box">${done ? '✓' : ''}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        ${doneCnt === total ? '<div class="daily-cl-done-msg">🎉 Alhamdulillah — semua amal hari ini tercatat!</div>' : ''}
+        <div class="daily-cl-footer">
+          <button class="dash-btn dash-btn-ghost" onclick="resetDailyChecklist()" style="font-size:11.5px">Reset hari ini</button>
+        </div>
       </div>
     </div>
   `;

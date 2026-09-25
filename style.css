@@ -2523,13 +2523,16 @@ body:not(.app-unlocked) .pin-lock-screen {
    DAILY CHECKLIST HARIAN — di tab Jadwal Harian
    ================================================ */
 
-/* Wrapper lebar sejajar todo-section — identik dengan .todo-section */
+/* Wrapper checklist & mindset ada di DALAM .main-content yang sudah
+   punya padding 1.75rem kiri-kanan dan max-width 1240px.
+   Cukup negatifkan padding .main-content agar melebar penuh
+   sejajar dengan .todo-section yang ada di LUAR .main-content */
 #daily-checklist-wrap,
 #mindset-card {
-  max-width: 1240px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0 1.75rem;
+  margin-left:  -1.75rem;
+  margin-right: -1.75rem;
+  padding-left:  1.75rem;
+  padding-right: 1.75rem;
   box-sizing: border-box;
 }
 
@@ -2732,7 +2735,10 @@ body:not(.app-unlocked) .pin-lock-screen {
 @media (max-width: 600px) {
   #daily-checklist-wrap,
   #mindset-card {
-    padding: 0 1rem;
+    margin-left:  -1rem;
+    margin-right: -1rem;
+    padding-left:  1rem;
+    padding-right: 1rem;
   }
   .daily-cl-grid {
     grid-template-columns: 1fr 1fr;

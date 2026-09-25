@@ -54,7 +54,6 @@
     <button id="mtab-jadwal" class="active" onclick="showView('jadwal')">Jadwal Harian</button>
     <button id="mtab-bersama" onclick="showView('bersama')">🤝 Momen Bersama</button>
     <button id="mtab-menu" onclick="showView('menu')">🍳 Menu Masakan</button>
-    <button id="mtab-today" onclick="showView('today')">📋 Hari Ini</button>
     <button id="mtab-english" onclick="showView('english')">🇬🇧 English</button>
     <button id="mtab-finansial" onclick="showView('finansial')">💰 Finansial</button>
   </nav>
@@ -487,10 +486,14 @@
         </div><!-- /col-body istri -->
       </div><!-- /col-card istri -->
 
+
     </div><!-- /dual-grid -->
 
-    <!-- Mindset Harian — di bawah jadwal istri -->
-    <div id="mindset-card" style="max-width:860px;margin:1.25rem auto 0"></div>
+    <!-- ✅ Checklist Harian — di bawah jadwal, lebar penuh seperti To-Do -->
+    <div id="daily-checklist-wrap" style="max-width:var(--todo-max,860px);margin:1.25rem auto 0"></div>
+
+    <!-- 🧠 Mindset Hari Ini — lebar penuh sejajar To-Do -->
+    <div id="mindset-card" style="max-width:var(--todo-max,860px);margin:0.75rem auto 0"></div>
 
   </div><!-- /view-jadwal -->
 
@@ -592,42 +595,6 @@
   </div><!-- /main-content inner -->
   </div><!-- /view-menu -->
 
-  <!-- ═══ HARI INI ═══ -->
-  <div id="view-today" class="view-panel">
-  <div class="main-content" style="padding-bottom:2rem">
-
-    <div class="dash-grid-2">
-      <div class="dash-stat-card" style="border-top:3px solid #3b82f6">
-        <div class="dash-stat-num" id="d-stat-hari" style="color:#3b82f6">—</div>
-        <div class="dash-stat-lbl">Hari ini</div>
-      </div>
-      <div class="dash-stat-card" style="border-top:3px solid #10b981">
-        <div class="dash-stat-num" id="d-stat-jam" style="color:#10b981">—</div>
-        <div class="dash-stat-lbl">Waktu sekarang</div>
-      </div>
-    </div>
-
-    <div class="dash-card">
-      <div class="dash-card-title">⏰ Agenda Hari Ini</div>
-      <div class="dash-timeline" id="d-timeline"></div>
-    </div>
-
-    <div class="dash-card">
-      <div class="dash-card-title">✅ Checklist Harian</div>
-      <div id="d-checks"></div>
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="dash-btn dash-btn-primary" onclick="saveDChecks()">Simpan</button>
-        <button class="dash-btn dash-btn-ghost" onclick="resetDChecks()">Reset</button>
-      </div>
-    </div>
-
-    <div class="dash-card" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#86efac">
-      <div class="dash-card-title" style="color:#065f46">💬 Pengingat Hari Ini</div>
-      <div id="d-reminder" style="font-size:13px;color:#065f46;line-height:1.7"></div>
-    </div>
-
-  </div>
-  </div><!-- /view-today -->
 
   <!-- ═══ ENGLISH ═══ -->
   <div id="view-english" class="view-panel">
@@ -663,7 +630,6 @@
 
   </div>
   </div><!-- /view-english -->
-
 
 
   <!-- ═══ FINANSIAL ═══ -->

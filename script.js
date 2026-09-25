@@ -128,6 +128,7 @@ function initFirebase() {
 
     isFirebaseReady = true;
     setTimeout(initMenuFirebase, 0);
+    setTimeout(initChecklistFirebase, 0);
   } catch(e) {
     setSyncStatus('error', 'Error Firebase');
     console.error(e);
@@ -546,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
   highlightLiveBlocks();
   initFirebase();
   renderEngStreak();
-  renderDailyChecklist();
+  renderDailyChecklist(); // fallback sebelum Firebase siap
   renderMindset();
   setInterval(updateClock, 1000);
   setInterval(highlightLiveBlocks, 30000);
@@ -1583,12 +1584,11 @@ function renderMindset() {
    CHECKLIST HARIAN SEDERHANA — di tab Jadwal Harian
    ================================================ */
 
-const DAILY_CHECKS_KEY = 'daily_checks_simple_';
-
-function dailyChecksKey() {
-  const d = new Date();
-  return DAILY_CHECKS_KEY + d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
+/* ================================================
+   CHECKLIST HARIAN — Firebase Realtime Sync
+   Data path: checklist/YYYY-MM-DD/{item_id: true/false}
+   Reset otomatis tiap hari (key berdasarkan tanggal)
+   ================================================ */
 
 const DAILY_CHECK_ITEMS = [
   { id: 'subuh',    icon: '🕌', label: 'Sholat Subuh' },
@@ -1597,7 +1597,7 @@ const DAILY_CHECK_ITEMS = [
   { id: 'ashar',    icon: '🕌', label: 'Sholat Ashar' },
   { id: 'maghrib',  icon: '🌅', label: 'Sholat Maghrib' },
   { id: 'isya',     icon: '🌙', label: 'Sholat Isya' },
-  { id: 'tilawah',  icon: '📖', label: 'Baca Al-Qur\'an / Tilawah' },
+  { id: 'tilawah',  icon: '📖', label: "Baca Al-Qur'an / Tilawah" },
   { id: 'dzikir',   icon: '🤲', label: 'Dzikir Pagi & Petang' },
   { id: 'workout',  icon: '💪', label: 'Olahraga / Workout' },
   { id: 'keluarga', icon: '❤️', label: 'Quality Time Keluarga' },
@@ -1605,15 +1605,47 @@ const DAILY_CHECK_ITEMS = [
   { id: 'tahajud',  icon: '🌙', label: 'Tahajud (Senin & Kamis)' },
 ];
 
+// Ref Firebase untuk checklist hari ini
+let checklistRef  = null;
+let checklistData = {}; // cache data dari Firebase / localStorage
+
+function getDailyDateKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+// Dipanggil oleh initFirebase setelah db siap
+function initChecklistFirebase() {
+  try {
+    const dateKey = getDailyDateKey();
+    checklistRef  = db.ref('checklist/' + dateKey);
+
+    // Real-time listener — update semua device seketika
+    checklistRef.on('value', snap => {
+      checklistData = snap.val() || {};
+      renderDailyChecklist();
+    }, err => {
+      console.warn('Checklist Firebase error, pakai lokal:', err);
+      loadChecklistLocal();
+    });
+  } catch(e) {
+    console.warn('initChecklistFirebase error:', e);
+    loadChecklistLocal();
+  }
+}
+
+function loadChecklistLocal() {
+  try {
+    checklistData = JSON.parse(localStorage.getItem('checklist_' + getDailyDateKey()) || '{}');
+  } catch { checklistData = {}; }
+  renderDailyChecklist();
+}
+
 function renderDailyChecklist() {
   const el = document.getElementById('daily-checklist-wrap');
   if (!el) return;
 
-  const key = dailyChecksKey();
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem(key) || '{}'); } catch {}
-
-  const doneCnt = DAILY_CHECK_ITEMS.filter(it => saved[it.id]).length;
+  const doneCnt = DAILY_CHECK_ITEMS.filter(it => checklistData[it.id]).length;
   const total   = DAILY_CHECK_ITEMS.length;
   const pct     = Math.round(doneCnt / total * 100);
 
@@ -1637,7 +1669,7 @@ function renderDailyChecklist() {
         </div>
         <div class="daily-cl-grid">
           ${DAILY_CHECK_ITEMS.map(it => {
-            const done = !!saved[it.id];
+            const done = !!checklistData[it.id];
             return `<div class="daily-cl-item ${done ? 'done' : ''}" onclick="toggleDailyCheck('${it.id}')">
               <div class="daily-cl-ico">${it.icon}</div>
               <div class="daily-cl-lbl">${it.label}</div>
@@ -1655,16 +1687,26 @@ function renderDailyChecklist() {
 }
 
 window.toggleDailyCheck = function(id) {
-  const key = dailyChecksKey();
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem(key) || '{}'); } catch {}
-  saved[id] = !saved[id];
-  try { localStorage.setItem(key, JSON.stringify(saved)); } catch {}
-  renderDailyChecklist();
+  const newVal = !checklistData[id];
+  checklistData[id] = newVal;
+
+  if (checklistRef) {
+    // Firebase — sync ke semua device
+    checklistRef.child(id).set(newVal);
+  } else {
+    // Fallback localStorage
+    try { localStorage.setItem('checklist_' + getDailyDateKey(), JSON.stringify(checklistData)); } catch {}
+    renderDailyChecklist();
+  }
 };
 
 window.resetDailyChecklist = function() {
   if (!confirm('Reset checklist hari ini?')) return;
-  try { localStorage.removeItem(dailyChecksKey()); } catch {}
-  renderDailyChecklist();
+  checklistData = {};
+  if (checklistRef) {
+    checklistRef.remove();
+  } else {
+    try { localStorage.removeItem('checklist_' + getDailyDateKey()); } catch {}
+    renderDailyChecklist();
+  }
 };

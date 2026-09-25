@@ -2357,35 +2357,50 @@ body:not(.app-unlocked) .pin-lock-screen {
    ================================================ */
 
 .mindset-wrap {
-  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
-  border-color: #c4b5fd;
+  padding: 0 !important;
+  overflow: hidden;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-med) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04) !important;
+  margin-bottom: 0 !important;
 }
 
+/* Dark purple header matching the theme */
 .mindset-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 0.85rem;
-  padding-bottom: 0.7rem;
-  border-bottom: 1px solid #ddd6fe;
+  padding: 0.9rem 1.25rem;
+  background: linear-gradient(135deg, #1e1b30 0%, #2d2553 100%);
+  border-bottom: 1px solid rgba(139,92,246,0.35);
+  margin-bottom: 0;
 }
 
 .mindset-ico {
-  font-size: 28px;
-  width: 48px;
-  height: 48px;
-  background: rgba(109,99,212,0.12);
-  border-radius: 14px;
+  font-size: 24px;
+  width: 42px;
+  height: 42px;
+  background: rgba(139,92,246,0.2);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 1.5px solid #c4b5fd;
+  border: 2px solid rgba(167,139,250,0.4);
+  box-shadow: 0 0 0 3px rgba(109,99,212,0.15);
 }
 
 .mindset-meta {
   flex: 1;
   min-width: 0;
+}
+
+/* Override dash-card-title inside mindset header to be white */
+.mindset-header .dash-card-title {
+  color: #fff !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 .mindset-tema-tag {
@@ -2394,11 +2409,17 @@ body:not(.app-unlocked) .pin-lock-screen {
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #6d63d4;
-  background: rgba(109,99,212,0.12);
+  color: #c4b5fd;
+  background: rgba(139,92,246,0.2);
+  border: 1px solid rgba(167,139,250,0.35);
   border-radius: 20px;
   padding: 2px 9px;
   margin-top: 4px;
+}
+
+/* Body padding for mindset */
+.mindset-body {
+  padding: 1rem 1.25rem 1.1rem;
 }
 
 .mindset-ganti {
@@ -2502,7 +2523,7 @@ body:not(.app-unlocked) .pin-lock-screen {
    DAILY CHECKLIST HARIAN — di tab Jadwal Harian
    ================================================ */
 
-/* Wrapper lebar sejajar todo-section */
+/* Wrapper lebar sejajar todo-section — identik dengan .todo-section */
 #daily-checklist-wrap,
 #mindset-card {
   max-width: 1240px;
@@ -2512,27 +2533,86 @@ body:not(.app-unlocked) .pin-lock-screen {
   box-sizing: border-box;
 }
 
-.daily-cl-card {
-  border-top: 3px solid #639922;
+#daily-checklist-wrap {
+  margin-top: 1.25rem;
 }
 
+#mindset-card {
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Checklist Card Shell ── */
+.daily-cl-card {
+  padding: 0 !important;
+  overflow: hidden;
+  border: 1px solid var(--border-med) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04) !important;
+  margin-bottom: 0 !important;
+}
+
+/* Dark header — same treatment as .col-header */
 .daily-cl-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  gap: 12px;
+  padding: 0.9rem 1.25rem;
+  background: linear-gradient(135deg, #1e2d1a 0%, #2a3d1f 100%);
+  border-bottom: 1px solid rgba(99,153,34,0.35);
+}
+
+.daily-cl-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.daily-cl-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #639922, #86c232);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  border: 2px solid rgba(134,194,50,0.5);
+  box-shadow: 0 0 0 3px rgba(99,153,34,0.18);
 }
 
 .daily-cl-title {
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+
+.daily-cl-title-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  margin-top: 1px;
+}
+
+.daily-cl-prog-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .daily-cl-prog-text {
   font-size: 13px;
   font-weight: 700;
-  color: #639922;
+  color: #a3e635;
+  white-space: nowrap;
+}
+
+/* Body area */
+.daily-cl-body {
+  padding: 1rem 1.25rem 1.1rem;
+  background: var(--bg-card);
 }
 
 .daily-cl-bar-wrap {
@@ -2553,7 +2633,7 @@ body:not(.app-unlocked) .pin-lock-screen {
 
 .daily-cl-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
   gap: 8px;
 }
 
@@ -2561,7 +2641,7 @@ body:not(.app-unlocked) .pin-lock-screen {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 9px 11px;
   border-radius: 10px;
   border: 1.5px solid var(--border-med);
   background: var(--bg-surface);
@@ -2573,11 +2653,14 @@ body:not(.app-unlocked) .pin-lock-screen {
 .daily-cl-item:hover {
   border-color: #639922;
   background: #f3f8eb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(99,153,34,0.12);
 }
 
 .daily-cl-item.done {
   background: linear-gradient(135deg, #f0fdf4, #dcfce7);
   border-color: #86efac;
+  box-shadow: 0 1px 5px rgba(34,197,94,0.1);
 }
 
 .daily-cl-ico {
@@ -2636,10 +2719,15 @@ body:not(.app-unlocked) .pin-lock-screen {
   text-align: center;
 }
 
-/* Reset mindset-wrap to not override the outer wrapper padding */
-.mindset-wrap {
-  margin: 0;
+.daily-cl-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
 }
+
+/* mindset-wrap body content spacing (override moved above) */
 
 @media (max-width: 600px) {
   #daily-checklist-wrap,
@@ -2648,5 +2736,13 @@ body:not(.app-unlocked) .pin-lock-screen {
   }
   .daily-cl-grid {
     grid-template-columns: 1fr 1fr;
+  }
+  .daily-cl-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .daily-cl-prog-wrap {
+    align-self: flex-end;
   }
 }

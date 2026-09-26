@@ -1710,3 +1710,16 @@ window.resetDailyChecklist = function() {
     renderDailyChecklist();
   }
 };
+
+/* ════════════════════════════════════════════════
+   FINANSIAL v2 — Tab switcher
+   ════════════════════════════════════════════════ */
+window.switchFinTab = function(tab, btn) {
+  // Deactivate all tabs and panels
+  document.querySelectorAll('.fin-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.fin-panel').forEach(p => p.classList.remove('active'));
+  // Activate selected
+  if (btn) btn.classList.add('active');
+  const panel = document.getElementById('fin-panel-' + tab);
+  if (panel) panel.classList.add('active');
+};

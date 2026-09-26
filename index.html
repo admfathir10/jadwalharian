@@ -636,574 +636,372 @@
   <div id="view-finansial" class="view-panel">
   <div class="main-content fin-main">
 
-    <!-- ═══════════════════════════════════════════
-         SUMMARY STRIP — Total alokasi keluarga
-         ═══════════════════════════════════════════ -->
+    <!-- ── Hero strip ── -->
     <div class="fin-hero-strip">
       <div class="fin-hero-card fin-hero-suami">
-        <div class="fin-hero-label">💼 Alokasi Suami</div>
+        <div class="fin-hero-icon">💼</div>
+        <div class="fin-hero-label">Alokasi Suami</div>
         <div class="fin-hero-amount">Rp 1.500.000</div>
         <div class="fin-hero-sub">8 kategori pengeluaran</div>
       </div>
       <div class="fin-hero-card fin-hero-total">
-        <div class="fin-hero-label">🏠 Total Keluarga</div>
+        <div class="fin-hero-icon">🏠</div>
+        <div class="fin-hero-label">Total Keluarga</div>
         <div class="fin-hero-amount">Rp 3.900.000</div>
         <div class="fin-hero-sub">Anggaran bulanan bersama</div>
       </div>
       <div class="fin-hero-card fin-hero-istri">
-        <div class="fin-hero-label">🌸 Alokasi Istri</div>
+        <div class="fin-hero-icon">🌸</div>
+        <div class="fin-hero-label">Alokasi Istri</div>
         <div class="fin-hero-amount">Rp 2.400.000</div>
         <div class="fin-hero-sub">5 kategori pengeluaran</div>
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════
-         TAB SWITCH — Suami / Istri / Bersama
-         ═══════════════════════════════════════════ -->
+    <!-- ── Tab bar ── -->
     <div class="fin-tab-bar">
       <button class="fin-tab active" onclick="switchFinTab('suami',this)">💼 Suami</button>
       <button class="fin-tab" onclick="switchFinTab('istri',this)">🌸 Istri</button>
       <button class="fin-tab" onclick="switchFinTab('ringkasan',this)">📊 Ringkasan</button>
     </div>
 
-    <!-- ═══════════════════════════════════════════
-         PANEL SUAMI
-         ═══════════════════════════════════════════ -->
+    <!-- ════ PANEL SUAMI ════ -->
     <div id="fin-panel-suami" class="fin-panel active">
 
-      <!-- Donut visual + legend -->
       <div class="fin-panel-top">
+        <!-- Donut chart via conic-gradient -->
         <div class="dash-card fin-donut-card">
-          <div class="fin-donut-wrap">
-            <svg viewBox="0 0 200 200" class="fin-donut-svg">
-              <!-- Transportasi 33.33% -->
-              <circle class="fin-ring" r="70" cx="100" cy="100"
-                stroke="#f43f5e"
-                stroke-dasharray="146.6 293.2"
-                stroke-dashoffset="0"/>
-              <!-- Tabungan Darurat 13.33% -->
-              <circle class="fin-ring" r="70" cx="100" cy="100"
-                stroke="#10b981"
-                stroke-dasharray="58.6 380.8"
-                stroke-dashoffset="-146.6"/>
-              <!-- Modal Usaha 13.33% -->
-              <circle class="fin-ring" r="70" cx="100" cy="100"
-                stroke="#8b5cf6"
-                stroke-dasharray="58.6 380.8"
-                stroke-dashoffset="-205.2"/>
-              <!-- Hiburan 6.67% -->
-              <circle class="fin-ring" r="70" cx="100" cy="100"
-                stroke="#f59e0b"
-                stroke-dasharray="29.3 410.1"
-                stroke-dashoffset="-263.8"/>
-              <!-- Provider 6.67% -->
-              <circle class="fin-ring" r="70" cx="100" cy="100"
-                stroke="#3b82f6"
-                stroke-dasharray="29.3 410.1"
-                stroke-dashoffset="-293.1"/>
-              <!-- Kebutuhan Pribadi 6.67% -->
-              <circle class="fin-ring" r="70" cx="100" cy="100"
-                stroke="#ec4899"
-                stroke-dasharray="29.3 410.1"
-                stroke-dashoffset="-322.4"/>
-              <!-- Investasi 13.33% -->
-              <circle class="fin-ring" r="70" cx="100" cy="100"
-                stroke="#06b6d4"
-                stroke-dasharray="58.6 380.8"
-                stroke-dashoffset="-351.7"/>
-              <!-- Pendidikan 6.67% -->
-              <circle class="fin-ring" r="70" cx="100" cy="100"
-                stroke="#84cc16"
-                stroke-dasharray="29.3 410.1"
-                stroke-dashoffset="-410.3"/>
-              <text x="100" y="96" text-anchor="middle" class="fin-donut-center-val">Rp1,5 jt</text>
-              <text x="100" y="112" text-anchor="middle" class="fin-donut-center-lbl">/ bulan</text>
-            </svg>
-          </div>
-          <div class="fin-donut-legend">
-            <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#f43f5e"></span><span class="fin-legend-lbl">Transportasi</span><span class="fin-legend-pct">33,33%</span></div>
-            <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#10b981"></span><span class="fin-legend-lbl">Dana Darurat</span><span class="fin-legend-pct">13,33%</span></div>
-            <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#8b5cf6"></span><span class="fin-legend-lbl">Modal Usaha</span><span class="fin-legend-pct">13,33%</span></div>
-            <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#06b6d4"></span><span class="fin-legend-lbl">Investasi</span><span class="fin-legend-pct">13,33%</span></div>
-            <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#f59e0b"></span><span class="fin-legend-lbl">Hiburan</span><span class="fin-legend-pct">6,67%</span></div>
-            <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#3b82f6"></span><span class="fin-legend-lbl">Provider</span><span class="fin-legend-pct">6,67%</span></div>
-            <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#ec4899"></span><span class="fin-legend-lbl">Keb. Pribadi</span><span class="fin-legend-pct">6,67%</span></div>
-            <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#84cc16"></span><span class="fin-legend-lbl">Pendidikan</span><span class="fin-legend-pct">6,67%</span></div>
+          <div class="fin-donut-title">Distribusi Alokasi</div>
+          <div class="fin-donut-body">
+            <div class="fin-donut-wrap">
+              <div class="fin-donut"
+                style="background: conic-gradient(
+                  #f43f5e   0%   33.33%,
+                  #10b981  33.33%  46.66%,
+                  #8b5cf6  46.66%  60%,
+                  #06b6d4  60%    73.33%,
+                  #f59e0b  73.33%  80%,
+                  #3b82f6  80%    86.67%,
+                  #ec4899  86.67%  93.34%,
+                  #84cc16  93.34%  100%
+                )">
+                <div class="fin-donut-hole">
+                  <span class="fin-donut-hole-val">Rp1,5 jt</span>
+                  <span class="fin-donut-hole-sub">/ bulan</span>
+                </div>
+              </div>
+            </div>
+            <div class="fin-donut-legend">
+              <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#f43f5e"></span><span class="fin-legend-lbl">Transportasi</span><span class="fin-legend-pct">33,33%</span></div>
+              <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#10b981"></span><span class="fin-legend-lbl">Dana Darurat</span><span class="fin-legend-pct">13,33%</span></div>
+              <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#8b5cf6"></span><span class="fin-legend-lbl">Modal Usaha</span><span class="fin-legend-pct">13,33%</span></div>
+              <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#06b6d4"></span><span class="fin-legend-lbl">Investasi</span><span class="fin-legend-pct">13,33%</span></div>
+              <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#f59e0b"></span><span class="fin-legend-lbl">Hiburan</span><span class="fin-legend-pct">6,67%</span></div>
+              <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#3b82f6"></span><span class="fin-legend-lbl">Provider</span><span class="fin-legend-pct">6,67%</span></div>
+              <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#ec4899"></span><span class="fin-legend-lbl">Keb. Pribadi</span><span class="fin-legend-pct">6,67%</span></div>
+              <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#84cc16"></span><span class="fin-legend-lbl">Pendidikan</span><span class="fin-legend-pct">6,67%</span></div>
+            </div>
           </div>
         </div>
 
-        <!-- Stat cards suami -->
+        <!-- Stat cards -->
         <div class="fin-stat-col">
-          <div class="fin-stat-card" style="border-left-color:#f43f5e">
+          <div class="fin-stat-card" style="--acc:#f43f5e">
             <div class="fin-stat-ico">🚗</div>
-            <div>
+            <div class="fin-stat-info">
               <div class="fin-stat-lbl">Transportasi (terbesar)</div>
               <div class="fin-stat-val">Rp 500.000</div>
-              <div class="fin-stat-pct">33,33% dari total</div>
+              <div class="fin-stat-bar"><div class="fin-stat-bar-fill" style="width:33.33%;background:#f43f5e"></div></div>
             </div>
+            <div class="fin-stat-pct" style="color:#f43f5e">33%</div>
           </div>
-          <div class="fin-stat-card" style="border-left-color:#06b6d4">
+          <div class="fin-stat-card" style="--acc:#06b6d4">
             <div class="fin-stat-ico">📈</div>
-            <div>
+            <div class="fin-stat-info">
               <div class="fin-stat-lbl">Investasi (Bibit + Emas)</div>
               <div class="fin-stat-val">Rp 200.000</div>
-              <div class="fin-stat-pct">13,33% dari total</div>
+              <div class="fin-stat-bar"><div class="fin-stat-bar-fill" style="width:13.33%;background:#06b6d4"></div></div>
             </div>
+            <div class="fin-stat-pct" style="color:#06b6d4">13%</div>
           </div>
-          <div class="fin-stat-card" style="border-left-color:#8b5cf6">
+          <div class="fin-stat-card" style="--acc:#8b5cf6">
             <div class="fin-stat-ico">🏪</div>
-            <div>
+            <div class="fin-stat-info">
               <div class="fin-stat-lbl">Modal Usaha (5 bisnis)</div>
               <div class="fin-stat-val">Rp 200.000</div>
-              <div class="fin-stat-pct">13,33% dari total</div>
+              <div class="fin-stat-bar"><div class="fin-stat-bar-fill" style="width:13.33%;background:#8b5cf6"></div></div>
             </div>
+            <div class="fin-stat-pct" style="color:#8b5cf6">13%</div>
           </div>
-          <div class="fin-stat-card" style="border-left-color:#10b981">
+          <div class="fin-stat-card" style="--acc:#10b981">
             <div class="fin-stat-ico">🛡️</div>
-            <div>
+            <div class="fin-stat-info">
               <div class="fin-stat-lbl">Dana Darurat</div>
               <div class="fin-stat-val">Rp 200.000</div>
-              <div class="fin-stat-pct">13,33% dari total</div>
+              <div class="fin-stat-bar"><div class="fin-stat-bar-fill" style="width:13.33%;background:#10b981"></div></div>
             </div>
+            <div class="fin-stat-pct" style="color:#10b981">13%</div>
           </div>
         </div>
       </div>
 
       <!-- Tabel detail suami -->
       <div class="dash-card fin-table-card">
-        <div class="fin-table-header">
-          <div class="fin-table-title">📋 Detail Alokasi Suami — Rp 1.500.000 / bulan</div>
+        <div class="fin-table-header fin-table-header-suami">
+          <span class="fin-table-title">📋 Detail Alokasi Suami</span>
+          <span class="fin-table-badge">Total: Rp 1.500.000 / bulan</span>
         </div>
         <div class="fin-table-wrap">
           <table class="fin-table">
-            <thead>
-              <tr>
-                <th>No</th>
-                <th>Kategori</th>
-                <th>Sub-item</th>
-                <th>Anggaran</th>
-                <th>% Total</th>
-                <th>Bar</th>
-              </tr>
-            </thead>
+            <thead><tr><th style="width:32px">No</th><th>Kategori</th><th>Sub-item</th><th>Anggaran</th><th>%</th><th style="min-width:90px">Proporsi</th></tr></thead>
             <tbody>
-              <!-- Transportasi -->
-              <tr class="fin-row-cat">
-                <td>1</td>
-                <td><span class="fin-cat-dot" style="background:#f43f5e"></span>🚗 Transportasi</td>
-                <td class="fin-sub-total">Total Transportasi</td>
-                <td class="fin-amt-total">Rp 500.000</td>
-                <td class="fin-pct-total">33,33%</td>
-                <td class="fin-bar-cell"><div class="fin-tbar"><div class="fin-tbar-fill" style="width:33.33%;background:#f43f5e"></div></div></td>
-              </tr>
-              <tr class="fin-row-sub">
-                <td></td><td></td>
-                <td>⛽ Bensin 2 motor + 1 mobil</td>
-                <td>Rp 350.000</td><td>23,33%</td>
-                <td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:23.33%;background:#fca5a5"></div></div></td>
-              </tr>
-              <tr class="fin-row-sub">
-                <td></td><td></td>
-                <td>🔧 Servis rutin 3 motor</td>
-                <td>Rp 75.000</td><td>5,00%</td>
-                <td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:5%;background:#fca5a5"></div></div></td>
-              </tr>
-              <tr class="fin-row-sub">
-                <td></td><td></td>
-                <td>📋 Pajak 3 motor + SIM</td>
-                <td>Rp 75.000</td><td>5,00%</td>
-                <td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:5%;background:#fca5a5"></div></div></td>
-              </tr>
-              <!-- Dana Darurat -->
-              <tr class="fin-row-cat">
-                <td>2</td>
-                <td><span class="fin-cat-dot" style="background:#10b981"></span>🛡️ Dana Darurat</td>
-                <td class="fin-sub-total">Dana Darurat</td>
-                <td class="fin-amt-total">Rp 200.000</td>
-                <td class="fin-pct-total">13,33%</td>
-                <td class="fin-bar-cell"><div class="fin-tbar"><div class="fin-tbar-fill" style="width:13.33%;background:#10b981"></div></div></td>
-              </tr>
-              <!-- Modal Usaha -->
-              <tr class="fin-row-cat">
-                <td>3</td>
-                <td><span class="fin-cat-dot" style="background:#8b5cf6"></span>🏪 Modal Usaha</td>
-                <td class="fin-sub-total">Total Modal Usaha</td>
-                <td class="fin-amt-total">Rp 200.000</td>
-                <td class="fin-pct-total">13,33%</td>
-                <td class="fin-bar-cell"><div class="fin-tbar"><div class="fin-tbar-fill" style="width:13.33%;background:#8b5cf6"></div></div></td>
-              </tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>📸 Studio Foto</td><td>Rp 60.000</td><td>4,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4%;background:#c4b5fd"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🛍️ Artilerianstore</td><td>Rp 40.000</td><td>2,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2.67%;background:#c4b5fd"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🖨️ Mini Printing</td><td>Rp 40.000</td><td>2,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2.67%;background:#c4b5fd"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🐠 Aquascape</td><td>Rp 30.000</td><td>2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#c4b5fd"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🔗 Affiliate</td><td>Rp 30.000</td><td>2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#c4b5fd"></div></div></td></tr>
-              <!-- Hiburan -->
-              <tr class="fin-row-cat">
-                <td>4</td>
-                <td><span class="fin-cat-dot" style="background:#f59e0b"></span>🎉 Hiburan</td>
-                <td class="fin-sub-total">Total Hiburan</td>
-                <td class="fin-amt-total">Rp 100.000</td>
-                <td class="fin-pct-total">6,67%</td>
-                <td class="fin-bar-cell"><div class="fin-tbar"><div class="fin-tbar-fill" style="width:6.67%;background:#f59e0b"></div></div></td>
-              </tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🍜 Jajan</td><td>Rp 50.000</td><td>3,33%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:3.33%;background:#fcd34d"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🚶 Jalan-jalan</td><td>Rp 30.000</td><td>2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#fcd34d"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🛒 Belanja</td><td>Rp 20.000</td><td>1,33%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:1.33%;background:#fcd34d"></div></div></td></tr>
-              <!-- Provider -->
-              <tr class="fin-row-cat">
-                <td>5</td>
-                <td><span class="fin-cat-dot" style="background:#3b82f6"></span>📡 Provider</td>
-                <td class="fin-sub-total">Total Provider</td>
-                <td class="fin-amt-total">Rp 100.000</td>
-                <td class="fin-pct-total">6,67%</td>
-                <td class="fin-bar-cell"><div class="fin-tbar"><div class="fin-tbar-fill" style="width:6.67%;background:#3b82f6"></div></div></td>
-              </tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>📶 Telkomsel</td><td>Rp 40.000</td><td>2,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2.67%;background:#93c5fd"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>📶 Smartfren</td><td>Rp 30.000</td><td>2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#93c5fd"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>📶 Indosat</td><td>Rp 30.000</td><td>2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#93c5fd"></div></div></td></tr>
-              <!-- Kebutuhan Pribadi -->
-              <tr class="fin-row-cat">
-                <td>6</td>
-                <td><span class="fin-cat-dot" style="background:#ec4899"></span>🧴 Keb. Pribadi</td>
-                <td class="fin-sub-total">Total Pribadi</td>
-                <td class="fin-amt-total">Rp 100.000</td>
-                <td class="fin-pct-total">6,67%</td>
-                <td class="fin-bar-cell"><div class="fin-tbar"><div class="fin-tbar-fill" style="width:6.67%;background:#ec4899"></div></div></td>
-              </tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🧼 Sabun badan</td><td>Rp 30.000</td><td>2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#f9a8d4"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🧼 Sabun muka</td><td>Rp 30.000</td><td>2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#f9a8d4"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>✨ Skincare (opsional)</td><td>Rp 40.000</td><td>2,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2.67%;background:#f9a8d4"></div></div></td></tr>
-              <!-- Investasi -->
-              <tr class="fin-row-cat">
-                <td>7</td>
-                <td><span class="fin-cat-dot" style="background:#06b6d4"></span>📈 Investasi</td>
-                <td class="fin-sub-total">Total Investasi</td>
-                <td class="fin-amt-total">Rp 200.000</td>
-                <td class="fin-pct-total">13,33%</td>
-                <td class="fin-bar-cell"><div class="fin-tbar"><div class="fin-tbar-fill" style="width:13.33%;background:#06b6d4"></div></div></td>
-              </tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🌱 Aplikasi Bibit</td><td>Rp 125.000</td><td>8,33%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:8.33%;background:#67e8f9"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🥇 Emas</td><td>Rp 75.000</td><td>5,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:5%;background:#67e8f9"></div></div></td></tr>
-              <!-- Pendidikan -->
-              <tr class="fin-row-cat">
-                <td>8</td>
-                <td><span class="fin-cat-dot" style="background:#84cc16"></span>📚 Pendidikan</td>
-                <td class="fin-sub-total">Total Pendidikan</td>
-                <td class="fin-amt-total">Rp 100.000</td>
-                <td class="fin-pct-total">6,67%</td>
-                <td class="fin-bar-cell"><div class="fin-tbar"><div class="fin-tbar-fill" style="width:6.67%;background:#84cc16"></div></div></td>
-              </tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>👩 Istri — seminar/workshop</td><td>Rp 50.000</td><td>3,33%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:3.33%;background:#bef264"></div></div></td></tr>
-              <tr class="fin-row-sub fin-last-sub"><td></td><td></td><td>👶 Anak — semaksimal mungkin</td><td>Rp 50.000</td><td>3,33%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:3.33%;background:#bef264"></div></div></td></tr>
-              <!-- Total -->
-              <tr class="fin-row-grand-total">
-                <td colspan="3">🏆 TOTAL SUAMI</td>
-                <td>Rp 1.500.000</td>
-                <td>100%</td>
-                <td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:100%;background:linear-gradient(90deg,#0f1628,#1e3a5f)"></div></div></td>
-              </tr>
+              <tr class="fin-row-cat"><td>1</td><td><span class="fin-cat-dot" style="background:#f43f5e"></span>🚗 Transportasi</td><td><b>Total Transportasi</b></td><td class="fin-td-amt"><b>Rp 500.000</b></td><td class="fin-td-pct"><b>33,33%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:33.33%;background:#f43f5e"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>⛽ Bensin 2 motor + 1 mobil</td><td class="fin-td-amt">Rp 350.000</td><td class="fin-td-pct">23,33%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:23.33%;background:#fca5a5"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🔧 Servis rutin 3 motor</td><td class="fin-td-amt">Rp 75.000</td><td class="fin-td-pct">5,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:5%;background:#fca5a5"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>📋 Pajak 3 motor + SIM</td><td class="fin-td-amt">Rp 75.000</td><td class="fin-td-pct">5,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:5%;background:#fca5a5"></div></div></td></tr>
+              <tr class="fin-row-cat"><td>2</td><td><span class="fin-cat-dot" style="background:#10b981"></span>🛡️ Dana Darurat</td><td><b>Dana Darurat</b></td><td class="fin-td-amt"><b>Rp 200.000</b></td><td class="fin-td-pct"><b>13,33%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:13.33%;background:#10b981"></div></div></td></tr>
+              <tr class="fin-row-cat"><td>3</td><td><span class="fin-cat-dot" style="background:#8b5cf6"></span>🏪 Modal Usaha</td><td><b>Total Modal Usaha</b></td><td class="fin-td-amt"><b>Rp 200.000</b></td><td class="fin-td-pct"><b>13,33%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:13.33%;background:#8b5cf6"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>📸 Studio Foto</td><td class="fin-td-amt">Rp 60.000</td><td class="fin-td-pct">4,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4%;background:#c4b5fd"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🛍️ Artilerianstore</td><td class="fin-td-amt">Rp 40.000</td><td class="fin-td-pct">2,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2.67%;background:#c4b5fd"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🖨️ Mini Printing</td><td class="fin-td-amt">Rp 40.000</td><td class="fin-td-pct">2,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2.67%;background:#c4b5fd"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🐠 Aquascape</td><td class="fin-td-amt">Rp 30.000</td><td class="fin-td-pct">2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#c4b5fd"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🔗 Affiliate</td><td class="fin-td-amt">Rp 30.000</td><td class="fin-td-pct">2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#c4b5fd"></div></div></td></tr>
+              <tr class="fin-row-cat"><td>4</td><td><span class="fin-cat-dot" style="background:#f59e0b"></span>🎉 Hiburan</td><td><b>Total Hiburan</b></td><td class="fin-td-amt"><b>Rp 100.000</b></td><td class="fin-td-pct"><b>6,67%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:6.67%;background:#f59e0b"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🍜 Jajan</td><td class="fin-td-amt">Rp 50.000</td><td class="fin-td-pct">3,33%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:3.33%;background:#fcd34d"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🚶 Jalan-jalan</td><td class="fin-td-amt">Rp 30.000</td><td class="fin-td-pct">2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#fcd34d"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🛒 Belanja</td><td class="fin-td-amt">Rp 20.000</td><td class="fin-td-pct">1,33%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:1.33%;background:#fcd34d"></div></div></td></tr>
+              <tr class="fin-row-cat"><td>5</td><td><span class="fin-cat-dot" style="background:#3b82f6"></span>📡 Provider</td><td><b>Total Provider</b></td><td class="fin-td-amt"><b>Rp 100.000</b></td><td class="fin-td-pct"><b>6,67%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:6.67%;background:#3b82f6"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>📶 Telkomsel</td><td class="fin-td-amt">Rp 40.000</td><td class="fin-td-pct">2,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2.67%;background:#93c5fd"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>📶 Smartfren</td><td class="fin-td-amt">Rp 30.000</td><td class="fin-td-pct">2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#93c5fd"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>📶 Indosat</td><td class="fin-td-amt">Rp 30.000</td><td class="fin-td-pct">2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#93c5fd"></div></div></td></tr>
+              <tr class="fin-row-cat"><td>6</td><td><span class="fin-cat-dot" style="background:#ec4899"></span>🧴 Keb. Pribadi</td><td><b>Total Pribadi</b></td><td class="fin-td-amt"><b>Rp 100.000</b></td><td class="fin-td-pct"><b>6,67%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:6.67%;background:#ec4899"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🧼 Sabun badan</td><td class="fin-td-amt">Rp 30.000</td><td class="fin-td-pct">2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#f9a8d4"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🧼 Sabun muka</td><td class="fin-td-amt">Rp 30.000</td><td class="fin-td-pct">2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#f9a8d4"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>✨ Skincare (opsional)</td><td class="fin-td-amt">Rp 40.000</td><td class="fin-td-pct">2,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2.67%;background:#f9a8d4"></div></div></td></tr>
+              <tr class="fin-row-cat"><td>7</td><td><span class="fin-cat-dot" style="background:#06b6d4"></span>📈 Investasi</td><td><b>Total Investasi</b></td><td class="fin-td-amt"><b>Rp 200.000</b></td><td class="fin-td-pct"><b>13,33%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:13.33%;background:#06b6d4"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🌱 Aplikasi Bibit</td><td class="fin-td-amt">Rp 125.000</td><td class="fin-td-pct">8,33%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:8.33%;background:#67e8f9"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🥇 Emas</td><td class="fin-td-amt">Rp 75.000</td><td class="fin-td-pct">5,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:5%;background:#67e8f9"></div></div></td></tr>
+              <tr class="fin-row-cat"><td>8</td><td><span class="fin-cat-dot" style="background:#84cc16"></span>📚 Pendidikan</td><td><b>Total Pendidikan</b></td><td class="fin-td-amt"><b>Rp 100.000</b></td><td class="fin-td-pct"><b>6,67%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:6.67%;background:#84cc16"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>👩 Istri — seminar/workshop</td><td class="fin-td-amt">Rp 50.000</td><td class="fin-td-pct">3,33%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:3.33%;background:#bef264"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>👶 Anak — semaksimal mungkin</td><td class="fin-td-amt">Rp 50.000</td><td class="fin-td-pct">3,33%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:3.33%;background:#bef264"></div></div></td></tr>
+              <tr class="fin-row-grand"><td colspan="3">🏆 TOTAL SUAMI</td><td class="fin-td-amt">Rp 1.500.000</td><td class="fin-td-pct">100%</td><td><div class="fin-tbar fin-tbar-lg"><div class="fin-tbar-fill" style="width:100%;background:linear-gradient(90deg,#0f1628,#2d5a8e)"></div></div></td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </div><!-- /fin-panel-suami -->
 
-    <!-- ═══════════════════════════════════════════
-         PANEL ISTRI
-         ═══════════════════════════════════════════ -->
+    <!-- ════ PANEL ISTRI ════ -->
     <div id="fin-panel-istri" class="fin-panel">
 
       <div class="fin-panel-top">
         <div class="dash-card fin-donut-card">
-          <div class="fin-donut-wrap">
-            <svg viewBox="0 0 200 200" class="fin-donut-svg">
-              <!-- Kebutuhan Dapur 41.67% -->
-              <circle class="fin-ring" r="70" cx="100" cy="100"
-                stroke="#f59e0b"
-                stroke-dasharray="183.2 256.6"
-                stroke-dashoffset="0"/>
-              <!-- Rumah 25% -->
-              <circle class="fin-ring" r="70" cx="100" cy="100"
-                stroke="#3b82f6"
-                stroke-dasharray="109.9 329.9"
-                stroke-dashoffset="-183.2"/>
-              <!-- Kebutuhan Pribadi 18.75% -->
-              <circle class="fin-ring" r="70" cx="100" cy="100"
-                stroke="#ec4899"
-                stroke-dasharray="82.5 357.3"
-                stroke-dashoffset="-293.1"/>
-              <!-- Kebutuhan Anak 10.42% -->
-              <circle class="fin-ring" r="70" cx="100" cy="100"
-                stroke="#06b6d4"
-                stroke-dasharray="45.8 393.9"
-                stroke-dashoffset="-375.6"/>
-              <!-- Hiburan 4.17% -->
-              <circle class="fin-ring" r="70" cx="100" cy="100"
-                stroke="#10b981"
-                stroke-dasharray="18.3 421.4"
-                stroke-dashoffset="-421.4"/>
-              <text x="100" y="96" text-anchor="middle" class="fin-donut-center-val">Rp2,4 jt</text>
-              <text x="100" y="112" text-anchor="middle" class="fin-donut-center-lbl">/ bulan</text>
-            </svg>
-          </div>
-          <div class="fin-donut-legend">
-            <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#f59e0b"></span><span class="fin-legend-lbl">Keb. Dapur</span><span class="fin-legend-pct">41,67%</span></div>
-            <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#3b82f6"></span><span class="fin-legend-lbl">Rumah</span><span class="fin-legend-pct">25,00%</span></div>
-            <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#ec4899"></span><span class="fin-legend-lbl">Keb. Pribadi</span><span class="fin-legend-pct">18,75%</span></div>
-            <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#06b6d4"></span><span class="fin-legend-lbl">Keb. Anak</span><span class="fin-legend-pct">10,42%</span></div>
-            <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#10b981"></span><span class="fin-legend-lbl">Hiburan</span><span class="fin-legend-pct">4,17%</span></div>
+          <div class="fin-donut-title">Distribusi Alokasi</div>
+          <div class="fin-donut-body">
+            <div class="fin-donut-wrap">
+              <div class="fin-donut"
+                style="background: conic-gradient(
+                  #f59e0b   0%    41.67%,
+                  #3b82f6  41.67%  66.67%,
+                  #ec4899  66.67%  85.42%,
+                  #06b6d4  85.42%  95.83%,
+                  #10b981  95.83%  100%
+                )">
+                <div class="fin-donut-hole">
+                  <span class="fin-donut-hole-val">Rp2,4 jt</span>
+                  <span class="fin-donut-hole-sub">/ bulan</span>
+                </div>
+              </div>
+            </div>
+            <div class="fin-donut-legend">
+              <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#f59e0b"></span><span class="fin-legend-lbl">Keb. Dapur</span><span class="fin-legend-pct">41,67%</span></div>
+              <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#3b82f6"></span><span class="fin-legend-lbl">Rumah</span><span class="fin-legend-pct">25,00%</span></div>
+              <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#ec4899"></span><span class="fin-legend-lbl">Keb. Pribadi</span><span class="fin-legend-pct">18,75%</span></div>
+              <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#06b6d4"></span><span class="fin-legend-lbl">Keb. Anak</span><span class="fin-legend-pct">10,42%</span></div>
+              <div class="fin-legend-item"><span class="fin-legend-dot" style="background:#10b981"></span><span class="fin-legend-lbl">Hiburan</span><span class="fin-legend-pct">4,17%</span></div>
+            </div>
           </div>
         </div>
 
         <div class="fin-stat-col">
-          <div class="fin-stat-card" style="border-left-color:#f59e0b">
+          <div class="fin-stat-card" style="--acc:#f59e0b">
             <div class="fin-stat-ico">🍳</div>
-            <div>
+            <div class="fin-stat-info">
               <div class="fin-stat-lbl">Kebutuhan Dapur (terbesar)</div>
               <div class="fin-stat-val">Rp 1.000.000</div>
-              <div class="fin-stat-pct">41,67% dari total</div>
+              <div class="fin-stat-bar"><div class="fin-stat-bar-fill" style="width:41.67%;background:#f59e0b"></div></div>
             </div>
+            <div class="fin-stat-pct" style="color:#f59e0b">42%</div>
           </div>
-          <div class="fin-stat-card" style="border-left-color:#3b82f6">
+          <div class="fin-stat-card" style="--acc:#3b82f6">
             <div class="fin-stat-ico">🏠</div>
-            <div>
+            <div class="fin-stat-info">
               <div class="fin-stat-lbl">Rumah (WiFi + Listrik)</div>
               <div class="fin-stat-val">Rp 600.000</div>
-              <div class="fin-stat-pct">25,00% dari total</div>
+              <div class="fin-stat-bar"><div class="fin-stat-bar-fill" style="width:25%;background:#3b82f6"></div></div>
             </div>
+            <div class="fin-stat-pct" style="color:#3b82f6">25%</div>
           </div>
-          <div class="fin-stat-card" style="border-left-color:#ec4899">
+          <div class="fin-stat-card" style="--acc:#ec4899">
             <div class="fin-stat-ico">👗</div>
-            <div>
+            <div class="fin-stat-info">
               <div class="fin-stat-lbl">Kebutuhan Pribadi</div>
               <div class="fin-stat-val">Rp 450.000</div>
-              <div class="fin-stat-pct">18,75% dari total</div>
+              <div class="fin-stat-bar"><div class="fin-stat-bar-fill" style="width:18.75%;background:#ec4899"></div></div>
             </div>
+            <div class="fin-stat-pct" style="color:#ec4899">19%</div>
           </div>
-          <div class="fin-stat-card" style="border-left-color:#06b6d4">
+          <div class="fin-stat-card" style="--acc:#06b6d4">
             <div class="fin-stat-ico">👶</div>
-            <div>
+            <div class="fin-stat-info">
               <div class="fin-stat-lbl">Kebutuhan Anak</div>
               <div class="fin-stat-val">Rp 250.000</div>
-              <div class="fin-stat-pct">10,42% dari total</div>
+              <div class="fin-stat-bar"><div class="fin-stat-bar-fill" style="width:10.42%;background:#06b6d4"></div></div>
             </div>
+            <div class="fin-stat-pct" style="color:#06b6d4">10%</div>
           </div>
         </div>
       </div>
 
       <div class="dash-card fin-table-card">
-        <div class="fin-table-header">
-          <div class="fin-table-title">📋 Detail Alokasi Istri — Rp 2.400.000 / bulan</div>
+        <div class="fin-table-header fin-table-header-istri">
+          <span class="fin-table-title">📋 Detail Alokasi Istri</span>
+          <span class="fin-table-badge">Total: Rp 2.400.000 / bulan</span>
         </div>
         <div class="fin-table-wrap">
           <table class="fin-table">
-            <thead>
-              <tr>
-                <th>No</th>
-                <th>Kategori</th>
-                <th>Sub-item</th>
-                <th>Anggaran</th>
-                <th>% Total</th>
-                <th>Bar</th>
-              </tr>
-            </thead>
+            <thead><tr><th style="width:32px">No</th><th>Kategori</th><th>Sub-item</th><th>Anggaran</th><th>%</th><th style="min-width:90px">Proporsi</th></tr></thead>
             <tbody>
-              <!-- Kebutuhan Pribadi -->
-              <tr class="fin-row-cat">
-                <td>1</td>
-                <td><span class="fin-cat-dot" style="background:#ec4899"></span>👗 Keb. Pribadi</td>
-                <td class="fin-sub-total">Total Pribadi</td>
-                <td class="fin-amt-total">Rp 450.000</td>
-                <td class="fin-pct-total">18,75%</td>
-                <td class="fin-bar-cell"><div class="fin-tbar"><div class="fin-tbar-fill" style="width:18.75%;background:#ec4899"></div></div></td>
-              </tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>📖 Belajar</td><td>Rp 75.000</td><td>3,13%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:3.13%;background:#f9a8d4"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>👔 Pakaian</td><td>Rp 100.000</td><td>4,17%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4.17%;background:#f9a8d4"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>💄 Makeup</td><td>Rp 100.000</td><td>4,17%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4.17%;background:#f9a8d4"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>✨ Skincare</td><td>Rp 175.000</td><td>7,29%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:7.29%;background:#f9a8d4"></div></div></td></tr>
-              <!-- Kebutuhan Dapur -->
-              <tr class="fin-row-cat">
-                <td>2</td>
-                <td><span class="fin-cat-dot" style="background:#f59e0b"></span>🍳 Keb. Dapur</td>
-                <td class="fin-sub-total">Total Dapur</td>
-                <td class="fin-amt-total">Rp 1.000.000</td>
-                <td class="fin-pct-total">41,67%</td>
-                <td class="fin-bar-cell"><div class="fin-tbar"><div class="fin-tbar-fill" style="width:41.67%;background:#f59e0b"></div></div></td>
-              </tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🌾 Bahan pokok (beras, dll.)</td><td>Rp 400.000</td><td>16,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:16.67%;background:#fcd34d"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🥩 Lauk-pauk & sayur</td><td>Rp 400.000</td><td>16,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:16.67%;background:#fcd34d"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🔥 Gas</td><td>Rp 100.000</td><td>4,17%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4.17%;background:#fcd34d"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>💧 Galon</td><td>Rp 100.000</td><td>4,17%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4.17%;background:#fcd34d"></div></div></td></tr>
-              <!-- Rumah -->
-              <tr class="fin-row-cat">
-                <td>3</td>
-                <td><span class="fin-cat-dot" style="background:#3b82f6"></span>🏠 Rumah</td>
-                <td class="fin-sub-total">Total Rumah</td>
-                <td class="fin-amt-total">Rp 600.000</td>
-                <td class="fin-pct-total">25,00%</td>
-                <td class="fin-bar-cell"><div class="fin-tbar"><div class="fin-tbar-fill" style="width:25%;background:#3b82f6"></div></div></td>
-              </tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>📶 WiFi</td><td>Rp 200.000</td><td>8,33%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:8.33%;background:#93c5fd"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>⚡ Listrik</td><td>Rp 400.000</td><td>16,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:16.67%;background:#93c5fd"></div></div></td></tr>
-              <!-- Kebutuhan Anak -->
-              <tr class="fin-row-cat">
-                <td>4</td>
-                <td><span class="fin-cat-dot" style="background:#06b6d4"></span>👶 Keb. Anak</td>
-                <td class="fin-sub-total">Total Anak</td>
-                <td class="fin-amt-total">Rp 250.000</td>
-                <td class="fin-pct-total">10,42%</td>
-                <td class="fin-bar-cell"><div class="fin-tbar"><div class="fin-tbar-fill" style="width:10.42%;background:#06b6d4"></div></div></td>
-              </tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🛁 Sabun / body soap / shampoo</td><td>Rp 125.000</td><td>5,21%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:5.21%;background:#67e8f9"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🌸 Minyak wangi / face cream</td><td>Rp 125.000</td><td>5,21%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:5.21%;background:#67e8f9"></div></div></td></tr>
-              <!-- Hiburan -->
-              <tr class="fin-row-cat">
-                <td>5</td>
-                <td><span class="fin-cat-dot" style="background:#10b981"></span>🎉 Hiburan</td>
-                <td class="fin-sub-total">Total Hiburan</td>
-                <td class="fin-amt-total">Rp 100.000</td>
-                <td class="fin-pct-total">4,17%</td>
-                <td class="fin-bar-cell"><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4.17%;background:#10b981"></div></div></td>
-              </tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🍜 Jajan</td><td>Rp 60.000</td><td>2,50%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2.5%;background:#6ee7b7"></div></div></td></tr>
-              <tr class="fin-row-sub fin-last-sub"><td></td><td></td><td>🚶 Jalan-jalan</td><td>Rp 40.000</td><td>1,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:1.67%;background:#6ee7b7"></div></div></td></tr>
-              <!-- Total -->
-              <tr class="fin-row-grand-total">
-                <td colspan="3">🏆 TOTAL ISTRI</td>
-                <td>Rp 2.400.000</td>
-                <td>100%</td>
-                <td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:100%;background:linear-gradient(90deg,#0d2818,#1a5c35)"></div></div></td>
-              </tr>
+              <tr class="fin-row-cat"><td>1</td><td><span class="fin-cat-dot" style="background:#ec4899"></span>👗 Keb. Pribadi</td><td><b>Total Pribadi</b></td><td class="fin-td-amt"><b>Rp 450.000</b></td><td class="fin-td-pct"><b>18,75%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:18.75%;background:#ec4899"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>📖 Belajar</td><td class="fin-td-amt">Rp 75.000</td><td class="fin-td-pct">3,13%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:3.13%;background:#f9a8d4"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>👔 Pakaian</td><td class="fin-td-amt">Rp 100.000</td><td class="fin-td-pct">4,17%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4.17%;background:#f9a8d4"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>💄 Makeup</td><td class="fin-td-amt">Rp 100.000</td><td class="fin-td-pct">4,17%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4.17%;background:#f9a8d4"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>✨ Skincare</td><td class="fin-td-amt">Rp 175.000</td><td class="fin-td-pct">7,29%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:7.29%;background:#f9a8d4"></div></div></td></tr>
+              <tr class="fin-row-cat"><td>2</td><td><span class="fin-cat-dot" style="background:#f59e0b"></span>🍳 Keb. Dapur</td><td><b>Total Dapur</b></td><td class="fin-td-amt"><b>Rp 1.000.000</b></td><td class="fin-td-pct"><b>41,67%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:41.67%;background:#f59e0b"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🌾 Bahan pokok (beras, dll.)</td><td class="fin-td-amt">Rp 400.000</td><td class="fin-td-pct">16,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:16.67%;background:#fcd34d"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🥩 Lauk-pauk &amp; sayur</td><td class="fin-td-amt">Rp 400.000</td><td class="fin-td-pct">16,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:16.67%;background:#fcd34d"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🔥 Gas</td><td class="fin-td-amt">Rp 100.000</td><td class="fin-td-pct">4,17%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4.17%;background:#fcd34d"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>💧 Galon</td><td class="fin-td-amt">Rp 100.000</td><td class="fin-td-pct">4,17%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4.17%;background:#fcd34d"></div></div></td></tr>
+              <tr class="fin-row-cat"><td>3</td><td><span class="fin-cat-dot" style="background:#3b82f6"></span>🏠 Rumah</td><td><b>Total Rumah</b></td><td class="fin-td-amt"><b>Rp 600.000</b></td><td class="fin-td-pct"><b>25,00%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:25%;background:#3b82f6"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>📶 WiFi</td><td class="fin-td-amt">Rp 200.000</td><td class="fin-td-pct">8,33%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:8.33%;background:#93c5fd"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>⚡ Listrik</td><td class="fin-td-amt">Rp 400.000</td><td class="fin-td-pct">16,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:16.67%;background:#93c5fd"></div></div></td></tr>
+              <tr class="fin-row-cat"><td>4</td><td><span class="fin-cat-dot" style="background:#06b6d4"></span>👶 Keb. Anak</td><td><b>Total Anak</b></td><td class="fin-td-amt"><b>Rp 250.000</b></td><td class="fin-td-pct"><b>10,42%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:10.42%;background:#06b6d4"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🛁 Sabun / body soap / shampoo</td><td class="fin-td-amt">Rp 125.000</td><td class="fin-td-pct">5,21%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:5.21%;background:#67e8f9"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🌸 Minyak wangi / face cream</td><td class="fin-td-amt">Rp 125.000</td><td class="fin-td-pct">5,21%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:5.21%;background:#67e8f9"></div></div></td></tr>
+              <tr class="fin-row-cat"><td>5</td><td><span class="fin-cat-dot" style="background:#10b981"></span>🎉 Hiburan</td><td><b>Total Hiburan</b></td><td class="fin-td-amt"><b>Rp 100.000</b></td><td class="fin-td-pct"><b>4,17%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4.17%;background:#10b981"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🍜 Jajan</td><td class="fin-td-amt">Rp 60.000</td><td class="fin-td-pct">2,50%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2.5%;background:#6ee7b7"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🚶 Jalan-jalan</td><td class="fin-td-amt">Rp 40.000</td><td class="fin-td-pct">1,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:1.67%;background:#6ee7b7"></div></div></td></tr>
+              <tr class="fin-row-grand fin-row-grand-istri"><td colspan="3">🏆 TOTAL ISTRI</td><td class="fin-td-amt">Rp 2.400.000</td><td class="fin-td-pct">100%</td><td><div class="fin-tbar fin-tbar-lg"><div class="fin-tbar-fill" style="width:100%;background:linear-gradient(90deg,#0d2818,#259652)"></div></div></td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </div><!-- /fin-panel-istri -->
 
-    <!-- ═══════════════════════════════════════════
-         PANEL RINGKASAN
-         ═══════════════════════════════════════════ -->
+    <!-- ════ PANEL RINGKASAN ════ -->
     <div id="fin-panel-ringkasan" class="fin-panel">
+      <div class="fin-ring-grid">
 
-      <!-- Perbandingan bar chart horizontal -->
-      <div class="dash-card fin-compare-card">
-        <div class="fin-table-title" style="margin-bottom:1.2rem">📊 Perbandingan Alokasi Suami vs Istri</div>
-        <div class="fin-compare-row">
-          <div class="fin-compare-label">🚗 Transportasi</div>
-          <div class="fin-compare-bars">
-            <div class="fin-cbar-wrap">
-              <div class="fin-cbar fin-cbar-suami" style="width:33.33%"><span>33,33%</span></div>
+        <!-- Stacked bar keluarga -->
+        <div class="dash-card fin-stack-card">
+          <div class="fin-table-title" style="margin-bottom:1rem">🏠 Komposisi Anggaran Keluarga</div>
+          <div class="fin-stack-total">
+            <span class="fin-stack-total-lbl">Total Keluarga</span>
+            <span class="fin-stack-total-val">Rp 3.900.000 / bulan</span>
+          </div>
+          <div class="fin-stack-bar-wrap">
+            <div class="fin-stack-bar">
+              <div class="fin-stack-seg" style="width:38.46%;background:linear-gradient(90deg,#0f1628,#1e3a5f)" title="Suami 38,46%"></div>
+              <div class="fin-stack-seg" style="width:61.54%;background:linear-gradient(90deg,#0d2818,#1a5c35)" title="Istri 61,54%"></div>
             </div>
-            <div class="fin-cbar-wrap fin-cbar-wrap-istri">
-              <div class="fin-cbar fin-cbar-istri" style="width:0%"><span>—</span></div>
+            <div class="fin-stack-labels">
+              <span style="color:#1e3a5f">💼 Suami 38,46% — Rp 1.500.000</span>
+              <span style="color:#1a5c35">🌸 Istri 61,54% — Rp 2.400.000</span>
             </div>
           </div>
-          <div class="fin-compare-amts"><span>Rp500rb</span><span>—</span></div>
-        </div>
-        <div class="fin-compare-row">
-          <div class="fin-compare-label">🍳 Kebutuhan Dapur</div>
-          <div class="fin-compare-bars">
-            <div class="fin-cbar-wrap"><div class="fin-cbar fin-cbar-suami" style="width:0%"><span>—</span></div></div>
-            <div class="fin-cbar-wrap fin-cbar-wrap-istri"><div class="fin-cbar fin-cbar-istri" style="width:41.67%"><span>41,67%</span></div></div>
+
+          <!-- Per-kategori hbar chart -->
+          <div class="fin-ring-section-title">Breakdown per Kategori</div>
+          <div class="fin-hbar-list">
+            <div class="fin-hbar-item">
+              <div class="fin-hbar-label">🍳 Dapur (Istri)</div>
+              <div class="fin-hbar-track"><div class="fin-hbar-fill" style="width:25.64%;background:#f59e0b"></div></div>
+              <div class="fin-hbar-val">Rp 1.000.000 <span>25,6%</span></div>
+            </div>
+            <div class="fin-hbar-item">
+              <div class="fin-hbar-label">🚗 Transportasi (Suami)</div>
+              <div class="fin-hbar-track"><div class="fin-hbar-fill" style="width:12.82%;background:#f43f5e"></div></div>
+              <div class="fin-hbar-val">Rp 500.000 <span>12,8%</span></div>
+            </div>
+            <div class="fin-hbar-item">
+              <div class="fin-hbar-label">🏠 Rumah (Istri)</div>
+              <div class="fin-hbar-track"><div class="fin-hbar-fill" style="width:15.38%;background:#3b82f6"></div></div>
+              <div class="fin-hbar-val">Rp 600.000 <span>15,4%</span></div>
+            </div>
+            <div class="fin-hbar-item">
+              <div class="fin-hbar-label">👗 Keb. Pribadi Istri</div>
+              <div class="fin-hbar-track"><div class="fin-hbar-fill" style="width:11.54%;background:#ec4899"></div></div>
+              <div class="fin-hbar-val">Rp 450.000 <span>11,5%</span></div>
+            </div>
+            <div class="fin-hbar-item">
+              <div class="fin-hbar-label">📈 Investasi (Suami)</div>
+              <div class="fin-hbar-track"><div class="fin-hbar-fill" style="width:5.13%;background:#06b6d4"></div></div>
+              <div class="fin-hbar-val">Rp 200.000 <span>5,1%</span></div>
+            </div>
+            <div class="fin-hbar-item">
+              <div class="fin-hbar-label">🏪 Modal Usaha (Suami)</div>
+              <div class="fin-hbar-track"><div class="fin-hbar-fill" style="width:5.13%;background:#8b5cf6"></div></div>
+              <div class="fin-hbar-val">Rp 200.000 <span>5,1%</span></div>
+            </div>
+            <div class="fin-hbar-item">
+              <div class="fin-hbar-label">🛡️ Dana Darurat (Suami)</div>
+              <div class="fin-hbar-track"><div class="fin-hbar-fill" style="width:5.13%;background:#10b981"></div></div>
+              <div class="fin-hbar-val">Rp 200.000 <span>5,1%</span></div>
+            </div>
+            <div class="fin-hbar-item">
+              <div class="fin-hbar-label">👶 Keb. Anak (Istri)</div>
+              <div class="fin-hbar-track"><div class="fin-hbar-fill" style="width:6.41%;background:#67e8f9"></div></div>
+              <div class="fin-hbar-val">Rp 250.000 <span>6,4%</span></div>
+            </div>
           </div>
-          <div class="fin-compare-amts"><span>—</span><span>Rp1jt</span></div>
         </div>
-        <div class="fin-compare-row">
-          <div class="fin-compare-label">🏠 Rumah (Tagihan)</div>
-          <div class="fin-compare-bars">
-            <div class="fin-cbar-wrap"><div class="fin-cbar fin-cbar-suami" style="width:0%"><span>—</span></div></div>
-            <div class="fin-cbar-wrap fin-cbar-wrap-istri"><div class="fin-cbar fin-cbar-istri" style="width:25%"><span>25%</span></div></div>
+
+        <!-- Ringkasan card suami + istri -->
+        <div class="fin-ring-side">
+          <div class="dash-card fin-mini-summary fin-mini-suami">
+            <div class="fin-mini-header">
+              <span class="fin-mini-ico">💼</span>
+              <div><div class="fin-mini-name">Suami</div><div class="fin-mini-total">Rp 1.500.000</div></div>
+              <span class="fin-mini-badge">38,46%</span>
+            </div>
+            <div class="fin-mini-rows">
+              <div class="fin-mini-row"><span style="color:#f43f5e">🚗</span><span>Transportasi</span><b>Rp 500.000</b></div>
+              <div class="fin-mini-row"><span style="color:#06b6d4">📈</span><span>Investasi</span><b>Rp 200.000</b></div>
+              <div class="fin-mini-row"><span style="color:#8b5cf6">🏪</span><span>Modal Usaha</span><b>Rp 200.000</b></div>
+              <div class="fin-mini-row"><span style="color:#10b981">🛡️</span><span>Dana Darurat</span><b>Rp 200.000</b></div>
+              <div class="fin-mini-row"><span style="color:#f59e0b">🎉</span><span>Hiburan</span><b>Rp 100.000</b></div>
+              <div class="fin-mini-row"><span style="color:#3b82f6">📡</span><span>Provider</span><b>Rp 100.000</b></div>
+              <div class="fin-mini-row"><span style="color:#ec4899">🧴</span><span>Keb. Pribadi</span><b>Rp 100.000</b></div>
+              <div class="fin-mini-row fin-mini-row-last"><span style="color:#84cc16">📚</span><span>Pendidikan</span><b>Rp 100.000</b></div>
+            </div>
           </div>
-          <div class="fin-compare-amts"><span>—</span><span>Rp600rb</span></div>
-        </div>
-        <div class="fin-compare-row">
-          <div class="fin-compare-label">🧴 Kebutuhan Pribadi</div>
-          <div class="fin-compare-bars">
-            <div class="fin-cbar-wrap"><div class="fin-cbar fin-cbar-suami" style="width:6.67%"><span>6,67%</span></div></div>
-            <div class="fin-cbar-wrap fin-cbar-wrap-istri"><div class="fin-cbar fin-cbar-istri" style="width:18.75%"><span>18,75%</span></div></div>
+          <div class="dash-card fin-mini-summary fin-mini-istri">
+            <div class="fin-mini-header">
+              <span class="fin-mini-ico">🌸</span>
+              <div><div class="fin-mini-name">Istri</div><div class="fin-mini-total">Rp 2.400.000</div></div>
+              <span class="fin-mini-badge">61,54%</span>
+            </div>
+            <div class="fin-mini-rows">
+              <div class="fin-mini-row"><span style="color:#f59e0b">🍳</span><span>Kebutuhan Dapur</span><b>Rp 1.000.000</b></div>
+              <div class="fin-mini-row"><span style="color:#3b82f6">🏠</span><span>Rumah</span><b>Rp 600.000</b></div>
+              <div class="fin-mini-row"><span style="color:#ec4899">👗</span><span>Keb. Pribadi</span><b>Rp 450.000</b></div>
+              <div class="fin-mini-row"><span style="color:#06b6d4">👶</span><span>Keb. Anak</span><b>Rp 250.000</b></div>
+              <div class="fin-mini-row fin-mini-row-last"><span style="color:#10b981">🎉</span><span>Hiburan</span><b>Rp 100.000</b></div>
+            </div>
           </div>
-          <div class="fin-compare-amts"><span>Rp100rb</span><span>Rp450rb</span></div>
         </div>
-        <div class="fin-compare-row">
-          <div class="fin-compare-label">📈 Investasi / Dana Darurat</div>
-          <div class="fin-compare-bars">
-            <div class="fin-cbar-wrap"><div class="fin-cbar fin-cbar-suami" style="width:26.66%"><span>26,66%</span></div></div>
-            <div class="fin-cbar-wrap fin-cbar-wrap-istri"><div class="fin-cbar fin-cbar-istri" style="width:0%"><span>—</span></div></div>
-          </div>
-          <div class="fin-compare-amts"><span>Rp400rb</span><span>—</span></div>
-        </div>
-        <div class="fin-compare-row">
-          <div class="fin-compare-label">🏪 Modal Usaha</div>
-          <div class="fin-compare-bars">
-            <div class="fin-cbar-wrap"><div class="fin-cbar fin-cbar-suami" style="width:13.33%"><span>13,33%</span></div></div>
-            <div class="fin-cbar-wrap fin-cbar-wrap-istri"><div class="fin-cbar fin-cbar-istri" style="width:0%"><span>—</span></div></div>
-          </div>
-          <div class="fin-compare-amts"><span>Rp200rb</span><span>—</span></div>
-        </div>
-        <div class="fin-compare-row">
-          <div class="fin-compare-label">🎉 Hiburan</div>
-          <div class="fin-compare-bars">
-            <div class="fin-cbar-wrap"><div class="fin-cbar fin-cbar-suami" style="width:6.67%"><span>6,67%</span></div></div>
-            <div class="fin-cbar-wrap fin-cbar-wrap-istri"><div class="fin-cbar fin-cbar-istri" style="width:4.17%"><span>4,17%</span></div></div>
-          </div>
-          <div class="fin-compare-amts"><span>Rp100rb</span><span>Rp100rb</span></div>
-        </div>
-        <div class="fin-compare-row">
-          <div class="fin-compare-label">👶 Kebutuhan Anak</div>
-          <div class="fin-compare-bars">
-            <div class="fin-cbar-wrap"><div class="fin-cbar fin-cbar-suami" style="width:0%"><span>—</span></div></div>
-            <div class="fin-cbar-wrap fin-cbar-wrap-istri"><div class="fin-cbar fin-cbar-istri" style="width:10.42%"><span>10,42%</span></div></div>
-          </div>
-          <div class="fin-compare-amts"><span>—</span><span>Rp250rb</span></div>
-        </div>
-        <!-- legend -->
-        <div class="fin-compare-legend">
-          <span><span class="fin-legend-dot" style="background:#1e3a5f;display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:middle;margin-right:5px"></span>💼 Suami</span>
-          <span><span class="fin-legend-dot" style="background:#1a5c35;display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:middle;margin-right:5px"></span>🌸 Istri</span>
-        </div>
+
       </div>
-
-      <!-- Grand total cards -->
-      <div class="fin-grand-grid">
-        <div class="dash-card fin-grand-card fin-grand-suami">
-          <div class="fin-grand-label">💼 Total Suami</div>
-          <div class="fin-grand-val">Rp 1.500.000</div>
-          <div class="fin-grand-sub">8 pos · 38,46% dari keluarga</div>
-          <div class="fin-grand-bars">
-            <div class="fin-grand-bar-item"><span>🚗 Transportasi</span><div class="fin-tbar" style="flex:1"><div class="fin-tbar-fill" style="width:33.33%;background:#f43f5e"></div></div><span>33%</span></div>
-            <div class="fin-grand-bar-item"><span>📈 Investasi</span><div class="fin-tbar" style="flex:1"><div class="fin-tbar-fill" style="width:13.33%;background:#06b6d4"></div></div><span>13%</span></div>
-            <div class="fin-grand-bar-item"><span>🏪 Modal Usaha</span><div class="fin-tbar" style="flex:1"><div class="fin-tbar-fill" style="width:13.33%;background:#8b5cf6"></div></div><span>13%</span></div>
-            <div class="fin-grand-bar-item"><span>🛡️ Dana Darurat</span><div class="fin-tbar" style="flex:1"><div class="fin-tbar-fill" style="width:13.33%;background:#10b981"></div></div><span>13%</span></div>
-          </div>
-        </div>
-        <div class="dash-card fin-grand-card fin-grand-keluarga">
-          <div class="fin-grand-label">🏠 Grand Total Keluarga</div>
-          <div class="fin-grand-val">Rp 3.900.000</div>
-          <div class="fin-grand-sub">Rp1,5 jt suami + Rp2,4 jt istri</div>
-          <div style="margin-top:0.85rem">
-            <div class="fin-tbar fin-tbar-stacked">
-              <div class="fin-tbar-fill" style="width:38.46%;background:#1e3a5f;border-radius:4px 0 0 4px"></div>
-              <div class="fin-tbar-fill" style="width:61.54%;background:#1a5c35;border-radius:0 4px 4px 0"></div>
-            </div>
-            <div class="fin-stack-legend">
-              <span style="color:#1e3a5f">■ Suami 38,46%</span>
-              <span style="color:#1a5c35">■ Istri 61,54%</span>
-            </div>
-          </div>
-        </div>
-        <div class="dash-card fin-grand-card fin-grand-istri">
-          <div class="fin-grand-label">🌸 Total Istri</div>
-          <div class="fin-grand-val">Rp 2.400.000</div>
-          <div class="fin-grand-sub">5 pos · 61,54% dari keluarga</div>
-          <div class="fin-grand-bars">
-            <div class="fin-grand-bar-item"><span>🍳 Dapur</span><div class="fin-tbar" style="flex:1"><div class="fin-tbar-fill" style="width:41.67%;background:#f59e0b"></div></div><span>42%</span></div>
-            <div class="fin-grand-bar-item"><span>🏠 Rumah</span><div class="fin-tbar" style="flex:1"><div class="fin-tbar-fill" style="width:25%;background:#3b82f6"></div></div><span>25%</span></div>
-            <div class="fin-grand-bar-item"><span>👗 Pribadi</span><div class="fin-tbar" style="flex:1"><div class="fin-tbar-fill" style="width:18.75%;background:#ec4899"></div></div><span>19%</span></div>
-            <div class="fin-grand-bar-item"><span>👶 Anak</span><div class="fin-tbar" style="flex:1"><div class="fin-tbar-fill" style="width:10.42%;background:#06b6d4"></div></div><span>10%</span></div>
-          </div>
-        </div>
-      </div>
-
     </div><!-- /fin-panel-ringkasan -->
 
   </div>

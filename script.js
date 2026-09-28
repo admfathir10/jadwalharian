@@ -129,6 +129,7 @@ function initFirebase() {
     isFirebaseReady = true;
     setTimeout(initMenuFirebase, 0);
     setTimeout(initChecklistFirebase, 0);
+    setTimeout(initFinAllocFirebase, 0);
   } catch(e) {
     setSyncStatus('error', 'Error Firebase');
     console.error(e);
@@ -1722,4 +1723,97 @@ window.switchFinTab = function(tab, btn) {
   if (btn) btn.classList.add('active');
   const panel = document.getElementById('fin-panel-' + tab);
   if (panel) panel.classList.add('active');
+};
+
+/* ================================================
+   FINANSIAL CHECKLIST — Alokasi bulanan
+   Firebase path: fin_alloc/YYYY-MM/{suami_1: true, istri_3: true, ...}
+   Reset manual per bulan
+   ================================================ */
+
+let finAllocRef  = null;
+let finAllocData = {};
+
+const FIN_TOTALS = { suami: 8, istri: 7 };
+
+function getFinMonthKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+
+function initFinAllocFirebase() {
+  try {
+    const monthKey = getFinMonthKey();
+    finAllocRef    = db.ref('fin_alloc/' + monthKey);
+    finAllocRef.on('value', snap => {
+      finAllocData = snap.val() || {};
+      renderFinChk();
+    }, err => {
+      console.warn('FinAlloc Firebase error, pakai lokal:', err);
+      loadFinAllocLocal();
+    });
+  } catch(e) {
+    console.warn('initFinAllocFirebase error:', e);
+    loadFinAllocLocal();
+  }
+}
+
+function loadFinAllocLocal() {
+  try {
+    finAllocData = JSON.parse(localStorage.getItem('fin_alloc_' + getFinMonthKey()) || '{}');
+  } catch { finAllocData = {}; }
+  renderFinChk();
+}
+
+function renderFinChk() {
+  ['suami','istri'].forEach(who => {
+    const total = FIN_TOTALS[who];
+    let done = 0;
+    for (let i = 1; i <= total; i++) {
+      const id  = `${who}_${i}`;
+      const el  = document.getElementById(`finchk-${id}`);
+      const checked = !!finAllocData[id];
+      if (checked) done++;
+      if (el) {
+        el.classList.toggle('checked', checked);
+        el.querySelector('.fin-chk-inner').textContent = checked ? '✓' : '';
+      }
+    }
+    const pct  = Math.round(done / total * 100);
+    const bar  = document.getElementById(`fin-bar-${who}`);
+    const text = document.getElementById(`fin-text-${who}`);
+    if (bar)  bar.style.width = pct + '%';
+    if (text) {
+      text.textContent = done === total
+        ? `✅ Semua ${total} kategori sudah dialokasikan!`
+        : `${done} / ${total} kategori dialokasikan`;
+      text.style.color = done === total ? '#16a34a' : '';
+    }
+  });
+}
+
+window.toggleFinChk = function(id) {
+  const newVal     = !finAllocData[id];
+  finAllocData[id] = newVal;
+  if (finAllocRef) {
+    finAllocRef.child(id).set(newVal);
+  } else {
+    try { localStorage.setItem('fin_alloc_' + getFinMonthKey(), JSON.stringify(finAllocData)); } catch {}
+    renderFinChk();
+  }
+};
+
+window.resetFinChk = function(who) {
+  if (!confirm(`Reset checklist alokasi ${who === 'suami' ? 'Suami' : 'Istri'} bulan ini?`)) return;
+  const total = FIN_TOTALS[who];
+  for (let i = 1; i <= total; i++) delete finAllocData[`${who}_${i}`];
+  if (finAllocRef) {
+    // Hapus hanya key milik who ini
+    const updates = {};
+    for (let i = 1; i <= total; i++) updates[`${who}_${i}`] = null;
+    finAllocRef.update(updates);
+  } else {
+    try { localStorage.setItem('fin_alloc_' + getFinMonthKey(), JSON.stringify(finAllocData)); } catch {}
+    renderFinChk();
+  }
 };

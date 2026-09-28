@@ -3065,112 +3065,132 @@ body:not(.app-unlocked) .pin-lock-screen {
 }
 
 /* ================================================
-   FINANSIAL — Checklist Alokasi Bulanan
+   FINANSIAL — Checklist Alokasi Dana
    ================================================ */
 
-/* Kolom header checklist */
-.fin-table thead th:last-child {
+/* Header kolom ✓ */
+.fin-th-chk {
+  width: 68px;
   text-align: center;
-  font-size: 13px;
-  color: #16a34a;
-  letter-spacing: 0.03em;
+  color: #16a34a !important;
+  font-size: 12px;
+  letter-spacing: 0.04em;
 }
 
-/* Cell checklist di setiap fin-row-cat */
+/* Cell checklist di fin-row-cat */
 .fin-td-chk {
   text-align: center;
   vertical-align: middle;
   padding: 6px 8px !important;
 }
 
-/* Checkbox bulat */
-.fin-chk {
-  width: 28px;
-  height: 28px;
+/* Row sub tidak punya checkbox — kolom kosong */
+.fin-row-sub td:last-child {
+  /* biarkan kosong, tidak perlu style khusus */
+}
+
+/* Tombol checklist */
+.fin-chk-btn {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 2px solid #d1d5db;
   background: #fff;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.18s cubic-bezier(.34,1.56,.64,1);
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  margin: 0 auto;
+  padding: 0;
+  font-family: inherit;
 }
 
-.fin-chk:hover {
+.fin-chk-btn:hover {
   border-color: #16a34a;
   background: #f0fdf4;
-  transform: scale(1.12);
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(22,163,74,0.2);
 }
 
-.fin-chk.checked {
+.fin-chk-btn.done {
   background: linear-gradient(135deg, #22c55e, #16a34a);
   border-color: #16a34a;
-  box-shadow: 0 2px 8px rgba(34,197,94,0.35);
+  box-shadow: 0 3px 10px rgba(22,163,74,0.38);
+  transform: scale(1.05);
 }
 
-.fin-chk-inner {
-  font-size: 13px;
-  font-weight: 800;
-  color: transparent;
+.fin-chk-btn.done:hover {
+  transform: scale(1.12);
+  box-shadow: 0 4px 14px rgba(22,163,74,0.45);
+}
+
+.fin-chk-icon {
+  font-size: 14px;
+  font-weight: 700;
+  color: #9ca3af;
   line-height: 1;
+  pointer-events: none;
   transition: color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.fin-chk.checked .fin-chk-inner {
+.fin-chk-btn.done .fin-chk-icon {
   color: #fff;
+  font-size: 13px;
 }
 
-/* Row kategori yang sudah dicentang — redup sedikit */
-.fin-row-cat.alloc-done td {
-  opacity: 0.55;
-  text-decoration: line-through;
+/* Row kategori saat sudah dicentang — redup halus */
+.fin-row-cat.alloc-done td:not(.fin-td-chk) {
+  opacity: 0.45;
 }
-.fin-row-cat.alloc-done .fin-td-chk {
-  opacity: 1;
-  text-decoration: none;
+.fin-row-cat.alloc-done {
+  background: #f0fdf4;
 }
 
-/* Progress bar alokasi di bawah header tabel */
-.fin-alloc-progress {
+/* Progress strip di bawah header tabel */
+.fin-alloc-strip {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 16px 10px;
-  background: var(--bg-surface, #f9f8f5);
-  border-bottom: 1px solid var(--border-med, #e5e0d8);
+  padding: 9px 16px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .fin-alloc-bar-wrap {
   flex: 1;
-  height: 7px;
+  height: 8px;
   background: #e5e7eb;
   border-radius: 99px;
   overflow: hidden;
-  min-width: 80px;
+  min-width: 60px;
 }
 
-.fin-alloc-bar-fill {
+.fin-alloc-bar {
   height: 100%;
+  width: 0%;
   background: linear-gradient(90deg, #22c55e, #16a34a);
   border-radius: 99px;
-  transition: width 0.4s ease;
+  transition: width 0.45s ease;
 }
 
-.fin-alloc-prog-text {
+.fin-alloc-label {
   font-size: 11.5px;
   font-weight: 600;
-  color: var(--text-secondary, #6b7280);
+  color: #6b7280;
   white-space: nowrap;
+  min-width: 130px;
+  text-align: right;
 }
 
-.fin-alloc-reset {
+.fin-alloc-reset-btn {
   font-size: 10.5px;
   font-weight: 600;
-  font-family: var(--font, sans-serif);
-  padding: 3px 10px;
+  font-family: inherit;
+  padding: 3px 11px;
   border-radius: 20px;
   border: 1px solid #d1d5db;
   background: #fff;
@@ -3179,21 +3199,13 @@ body:not(.app-unlocked) .pin-lock-screen {
   transition: all 0.15s;
   white-space: nowrap;
 }
-.fin-alloc-reset:hover {
+.fin-alloc-reset-btn:hover {
   border-color: #f43f5e;
   color: #f43f5e;
   background: #fff1f2;
 }
 
-/* Mobile: sembunyikan kolom proporsi agar tidak terlalu padat */
 @media (max-width: 600px) {
-  .fin-table th:nth-child(6),
-  .fin-table td:nth-child(6) {
-    display: none;
-  }
-  .fin-alloc-progress {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .fin-alloc-bar-wrap { min-width: 100px; }
+  .fin-alloc-label { min-width: 90px; font-size: 10.5px; }
+  .fin-chk-btn { width: 28px; height: 28px; }
 }

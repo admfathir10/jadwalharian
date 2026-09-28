@@ -1726,15 +1726,16 @@ window.switchFinTab = function(tab, btn) {
 };
 
 /* ================================================
-   FINANSIAL CHECKLIST — Alokasi bulanan
-   Firebase path: fin_alloc/YYYY-MM/{suami_1: true, istri_3: true, ...}
-   Reset manual per bulan
+   FINANSIAL — Checklist Alokasi Dana (Firebase sync)
+   Path: fin_alloc/YYYY-MM/{s1,s2,...,i1,i2,...}
+   Key per bulan — otomatis kosong bulan depan
    ================================================ */
+
+// Metadata: prefix → jumlah kategori
+const FIN_CATS = { s: 8, i: 7 };
 
 let finAllocRef  = null;
 let finAllocData = {};
-
-const FIN_TOTALS = { suami: 8, istri: 7 };
 
 function getFinMonthKey() {
   const d = new Date();
@@ -1743,13 +1744,13 @@ function getFinMonthKey() {
 
 function initFinAllocFirebase() {
   try {
-    const monthKey = getFinMonthKey();
-    finAllocRef    = db.ref('fin_alloc/' + monthKey);
+    finAllocRef = db.ref('fin_alloc/' + getFinMonthKey());
+    // Real-time listener — update semua device seketika
     finAllocRef.on('value', snap => {
       finAllocData = snap.val() || {};
-      renderFinChk();
+      renderFinAlloc();
     }, err => {
-      console.warn('FinAlloc Firebase error, pakai lokal:', err);
+      console.warn('FinAlloc Firebase error:', err);
       loadFinAllocLocal();
     });
   } catch(e) {
@@ -1762,58 +1763,75 @@ function loadFinAllocLocal() {
   try {
     finAllocData = JSON.parse(localStorage.getItem('fin_alloc_' + getFinMonthKey()) || '{}');
   } catch { finAllocData = {}; }
-  renderFinChk();
+  renderFinAlloc();
 }
 
-function renderFinChk() {
-  ['suami','istri'].forEach(who => {
-    const total = FIN_TOTALS[who];
+function renderFinAlloc() {
+  Object.entries(FIN_CATS).forEach(([prefix, total]) => {
     let done = 0;
+
     for (let i = 1; i <= total; i++) {
-      const id  = `${who}_${i}`;
-      const el  = document.getElementById(`finchk-${id}`);
-      const checked = !!finAllocData[id];
+      const key     = prefix + i;
+      const checked = !!finAllocData[key];
       if (checked) done++;
-      if (el) {
-        el.classList.toggle('checked', checked);
-        el.querySelector('.fin-chk-inner').textContent = checked ? '✓' : '';
+
+      // Update tombol
+      const btn = document.getElementById('finchk-' + key);
+      if (btn) {
+        btn.classList.toggle('done', checked);
+        const icon = btn.querySelector('.fin-chk-icon');
+        if (icon) icon.textContent = checked ? '✓' : '○';
       }
+
+      // Update row background
+      const row = document.getElementById('finrow-' + key);
+      if (row) row.classList.toggle('alloc-done', checked);
     }
-    const pct  = Math.round(done / total * 100);
-    const bar  = document.getElementById(`fin-bar-${who}`);
-    const text = document.getElementById(`fin-text-${who}`);
-    if (bar)  bar.style.width = pct + '%';
-    if (text) {
-      text.textContent = done === total
-        ? `✅ Semua ${total} kategori sudah dialokasikan!`
-        : `${done} / ${total} kategori dialokasikan`;
-      text.style.color = done === total ? '#16a34a' : '';
+
+    // Update progress bar & label
+    const bar   = document.getElementById('fin-bar-' + prefix);
+    const label = document.getElementById('fin-label-' + prefix);
+    const pct   = Math.round(done / total * 100);
+
+    if (bar) bar.style.width = pct + '%';
+    if (label) {
+      if (done === total) {
+        label.textContent = '✅ Semua ' + total + ' kategori selesai!';
+        label.style.color = '#16a34a';
+      } else {
+        label.textContent = done + ' / ' + total + ' dialokasikan';
+        label.style.color = '';
+      }
     }
   });
 }
 
-window.toggleFinChk = function(id) {
-  const newVal     = !finAllocData[id];
-  finAllocData[id] = newVal;
+window.toggleFinChk = function(key) {
+  const newVal     = !finAllocData[key];
+  finAllocData[key] = newVal;
+
   if (finAllocRef) {
-    finAllocRef.child(id).set(newVal);
+    finAllocRef.child(key).set(newVal);
+    // renderFinAlloc akan dipanggil otomatis oleh listener
   } else {
     try { localStorage.setItem('fin_alloc_' + getFinMonthKey(), JSON.stringify(finAllocData)); } catch {}
-    renderFinChk();
+    renderFinAlloc();
   }
 };
 
-window.resetFinChk = function(who) {
-  if (!confirm(`Reset checklist alokasi ${who === 'suami' ? 'Suami' : 'Istri'} bulan ini?`)) return;
-  const total = FIN_TOTALS[who];
-  for (let i = 1; i <= total; i++) delete finAllocData[`${who}_${i}`];
+window.resetFinChk = function(prefix) {
+  const who   = prefix === 's' ? 'Suami' : 'Istri';
+  const total = FIN_CATS[prefix];
+  if (!confirm('Reset checklist alokasi ' + who + ' bulan ini?')) return;
+
+  for (let i = 1; i <= total; i++) delete finAllocData[prefix + i];
+
   if (finAllocRef) {
-    // Hapus hanya key milik who ini
     const updates = {};
-    for (let i = 1; i <= total; i++) updates[`${who}_${i}`] = null;
+    for (let i = 1; i <= total; i++) updates[prefix + i] = null;
     finAllocRef.update(updates);
   } else {
     try { localStorage.setItem('fin_alloc_' + getFinMonthKey(), JSON.stringify(finAllocData)); } catch {}
-    renderFinChk();
+    renderFinAlloc();
   }
 };

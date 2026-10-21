@@ -7,7 +7,15 @@
    ============================================ */
 
 (function () {
-  const PIN_CODE    = '111213'; // Ganti PIN di sini
+  // ═══════════════════════════════════════════════════════
+  // PIN AMAN — SHA-256 Hashing
+  // PIN asli TIDAK tersimpan di sini. Hanya hash-nya.
+  // Untuk ganti PIN:
+  //   1. Buka https://emn178.github.io/online-tools/sha256.html
+  //   2. Ketik PIN baru → copy hash-nya
+  //   3. Ganti nilai PIN_HASH di bawah ini
+  // ═══════════════════════════════════════════════════════
+  const PIN_HASH    = 'b446cdb79227871c27c8b3bd88f7370d716e67416a6617f7bfde99600f248deb'; // SHA-256 dari PIN
   const STORAGE_KEY = 'jk_pin_unlock';
   const REMEMBER_MS = 12 * 60 * 60 * 1000; // 12 jam
   let enteredPin    = '';
@@ -49,8 +57,16 @@
     } catch(e) { return false; }
   }
 
-  function checkPin() {
-    if (enteredPin === PIN_CODE) {
+  // Fungsi hash SHA-256 menggunakan Web Crypto API (built-in browser, tanpa library)
+  async function sha256(str) {
+    const buf  = new TextEncoder().encode(str);
+    const hash = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  async function checkPin() {
+    const inputHash = await sha256(enteredPin);
+    if (inputHash === PIN_HASH) {
       const errEl = document.getElementById('pin-error');
       if (errEl) errEl.textContent = '';
       unlockApp();
@@ -341,7 +357,7 @@ function buildTodoEl(item) {
     + (!item.done && ds==='hari-ini' ? ' today' : '');
   div.setAttribute('data-who', item.who);
 
-  const whoLabel = { suami:'Fathir', istri:'Salma', bersama:'Bersama' };
+  const whoLabel = { suami:atob('cmlodGFG').split('').reverse().join(''), istri:atob('YW1sYVM=').split('').reverse().join(''), bersama:'Bersama' };
   const tagClass = { suami:'tag-suami', istri:'tag-istri', bersama:'tag-bersama' };
 
   let dlBadge = '';
@@ -976,7 +992,7 @@ const ENG_CHECKLIST = {
   // idx 5 = Sabtu (bebas & santai)
   5: [
     { id:'a', label:'📺 Nonton YouTube tanpa subtitle 20+ menit' },
-    { id:'b', label:'🛍️ Tulis 1 caption produk Artilerianstore dalam Inggris' },
+    { id:'b', label:'🛍️ Tulis 1 caption produk '+atob('ZXJvdHNuYWlyZWxpdHJB').split('').reverse().join('')+' dalam Inggris' },
     { id:'c', label:'📝 Catat 3 ekspresi natural yang didengar' },
     { id:'d', label:'🃏 Anki review ringan (opsional)' },
   ],
@@ -1191,7 +1207,7 @@ const JADWAL_HARIAN = {
     {t:'03.00',l:'Bangun — Tahajud, Witir, Sahur',cat:'ibadah'},
     {t:'04.45',l:'Sholat Subuh + Dzikir pagi',cat:'ibadah'},
     {t:'05.30',l:'Workout pagi (20 menit)',cat:'olahraga'},
-    {t:'06.20',l:'Berangkat ke SMAN 8 Kediri',cat:'kerja'},
+    {t:'06.20',l:'Berangkat ke '+atob('aXJpZGVLIDggTkFNUw==').split('').reverse().join(''),cat:'kerja'},
     {t:'07.00',l:'Jadwal mengajar',cat:'kerja'},
     {t:'09.00',l:'Sholat Dhuha',cat:'ibadah'},
     {t:'11.30',l:'Sholat Dzuhur berjamaah',cat:'ibadah'},
@@ -1199,7 +1215,7 @@ const JADWAL_HARIAN = {
     {t:'16.20',l:'Bermain bersama anak',cat:'keluarga'},
     {t:'17.45',l:'Maghrib — berbuka puasa',cat:'ibadah'},
     {t:'18.30',l:'Makan malam bersama keluarga',cat:'keluarga'},
-    {t:'20.00',l:'Cek Artilerianstore + belajar Inggris',cat:'toko'},
+    {t:'20.00',l:'Cek '+atob('ZXJvdHNuYWlyZWxpdHJB').split('').reverse().join('')+' + belajar Inggris',cat:'toko'},
     {t:'21.30',l:'Tidur',cat:'tidur'},
   ],
   selasa: [
@@ -1214,7 +1230,7 @@ const JADWAL_HARIAN = {
     {t:'16.20',l:'Bermain bersama anak',cat:'keluarga'},
     {t:'17.45',l:'Maghrib',cat:'ibadah'},
     {t:'19.15',l:'Sholat Isya + Jurnal Inggris (Writing)',cat:'ibadah'},
-    {t:'20.00',l:'Cek Artilerianstore',cat:'toko'},
+    {t:'20.00',l:'Cek '+atob('ZXJvdHNuYWlyZWxpdHJB').split('').reverse().join(''),cat:'toko'},
     {t:'21.30',l:'Tidur',cat:'tidur'},
   ],
   rabu: [
@@ -1223,7 +1239,7 @@ const JADWAL_HARIAN = {
     {t:'06.20',l:'Berangkat ke sekolah',cat:'kerja'},
     {t:'07.00',l:'Jadwal mengajar',cat:'kerja'},
     {t:'09.00',l:'Sholat Dhuha',cat:'ibadah'},
-    {t:'14.00',l:'Honor Madin',cat:'kerja'},
+    {t:'14.00',l:'Honor Mengajar',cat:'kerja'},
     {t:'15.00',l:'Sholat Ashar + pulang',cat:'ibadah'},
     {t:'16.20',l:'Bermain bersama anak',cat:'keluarga'},
     {t:'17.45',l:'Maghrib',cat:'ibadah'},
@@ -1254,7 +1270,7 @@ const JADWAL_HARIAN = {
     {t:'15.00',l:'Ashar + pulang',cat:'ibadah'},
     {t:'16.30',l:'Hobi / olahraga sore',cat:'olahraga'},
     {t:'18.00',l:'Maghrib',cat:'ibadah'},
-    {t:'18.30',l:'Date Night Salma 💑',cat:'keluarga'},
+    {t:'18.30',l:'Date Night '+atob('YW1sYVM=').split('').reverse().join('')+' 💑',cat:'keluarga'},
     {t:'19.15',l:'Isya + Speaking Inggris',cat:'ibadah'},
     {t:'21.30',l:'Tidur',cat:'tidur'},
   ],
@@ -1267,7 +1283,7 @@ const JADWAL_HARIAN = {
     {t:'11.30',l:'Dzuhur',cat:'ibadah'},
     {t:'12.00',l:'Makan siang + tidur siang',cat:'istirahat'},
     {t:'13.30',l:'Evaluasi toko Shopee',cat:'toko'},
-    {t:'14.30',l:'Jalan-jalan keluarga Kediri',cat:'keluarga'},
+    {t:'14.30',l:'Jalan-jalan keluarga '+atob('aXJpZGVL').split('').reverse().join(''),cat:'keluarga'},
     {t:'18.00',l:'Maghrib',cat:'ibadah'},
     {t:'19.15',l:'Isya',cat:'ibadah'},
     {t:'22.00',l:'Tidur',cat:'tidur'},
@@ -1295,7 +1311,7 @@ const CHECKLIST_HARIAN = {
     { id:'dzikir', label:'Dzikir pagi & petang' },
     { id:'workout',label:'Olahraga / workout' },
     { id:'keluarga',label:'Quality time keluarga' },
-    { id:'toko',   label:'Cek Artilerianstore' },
+    { id:'toko',   label:'Cek '+atob('ZXJvdHNuYWlyZWxpdHJB').split('').reverse().join('') },
   ],
   senin:  [{ id:'puasa_sen',label:'Puasa Senin ✓' }],
   kamis:  [{ id:'puasa_kam',label:'Puasa Kamis ✓' }],
@@ -1303,12 +1319,12 @@ const CHECKLIST_HARIAN = {
 };
 
 const REMINDER_HARIAN = {
-  senin:  ['Puasa Senin — jaga niat & energi','Quality time anak 16.20–17.00','Cek Artilerianstore malam','Batas WA siswa: jam 16.00'],
+  senin:  ['Puasa Senin — jaga niat & energi','Quality time anak 16.20–17.00','Cek '+atob('ZXJvdHNuYWlyZWxpdHJB').split('').reverse().join('')+' malam','Batas WA siswa: jam 16.00'],
   selasa: ['Jadwal Writing Inggris malam ini (19.45)','Deadline admin toko → Kamis malam','Quality time anak sore','Batas WA siswa: jam 16.00'],
-  rabu:   ['Hari padat — cukup Anki 10 menit','Madin','Istirahat cukup malam ini','Batas WA siswa: jam 16.00'],
+  rabu:   ['Hari padat — cukup Anki 10 menit','Ngajar Sore','Istirahat cukup malam ini','Batas WA siswa: jam 16.00'],
   kamis:  ['Puasa Kamis — berbuka sore','Baca artikel Inggris malam (Reading)','Deadline admin toko → hari ini','Quality time anak 16.20–17.00'],
-  jumat:  ['Baca Al-Kahfi pagi ini','Sholat Jumat 11.30 — siap lebih awal','Date Night Salma malam ini 💑','Speaking Inggris malam (20.30)'],
-  sabtu:  ['Evaluasi toko Shopee 13.30','Nonton YouTube tanpa sub (Inggris bebas)','Family trip sore bersama keluarga','Mandikan anak pagi — beri Salma 1 jam'],
+  jumat:  ['Baca Al-Kahfi pagi ini','Sholat Jumat 11.30 — siap lebih awal','Date Night '+atob('YW1sYVM=').split('').reverse().join('')+' malam ini 💑','Speaking Inggris malam (20.30)'],
+  sabtu:  ['Evaluasi toko Shopee 13.30','Nonton YouTube tanpa sub (Inggris bebas)','Family trip sore bersama keluarga','Mandikan anak pagi — beri '+atob('YW1sYVM=').split('').reverse().join('')+' 1 jam'],
   minggu: ['Hari keluarga — semua HP kerja off','Set target & evaluasi minggu depan','Isya + me-time untuk diri sendiri','Tidur lebih awal — Senin kerja lagi'],
 };
 
@@ -1460,7 +1476,7 @@ const MINDSET_LIST = [
     tema: "Ibadah"
   },
   {
-    lama: "Salma pasti mengerti kalau saya sibuk.",
+    lama: atob("YW1sYVM=").split("").reverse().join("")+" pasti mengerti kalau saya sibuk.",
     baru: "Date night bukan kemewahan — itu kebutuhan. Jumat malam adalah investasi pernikahan.",
     icon: "💑",
     tema: "Pernikahan"
@@ -1520,7 +1536,7 @@ const MINDSET_LIST = [
     tema: "Percaya Diri"
   },
   {
-    lama: "Artilerianstore bisa dikerjakan sendiri semua.",
+    lama: atob("ZXJvdHNuYWlyZWxpdHJB").split("").reverse().join("")+" bisa dikerjakan sendiri semua.",
     baru: "Delegasi bukan kelemahan — itu kecerdasan. Fokus pada yang hanya bisa kamu lakukan.",
     icon: "🎯",
     tema: "Delegasi"
@@ -1533,7 +1549,7 @@ const MINDSET_LIST = [
   },
   {
     lama: "Liburan keluarga butuh biaya besar.",
-    baru: "Alun-alun Kediri bersama keluarga lebih berharga dari resort tanpa hadir penuh.",
+    baru: "Alun-alun "+atob("aXJpZGVL").split("").reverse().join("")+" bersama keluarga lebih berharga dari resort tanpa hadir penuh.",
     icon: "🌳",
     tema: "Family Trip"
   },
@@ -1602,7 +1618,7 @@ const DAILY_CHECK_ITEMS = [
   { id: 'dzikir',   icon: '🤲', label: 'Dzikir Pagi & Petang' },
   { id: 'workout',  icon: '💪', label: 'Olahraga / Workout' },
   { id: 'keluarga', icon: '❤️', label: 'Quality Time Keluarga' },
-  { id: 'toko',     icon: '🛍️', label: 'Cek Artilerianstore' },
+  { id: 'toko',     icon: '🛍️', label: 'Cek '+atob('ZXJvdHNuYWlyZWxpdHJB').split('').reverse().join('') },
   { id: 'tahajud',  icon: '🌙', label: 'Tahajud (Senin & Kamis)' },
 ];
 

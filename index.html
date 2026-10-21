@@ -3,11 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jadwal Keluarga — Fathir & Salma</title>
+  <title>Jadwal Keluarga</title>
   <link rel="stylesheet" href="style.css" />
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script></head>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+/* ── Name Injector: decode & inject nama ke elemen DOM ── */
+(function(){
+  function d(e){return atob(e).split('').reverse().join('');}
+  var N={
+    s: d('cmlodGFG'),
+    i: d('YW1sYVM='),
+    ps: d('b2lkdXRTIGFtdXJBIMK3IGVyb3RzbmFpcmVsaXRyQSDCtyBpcmlkZUsgOCBOQU1T'),
+    pi: d('bW9NIHMncmFzdEEgwrcgcmVud28gdGVrcmFtbGFT'),
+    sk: d('aXJpZGVLIDggTkFNUw=='),
+    ts: d('ZXJvdHNuYWlyZWxpdHJB'),
+    ti: d('dGVrcmFtbGFT'),
+    kt: d('aXJpZGVL')
+  };
+  document.addEventListener('DOMContentLoaded',function(){
+    /* Nama suami & istri di semua span */
+    document.querySelectorAll('.nm-suami').forEach(function(e){e.textContent=N.s;});
+    document.querySelectorAll('.nm-istri').forEach(function(e){e.textContent=N.i;});
+    document.querySelectorAll('.nm-sekolah').forEach(function(e){e.textContent=N.sk;});
+    document.querySelectorAll('.nm-toko-s').forEach(function(e){e.textContent=N.ts;});
+    document.querySelectorAll('.nm-toko-i').forEach(function(e){e.textContent=N.ti;});
+    document.querySelectorAll('.nm-kota').forEach(function(e){e.textContent=N.kt;});
+    /* Profil kolom */
+    var ps=document.getElementById('profil-suami');
+    if(ps) ps.textContent=N.ps;
+    var pi=document.getElementById('profil-istri');
+    if(pi) pi.textContent=N.pi;
+    /* PIN subtitle */
+    var sub=document.getElementById('pin-subtitle');
+    if(sub) sub.textContent=N.s+' & '+N.i+' · Masukkan PIN 6 digit';
+  });
+})();
+</script>
+</head>
 <body>
 
 <!-- ===================== PIN LOCK SCREEN ===================== -->
@@ -16,7 +50,7 @@
   <div class="pin-lock-box" id="pin-lock-box">
     <div class="pin-lock-icon">📅</div>
     <h2>Jadwal Keluarga</h2>
-    <p>Fathir & Salma · Masukkan PIN 6 digit</p>
+    <p id="pin-subtitle">Keluarga · Masukkan PIN 6 digit</p>
     <div class="pin-dots" id="pin-dots">
       <div class="pin-dot"></div>
       <div class="pin-dot"></div>
@@ -94,8 +128,8 @@
       <!-- Input area -->
       <div class="todo-input-area">
         <div class="todo-who-select">
-          <button class="who-btn active" data-who="suami" onclick="setWho('suami',this)">👨 Fathir</button>
-          <button class="who-btn" data-who="istri" onclick="setWho('istri',this)">👩 Salma</button>
+          <button class="who-btn active" data-who="suami" onclick="setWho('suami',this)">👨 <span class="nm-suami">S</span></button>
+          <button class="who-btn" data-who="istri" onclick="setWho('istri',this)">👩 <span class="nm-istri">I</span></button>
           <button class="who-btn" data-who="bersama" onclick="setWho('bersama',this)">👨‍👩‍👦 Bersama</button>
         </div>
         <div class="todo-input-row">
@@ -120,8 +154,8 @@
         <button class="filter-btn active" onclick="setFilter('semua',this)">Semua</button>
         <button class="filter-btn" onclick="setFilter('hari-ini',this)">📅 Hari ini</button>
         <button class="filter-btn" onclick="setFilter('terlambat',this)">🔴 Terlambat</button>
-        <button class="filter-btn" onclick="setFilter('suami',this)">👨 Fathir</button>
-        <button class="filter-btn" onclick="setFilter('istri',this)">👩 Salma</button>
+        <button class="filter-btn" onclick="setFilter('suami',this)">👨 <span class="nm-suami">S</span></button>
+        <button class="filter-btn" onclick="setFilter('istri',this)">👩 <span class="nm-istri">I</span></button>
         <button class="filter-btn" onclick="setFilter('bersama',this)">👨‍👩‍👦 Bersama</button>
         <button class="filter-btn" onclick="setFilter('selesai',this)">✅ Selesai</button>
         <button class="todo-clear-btn" onclick="clearDone()">Hapus yang selesai</button>
@@ -154,7 +188,7 @@
           <div class="avatar">S</div>
           <div class="col-meta">
             <div class="col-name">Suami — Guru PPPK</div>
-            <div class="col-sub">SMAN 8 Kediri - Artilerianstore Owner- Aruma Studio Owner</div>
+            <div class="col-sub" id="profil-suami"></div>
           </div>
         </div>
 
@@ -182,7 +216,7 @@
               <div class="row"><span class="time">05.10</span><div class="block blk-ibadah">Mengaji</div></div>
               <div class="row"><span class="time">05.30</span><div class="block blk-olahraga">Workout pagi — bodyweight / lari ringan (20 menit)</div></div>
               <div class="row"><span class="time">05.50</span><div class="block blk-istirahat">Mandi, berpakaian rapi</div></div>
-              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke SMAN 8 Kota Kediri</div></div>
+              <div class="row"><span class="time">06.20</span><div class="block blk-kerja">Berangkat ke <span class="nm-sekolah">S</span></div></div>
               <div class="row"><span class="time">06.45</span><div class="block blk-kerja">Tiba di sekolah — absensi pagi</div></div>
               <div class="row"><span class="time">07.00</span><div class="block blk-kerja">Jadwal sesuai pelajaran</div></div>
               <div class="row"><span class="time">09.00</span><div class="block blk-ibadah">Istirahat — Sholat Dhuha (2–4 rakaat)</div></div>
@@ -196,7 +230,7 @@
               <div class="row"><span class="time">17.45</span><div class="block blk-ibadah">Maghrib — berbuka puasa</div></div>
               <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga</div></div>
               <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Sholat Isya + Dzikir malam</div></div>
-              <div class="row"><span class="time">20.00</span><div class="block blk-toko">Cek Artilerianstore</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-toko">Cek <span class="nm-toko-s">T</span></div></div>
               <div class="row"><span class="time">20.30</span><div class="block blk-hobby">Coding / membaca / nulis artikel</div></div>
               <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur</div></div>
             </div>
@@ -234,7 +268,7 @@
 
           <!-- RABU -->
           <div class="day-panel" id="day-rabu">
-            <div class="col-day-label">Rabu — Hari Kerja + Madin/TPA</div>
+            <div class="col-day-label">Rabu — Hari Kerja + Ngajar Sore</div>
             <div class="timeline">
               <div class="row"><span class="time">03.45</span><div class="block blk-ibadah">Bangun — Tahajud, Witir, doa</div></div>
               <div class="row"><span class="time">04.30</span><div class="block blk-istirahat">Sahur ringan / minum</div></div>
@@ -252,7 +286,7 @@
               <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Sholat Ashar</div></div>
               <div class="row"><span class="time">15.30</span><div class="block blk-kerja">Absensi pulang — segera pulang</div></div>
               <div class="row"><span class="time">15.45</span><div class="block blk-istirahat">Makan ringan + persiapan mengajar madin</div></div>
-              <div class="row"><span class="time">16.30</span><div class="block blk-madin">Mengajar Madin / TPA (hingga 19.00)</div></div>
+              <div class="row"><span class="time">16.30</span><div class="block blk-madin">Mengajar Ngajar Sore (hingga 19.00)</div></div>
               <div class="row"><span class="time">19.00</span><div class="block blk-ibadah">Selesai madin — Sholat Maghrib</div></div>
               <div class="row"><span class="time">19.30</span><div class="block blk-ibadah">Sholat Isya</div></div>
               <div class="row"><span class="time">19.45</span><div class="block blk-istirahat">Makan malam + istirahat ringan</div></div>
@@ -288,7 +322,7 @@
               <div class="row"><span class="time">17.45</span><div class="block blk-ibadah">Maghrib — berbuka puasa</div></div>
               <div class="row"><span class="time">18.30</span><div class="block blk-keluarga">Makan malam bersama keluarga</div></div>
               <div class="row"><span class="time">19.15</span><div class="block blk-ibadah">Sholat Isya + Dzikir malam</div></div>
-              <div class="row"><span class="time">20.00</span><div class="block blk-toko">Cek Artilerianstore</div></div>
+              <div class="row"><span class="time">20.00</span><div class="block blk-toko">Cek <span class="nm-toko-s">T</span></div></div>
               <div class="row"><span class="time">20.30</span><div class="block blk-hobby">Coding / membaca / nulis artikel</div></div>
               <div class="row"><span class="time">21.30</span><div class="block blk-tidur">Tidur</div></div>
             </div>
@@ -341,7 +375,7 @@
               <div class="row"><span class="time">11.30</span><div class="block blk-ibadah">Dzuhur</div></div>
               <div class="row"><span class="time">12.00</span><div class="block blk-istirahat">Makan siang + tidur siang (1–1.5 jam)</div></div>
               <div class="row"><span class="time">13.30</span><div class="block blk-toko">Evaluasi toko Shopee — brief karyawan mingguan</div></div>
-              <div class="row"><span class="time">14.30</span><div class="block blk-keluarga">Jalan-jalan keluarga / wisata kuliner kota Kediri</div></div>
+              <div class="row"><span class="time">14.30</span><div class="block blk-keluarga">Jalan-jalan keluarga / wisata kuliner kota</div></div>
               <div class="row"><span class="time">15.00</span><div class="block blk-ibadah">Ashar</div></div>
               <div class="row"><span class="time">15.30</span><div class="block blk-hobby">Mancing sore / nongki santai</div></div>
               <div class="row"><span class="time">17.30</span><div class="block blk-istirahat">Mandi + istirahat</div></div>
@@ -389,7 +423,7 @@
           <div class="avatar">I</div>
           <div class="col-meta">
             <div class="col-name">Istri — IRT Produktif</div>
-            <div class="col-sub">Salmarket owner - Atsar's Mom</div>
+            <div class="col-sub" id="profil-istri"></div>
           </div>
         </div>
 
@@ -524,7 +558,7 @@
         <h3>📍 Keluar Bersama (Mingguan)</h3>
         <div class="timeline">
           <div class="row"><span class="time">Jum malam</span><div class="block blk-keluarga">Makan malam di luar / nongki berdua (tanpa atau bawa anak)</div></div>
-          <div class="row"><span class="time">Sab sore</span><div class="block blk-keluarga">Jalan-jalan keluarga bertiga — kuliner / taman / mall Kediri</div></div>
+          <div class="row"><span class="time">Sab sore</span><div class="block blk-keluarga">Jalan-jalan keluarga bertiga — kuliner / taman / mall kota</div></div>
           <div class="row"><span class="time">Min pagi</span><div class="block blk-keluarga">Sarapan di luar / car free day / pasar pagi bersama</div></div>
         </div>
       </div>
@@ -620,7 +654,7 @@
     <div class="eng-day-card" style="border-color:#fecaca"><div class="eng-ico" style="background:#fef2f2">⚡</div><div style="flex:1"><div class="eng-day-name">Rabu — Micro (Hari Padat)</div><div class="eng-day-focus">Anki saja 10 menit</div><div class="eng-day-detail">Rabu = hari tersibuk. Cukup Anki di perjalanan. Konsistensi lebih penting dari durasi.</div></div><span class="eng-time-tag">Pagi</span></div>
     <div class="eng-day-card"><div class="eng-ico" style="background:#eff6ff">📖</div><div style="flex:1"><div class="eng-day-name">Kamis — Reading</div><div class="eng-day-focus">Artikel edukasi / Islam 20' + Vocab 10'</div><div class="eng-day-detail">BBC Education, The Guardian, atau jurnal Islamic Studies berbahasa Inggris.</div></div><span class="eng-time-tag">20.00</span></div>
     <div class="eng-day-card"><div class="eng-ico" style="background:#fffbeb">🎙️</div><div style="flex:1"><div class="eng-day-name">Jumat — Speaking</div><div class="eng-day-focus">Shadowing / Monolog 2 menit 20' + Pronunciation 10'</div><div class="eng-day-detail">Rekam suara sendiri, dengar ulang. Atau tirukan kalimat dari YouTube.</div></div><span class="eng-time-tag">20.30</span></div>
-    <div class="eng-day-card"><div class="eng-ico" style="background:#f0fdfa">🌿</div><div style="flex:1"><div class="eng-day-name">Sabtu — Bebas</div><div class="eng-day-focus">Nonton YouTube tanpa sub / Caption konten toko</div><div class="eng-day-detail">Buat caption Artilerianstore dalam Inggris. Belajar sambil bisnis.</div></div><span class="eng-time-tag">Bebas</span></div>
+    <div class="eng-day-card"><div class="eng-ico" style="background:#f0fdfa">🌿</div><div style="flex:1"><div class="eng-day-name">Sabtu — Bebas</div><div class="eng-day-focus">Nonton YouTube tanpa sub / Caption konten toko</div><div class="eng-day-detail">Buat caption <span class="nm-toko-s">T</span> dalam Inggris. Belajar sambil bisnis.</div></div><span class="eng-time-tag">Bebas</span></div>
     <div class="eng-day-card" style="background:#f9f8f5"><div class="eng-ico" style="background:#e5e7eb">🏠</div><div style="flex:1"><div class="eng-day-name">Minggu — Istirahat</div><div class="eng-day-focus">Review Anki ringan saja (opsional)</div><div class="eng-day-detail">Hari keluarga. Otak yang istirahat menyerap lebih baik pekan depan.</div></div><span class="eng-time-tag" style="background:#e5e7eb;color:#6b7280">Opsional</span></div>
 
     <div style="display:flex;gap:8px;margin-top:14px">
@@ -767,7 +801,7 @@
               <tr class="fin-row-cat" id="finrow-s2"><td>2</td><td><span class="fin-cat-dot" style="background:#10b981"></span>🛡️ Dana Darurat</td><td><b>Dana Darurat</b></td><td class="fin-td-amt"><b>Rp 200.000</b></td><td class="fin-td-pct"><b>13,33%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:13.33%;background:#10b981"></div></div></td><td class="fin-td-chk"><button class="fin-chk-btn" id="finchk-s2" onclick="toggleFinChk('s2')"><span class="fin-chk-icon">○</span></button></td></tr>
               <tr class="fin-row-cat" id="finrow-s3"><td>3</td><td><span class="fin-cat-dot" style="background:#8b5cf6"></span>🏪 Modal Usaha</td><td><b>Total Modal Usaha</b></td><td class="fin-td-amt"><b>Rp 200.000</b></td><td class="fin-td-pct"><b>13,33%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:13.33%;background:#8b5cf6"></div></div></td><td class="fin-td-chk"><button class="fin-chk-btn" id="finchk-s3" onclick="toggleFinChk('s3')"><span class="fin-chk-icon">○</span></button></td></tr>
               <tr class="fin-row-sub"><td></td><td></td><td>📸 Studio Foto</td><td class="fin-td-amt">Rp 60.000</td><td class="fin-td-pct">4,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4%;background:#c4b5fd"></div></div></td></tr>
-              <tr class="fin-row-sub"><td></td><td></td><td>🛍️ Artilerianstore</td><td class="fin-td-amt">Rp 40.000</td><td class="fin-td-pct">2,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2.67%;background:#c4b5fd"></div></div></td></tr>
+              <tr class="fin-row-sub"><td></td><td></td><td>🛍️ <span class="nm-toko-s">T</span></td><td class="fin-td-amt">Rp 40.000</td><td class="fin-td-pct">2,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2.67%;background:#c4b5fd"></div></div></td></tr>
               <tr class="fin-row-sub"><td></td><td></td><td>🖨️ Mini Printing</td><td class="fin-td-amt">Rp 40.000</td><td class="fin-td-pct">2,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2.67%;background:#c4b5fd"></div></div></td></tr>
               <tr class="fin-row-sub"><td></td><td></td><td>🐠 Aquascape</td><td class="fin-td-amt">Rp 30.000</td><td class="fin-td-pct">2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#c4b5fd"></div></div></td></tr>
               <tr class="fin-row-sub"><td></td><td></td><td>🔗 Affiliate</td><td class="fin-td-amt">Rp 30.000</td><td class="fin-td-pct">2,00%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2%;background:#c4b5fd"></div></div></td></tr>
@@ -906,7 +940,7 @@
               <tr class="fin-row-sub"><td></td><td></td><td>🍜 Jajan</td><td class="fin-td-amt">Rp 60.000</td><td class="fin-td-pct">2,50%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:2.5%;background:#6ee7b7"></div></div></td></tr>
               <tr class="fin-row-sub"><td></td><td></td><td>🚶 Jalan-jalan</td><td class="fin-td-amt">Rp 40.000</td><td class="fin-td-pct">1,67%</td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:1.67%;background:#6ee7b7"></div></div></td></tr>
               <tr class="fin-row-cat" id="finrow-i6"><td>6</td><td><span class="fin-cat-dot" style="background:#f43f5e"></span>🛡️ Dana Darurat</td><td><b>Dana Darurat</b></td><td class="fin-td-amt"><b>Rp 150.000</b></td><td class="fin-td-pct"><b>6,25%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:6.25%;background:#f43f5e"></div></div></td><td class="fin-td-chk"><button class="fin-chk-btn" id="finchk-i6" onclick="toggleFinChk('i6')"><span class="fin-chk-icon">○</span></button></td></tr>
-              <tr class="fin-row-cat" id="finrow-i7"><td>7</td><td><span class="fin-cat-dot" style="background:#8b5cf6"></span>🏪 Modal Usaha</td><td><b>Salmarket</b></td><td class="fin-td-amt"><b>Rp 100.000</b></td><td class="fin-td-pct"><b>4,17%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4.17%;background:#8b5cf6"></div></div></td><td class="fin-td-chk"><button class="fin-chk-btn" id="finchk-i7" onclick="toggleFinChk('i7')"><span class="fin-chk-icon">○</span></button></td></tr>
+              <tr class="fin-row-cat" id="finrow-i7"><td>7</td><td><span class="fin-cat-dot" style="background:#8b5cf6"></span>🏪 Modal Usaha</td><td><b><span class="nm-toko-i">T</span></b></td><td class="fin-td-amt"><b>Rp 100.000</b></td><td class="fin-td-pct"><b>4,17%</b></td><td><div class="fin-tbar"><div class="fin-tbar-fill" style="width:4.17%;background:#8b5cf6"></div></div></td><td class="fin-td-chk"><button class="fin-chk-btn" id="finchk-i7" onclick="toggleFinChk('i7')"><span class="fin-chk-icon">○</span></button></td></tr>
               <tr class="fin-row-grand fin-row-grand-istri"><td colspan="3">🏆 TOTAL ISTRI</td><td class="fin-td-amt">Rp 2.400.000</td><td class="fin-td-pct">100%</td><td><div class="fin-tbar fin-tbar-lg"><div class="fin-tbar-fill" style="width:100%;background:linear-gradient(90deg,#0d2818,#259652)"></div></div></td></tr>
             </tbody>
           </table>
@@ -985,7 +1019,7 @@
               <div class="fin-hbar-val">Rp 150.000 <span>3,8%</span></div>
             </div>
             <div class="fin-hbar-item">
-              <div class="fin-hbar-label">🏪 Modal Usaha — Salmarket (Istri)</div>
+              <div class="fin-hbar-label">🏪 Modal Usaha — <span class="nm-toko-i">T</span> (Istri)</div>
               <div class="fin-hbar-track"><div class="fin-hbar-fill" style="width:2.56%;background:#8b5cf6"></div></div>
               <div class="fin-hbar-val">Rp 100.000 <span>2,6%</span></div>
             </div>
@@ -1024,7 +1058,7 @@
               <div class="fin-mini-row"><span style="color:#06b6d4">👶</span><span>Keb. Anak</span><b>Rp 250.000</b></div>
               <div class="fin-mini-row"><span style="color:#10b981">🎉</span><span>Hiburan</span><b>Rp 100.000</b></div>
               <div class="fin-mini-row"><span style="color:#f43f5e">🛡️</span><span>Dana Darurat</span><b>Rp 150.000</b></div>
-              <div class="fin-mini-row fin-mini-row-last"><span style="color:#8b5cf6">🏪</span><span>Modal Usaha (Salmarket)</span><b>Rp 100.000</b></div>
+              <div class="fin-mini-row fin-mini-row-last"><span style="color:#8b5cf6">🏪</span><span>Modal Usaha (<span class="nm-toko-i">T</span>)</span><b>Rp 100.000</b></div>
             </div>
           </div>
         </div>

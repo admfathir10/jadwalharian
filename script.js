@@ -1210,7 +1210,7 @@ const JADWAL_HARIAN = {
     {t:'06.20',l:'Berangkat ke '+atob('aXJpZGVLIDggTkFNUw==').split('').reverse().join(''),cat:'kerja'},
     {t:'07.00',l:'Jadwal mengajar',cat:'kerja'},
     {t:'09.00',l:'Sholat Dhuha',cat:'ibadah'},
-    {t:'11.30',l:'Sholat Dzuhur berjamaah',cat:'ibadah'},
+    {t:'11.30',l:'Sholat Dzuhur berjamaah — imam sholat dhuhur',cat:'ibadah'},
     {t:'15.00',l:'Sholat Ashar + pulang',cat:'ibadah'},
     {t:'16.20',l:'Bermain bersama anak',cat:'keluarga'},
     {t:'17.45',l:'Maghrib — berbuka puasa',cat:'ibadah'},
@@ -1225,7 +1225,7 @@ const JADWAL_HARIAN = {
     {t:'06.20',l:'Berangkat ke sekolah',cat:'kerja'},
     {t:'07.00',l:'Jadwal mengajar',cat:'kerja'},
     {t:'09.00',l:'Sholat Dhuha',cat:'ibadah'},
-    {t:'11.30',l:'Sholat Dzuhur',cat:'ibadah'},
+    {t:'11.30',l:'Sholat Dzuhur — imam sholat dhuhur',cat:'ibadah'},
     {t:'15.00',l:'Sholat Ashar + pulang',cat:'ibadah'},
     {t:'16.20',l:'Bermain bersama anak',cat:'keluarga'},
     {t:'17.45',l:'Maghrib',cat:'ibadah'},
@@ -1239,11 +1239,12 @@ const JADWAL_HARIAN = {
     {t:'06.20',l:'Berangkat ke sekolah',cat:'kerja'},
     {t:'07.00',l:'Jadwal mengajar',cat:'kerja'},
     {t:'09.00',l:'Sholat Dhuha',cat:'ibadah'},
+    {t:'11.30',l:'Sholat Dzuhur — imam sholat dhuhur',cat:'ibadah'},
     {t:'14.00',l:'Honor Mengajar',cat:'kerja'},
     {t:'15.00',l:'Sholat Ashar + pulang',cat:'ibadah'},
-    {t:'16.20',l:'Bermain bersama anak',cat:'keluarga'},
-    {t:'17.45',l:'Maghrib',cat:'ibadah'},
-    {t:'19.15',l:'Isya',cat:'ibadah'},
+    {t:'16.00',l:'Mengajar madrasah diniyah: KBM + simak mengaji',cat:'madin'},
+    {t:'19.00',l:'Selesai madin — Sholat Maghrib',cat:'ibadah'},
+    {t:'19.30',l:'Isya',cat:'ibadah'},
     {t:'21.30',l:'Tidur (hari padat)',cat:'tidur'},
   ],
   kamis: [
@@ -1253,16 +1254,19 @@ const JADWAL_HARIAN = {
     {t:'06.20',l:'Berangkat ke sekolah',cat:'kerja'},
     {t:'07.00',l:'Jadwal mengajar',cat:'kerja'},
     {t:'09.00',l:'Sholat Dhuha',cat:'ibadah'},
+    {t:'11.30',l:'Sholat Dzuhur — imam sholat dhuhur',cat:'ibadah'},
     {t:'15.00',l:'Sholat Ashar — berbuka puasa',cat:'ibadah'},
     {t:'16.20',l:'Bermain bersama anak',cat:'keluarga'},
     {t:'17.45',l:'Maghrib',cat:'ibadah'},
     {t:'19.15',l:'Isya + baca artikel Inggris (Reading)',cat:'ibadah'},
+    {t:'20.00',l:'Flyer smadelaupdate (Kamis)',cat:'kerja'},
     {t:'21.30',l:'Tidur',cat:'tidur'},
   ],
   jumat: [
     {t:'04.30',l:'Subuh + Tilawah Al-Kahfi',cat:'ibadah'},
     {t:'05.35',l:'Workout pagi',cat:'olahraga'},
     {t:'06.20',l:'Berangkat ke sekolah',cat:'kerja'},
+    {t:'06.55',l:'Membaca Yasin Jumat pagi di sekolah',cat:'ibadah'},
     {t:'07.00',l:'Jadwal mengajar',cat:'kerja'},
     {t:'11.00',l:'Persiapan Sholat Jumat',cat:'ibadah'},
     {t:'11.30',l:'Sholat Jumat di masjid',cat:'ibadah'},
@@ -1280,6 +1284,7 @@ const JADWAL_HARIAN = {
     {t:'06.15',l:'Bantu mandikan anak',cat:'keluarga'},
     {t:'07.30',l:'Merawat tanaman & aquascape',cat:'hobby'},
     {t:'09.30',l:'Sholat Dhuha',cat:'ibadah'},
+    {t:'10.30',l:'Flyer smadelaupdate (Sabtu)',cat:'kerja'},
     {t:'11.30',l:'Dzuhur',cat:'ibadah'},
     {t:'12.00',l:'Makan siang + tidur siang',cat:'istirahat'},
     {t:'13.30',l:'Evaluasi toko Shopee',cat:'toko'},
@@ -1311,6 +1316,7 @@ const CHECKLIST_HARIAN = {
     { id:'dzikir', label:'Dzikir pagi & petang' },
     { id:'workout',label:'Olahraga / workout' },
     { id:'keluarga',label:'Quality time keluarga' },
+    { id:'channel',label:'Posting channel zonaPAI & ZonaKELAS terkirim' },
     { id:'toko',   label:'Cek '+atob('ZXJvdHNuYWlyZWxpdHJB').split('').reverse().join('') },
   ],
   senin:  [{ id:'puasa_sen',label:'Puasa Senin ✓' }],
@@ -1321,10 +1327,10 @@ const CHECKLIST_HARIAN = {
 const REMINDER_HARIAN = {
   senin:  ['Puasa Senin — jaga niat & energi','Quality time anak 16.20–17.00','Cek '+atob('ZXJvdHNuYWlyZWxpdHJB').split('').reverse().join('')+' malam','Batas WA siswa: jam 16.00'],
   selasa: ['Jadwal Writing Inggris malam ini (19.45)','Deadline admin toko → Kamis malam','Quality time anak sore','Batas WA siswa: jam 16.00'],
-  rabu:   ['Hari padat — cukup Anki 10 menit','Ngajar Sore','Istirahat cukup malam ini','Batas WA siswa: jam 16.00'],
-  kamis:  ['Puasa Kamis — berbuka sore','Baca artikel Inggris malam (Reading)','Deadline admin toko → hari ini','Quality time anak 16.20–17.00'],
-  jumat:  ['Baca Al-Kahfi pagi ini','Sholat Jumat 11.30 — siap lebih awal','Date Night '+atob('YW1sYVM=').split('').reverse().join('')+' malam ini 💑','Speaking Inggris malam (20.30)'],
-  sabtu:  ['Evaluasi toko Shopee 13.30','Nonton YouTube tanpa sub (Inggris bebas)','Family trip sore bersama keluarga','Mandikan anak pagi — beri '+atob('YW1sYVM=').split('').reverse().join('')+' 1 jam'],
+  rabu:   ['Hari padat — cukup Anki 10 menit','Madin 16.00–19.00 (KBM + simak mengaji)','Istirahat cukup malam ini','Batas WA siswa: jam 16.00'],
+  kamis:  ['Puasa Kamis — berbuka sore','Flyer smadelaupdate malam ini (dokumentasi bila ada event)','Baca artikel Inggris malam (Reading)','Deadline admin toko → hari ini','Quality time anak 16.20–17.00'],
+  jumat:  ['Baca Al-Kahfi pagi ini','Yasin Jumat pagi 06.55 di sekolah','Sholat Jumat 11.30 — siap lebih awal','Date Night '+atob('YW1sYVM=').split('').reverse().join('')+' malam ini 💑','Speaking Inggris malam (20.30)'],
+  sabtu:  ['Flyer smadelaupdate 10.30 (dokumentasi bila ada event)','Evaluasi toko Shopee 13.30','Nonton YouTube tanpa sub (Inggris bebas)','Family trip sore bersama keluarga','Mandikan anak pagi — beri '+atob('YW1sYVM=').split('').reverse().join('')+' 1 jam'],
   minggu: ['Hari keluarga — semua HP kerja off','Set target & evaluasi minggu depan','Isya + me-time untuk diri sendiri','Tidur lebih awal — Senin kerja lagi'],
 };
 
@@ -1362,7 +1368,7 @@ function renderHariIni() {
     const catColors = {
       ibadah:'#639922', olahraga:'#378add', kerja:'#7f77dd',
       istirahat:'#888780', sosial:'#ba7517', hobby:'#d85a30',
-      keluarga:'#d4537e', toko:'#1d9e75', tidur:'#9ca3af'
+      keluarga:'#d4537e', toko:'#1d9e75', tidur:'#9ca3af', madin:'#5b3fa0'
     };
 
     // Find current block

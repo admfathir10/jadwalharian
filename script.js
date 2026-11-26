@@ -17,6 +17,8 @@
   // ═══════════════════════════════════════════════════════
   const PIN_HASH    = 'b446cdb79227871c27c8b3bd88f7370d716e67416a6617f7bfde99600f248deb'; // SHA-256 dari PIN
   const STORAGE_KEY = 'jk_pin_unlock';
+  const ROLE_KEY    = 'jk_role';
+  const ROLE_LABEL  = { suami: 'Suami', istri: 'Istri', keluarga: 'Keluarga' };
   const REMEMBER_MS = 12 * 60 * 60 * 1000; // 12 jam
   let enteredPin    = '';
 
@@ -39,9 +41,19 @@
     }
   }
 
-  function unlockApp() {
+  function applyRole(role) {
+    ['suami','istri','keluarga'].forEach(r => document.body.classList.remove('role-' + r));
+    document.body.classList.add('role-' + role);
+    window.currentRole = role;
+    const who = document.getElementById('who-label');
+    if (who) who.textContent = 'Masuk sebagai ' + (ROLE_LABEL[role] || role);
+  }
+
+  function unlockApp(role) {
+    role = role || 'suami';
+    applyRole(role);
     document.body.classList.add('app-unlocked');
-    try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch(e) {}
+    try { localStorage.setItem(STORAGE_KEY, String(Date.now())); localStorage.setItem(ROLE_KEY, role); } catch(e) {}
     const screen = document.querySelector('.pin-lock-screen');
     if (screen) {
       screen.style.opacity = '0';
@@ -64,12 +76,30 @@
     return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
   }
 
+  // PIN Istri & Keluarga: hash-nya disimpan di Firebase (/akses), diatur oleh Suami lewat tombol Akses.
+  async function fetchAkses() {
+    try {
+      const r = await fetch(DATABASE_URL + 'akses.json');
+      if (!r.ok) return null;
+      return (await r.json()) || {};
+    } catch (e) { return null; }
+  }
+
   async function checkPin() {
     const inputHash = await sha256(enteredPin);
-    if (inputHash === PIN_HASH) {
+    let role = null;
+    if (inputHash === PIN_HASH) role = 'suami';
+    else {
+      const akses = await fetchAkses();
+      if (akses) {
+        if (akses.istri && inputHash === akses.istri) role = 'istri';
+        else if (akses.keluarga && inputHash === akses.keluarga) role = 'keluarga';
+      }
+    }
+    if (role) {
       const errEl = document.getElementById('pin-error');
       if (errEl) errEl.textContent = '';
-      unlockApp();
+      unlockApp(role);
     } else {
       showError('PIN salah, coba lagi');
       getDots().forEach(d => d.classList.add('error'));
@@ -95,9 +125,51 @@
   };
   window.pinDel = window.pinBackspace; // alias agar tombol ⌫ di HTML tetap berfungsi
 
+  // Kunci ulang aplikasi (ganti pengguna)
+  window.kunciAplikasi = function() {
+    try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(ROLE_KEY); } catch(e) {}
+    location.reload();
+  };
+
+  // Panel Akses (hanya Suami): atur PIN Istri & Keluarga
+  window.bukaAkses = async function() {
+    if (window.currentRole !== 'suami') return;
+    document.getElementById('akses-modal').classList.add('open');
+    const info = document.getElementById('akses-info');
+    info.textContent = 'Memuat…';
+    const a = await fetchAkses();
+    info.textContent = a === null ? 'Tidak bisa terhubung ke server. Coba lagi nanti.'
+      : 'Istri: ' + (a.istri ? 'sudah diatur' : 'belum diatur') + ' · Keluarga: ' + (a.keluarga ? 'sudah diatur' : 'belum diatur');
+  };
+  window.tutupAkses = function() { document.getElementById('akses-modal').classList.remove('open'); };
+  window.simpanAkses = async function() {
+    if (window.currentRole !== 'suami') return;
+    const info = document.getElementById('akses-info');
+    const pi = document.getElementById('akses-istri').value.trim();
+    const pk = document.getElementById('akses-keluarga').value.trim();
+    const okFmt = v => v === '' || /^\d{6}$/.test(v);
+    if (!okFmt(pi) || !okFmt(pk)) { info.textContent = 'PIN harus 6 angka (atau kosongkan untuk tidak diubah).'; return; }
+    if (!pi && !pk) { info.textContent = 'Isi minimal satu PIN.'; return; }
+    if ((pi && await sha256(pi) === PIN_HASH) || (pk && await sha256(pk) === PIN_HASH) || (pi && pk && pi === pk)) {
+      info.textContent = 'Setiap PIN harus berbeda.'; return;
+    }
+    const cur = (await fetchAkses()) || {};
+    if (pi) cur.istri = await sha256(pi);
+    if (pk) cur.keluarga = await sha256(pk);
+    try {
+      const r = await fetch(DATABASE_URL + 'akses.json', { method: 'PUT', body: JSON.stringify(cur) });
+      if (!r.ok) throw new Error('gagal');
+      document.getElementById('akses-istri').value = '';
+      document.getElementById('akses-keluarga').value = '';
+      info.textContent = 'Tersimpan. Istri: ' + (cur.istri ? 'sudah diatur' : 'belum') + ' · Keluarga: ' + (cur.keluarga ? 'sudah diatur' : 'belum');
+    } catch (e) { info.textContent = 'Gagal menyimpan. Periksa koneksi.'; }
+  };
+
   document.addEventListener('DOMContentLoaded', function() {
     if (isRemembered()) {
-      unlockApp();
+      let r = 'suami';
+      try { r = localStorage.getItem(ROLE_KEY) || 'suami'; } catch(e) {}
+      unlockApp(r);
       return;
     }
     // Keyboard support
@@ -395,6 +467,7 @@ const NAMA_HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 const ID_HARI   = ['minggu','senin','selasa','rabu','kamis','jumat','sabtu'];
 
 window.showView = function(id) {
+  if (id === 'finansial' && window.currentRole === 'keluarga') return; // Finansial privat: hanya Suami & Istri
   document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.main-tabs button').forEach(b => b.classList.remove('active'));
   const vp = document.getElementById('view-'+id);
@@ -563,7 +636,6 @@ document.addEventListener('DOMContentLoaded', () => {
   updateClock();
   highlightLiveBlocks();
   initFirebase();
-  renderEngStreak();
   renderDailyChecklist(); // fallback sebelum Firebase siap
   renderMindset();
   setInterval(updateClock, 1000);
@@ -944,259 +1016,6 @@ function initMenu() {
     initMenuLocal();
   }
 }
-
-/* ================================================
-   ENGLISH STREAK — Checklist per hari (3–5 materi)
-   ================================================ */
-
-const ENG_STREAK_KEY = 'eng_streak_v2';
-const ENG_DAY_LABELS = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
-
-// Checklist materi per hari (3–5 item)
-const ENG_CHECKLIST = {
-  // idx 0 = Senin
-  0: [
-    { id:'a', label:'🎧 Dengarkan Podcast BBC / TED-Ed 20 menit' },
-    { id:'b', label:'📝 Catat 3 frasa / kosa kata baru' },
-    { id:'c', label:'🃏 Review Anki 10 menit' },
-    { id:'d', label:'💬 Ucapkan ulang frasa yang didengar (shadowing singkat)' },
-  ],
-  // idx 1 = Selasa
-  1: [
-    { id:'a', label:'✍️ Tulis jurnal / paragraf 150 kata dalam Inggris' },
-    { id:'b', label:'📚 Pelajari 1 grammar point hari ini (10 menit)' },
-    { id:'c', label:'🃏 Review Anki 10 menit' },
-    { id:'d', label:'🔁 Baca ulang tulisan & koreksi sendiri' },
-  ],
-  // idx 2 = Rabu (hari padat — cukup 3 item ringan)
-  2: [
-    { id:'a', label:'🃏 Anki 10 menit (di perjalanan / istirahat)' },
-    { id:'b', label:'👁️ Baca 1 kalimat Inggris & terjemahkan dalam hati' },
-    { id:'c', label:'🔤 Hafal 2 kata baru hari ini' },
-  ],
-  // idx 3 = Kamis
-  3: [
-    { id:'a', label:'📖 Baca artikel edukasi / Islam berbahasa Inggris 20 menit' },
-    { id:'b', label:'📝 Catat 3–5 vocab baru dari artikel' },
-    { id:'c', label:'🃏 Review Anki 10 menit' },
-    { id:'d', label:'💡 Buat 1 kalimat sendiri dari vocab baru' },
-  ],
-  // idx 4 = Jumat
-  4: [
-    { id:'a', label:'🎙️ Shadowing 1 video / audio Inggris 20 menit' },
-    { id:'b', label:'🎤 Rekam monolog sendiri 2 menit — topik bebas' },
-    { id:'c', label:'👂 Dengar ulang rekaman & catat kesalahan' },
-    { id:'d', label:'🃏 Review Anki + tambah vocab dari rekaman' },
-    { id:'e', label:'🗣️ Pronunciation drill — tirukan 5 kalimat dari YouTube' },
-  ],
-  // idx 5 = Sabtu (bebas & santai)
-  5: [
-    { id:'a', label:'📺 Nonton YouTube tanpa subtitle 20+ menit' },
-    { id:'b', label:'🛍️ Tulis 1 caption produk '+atob('ZXJvdHNuYWlyZWxpdHJB').split('').reverse().join('')+' dalam Inggris' },
-    { id:'c', label:'📝 Catat 3 ekspresi natural yang didengar' },
-    { id:'d', label:'🃏 Anki review ringan (opsional)' },
-  ],
-  // idx 6 = Minggu (istirahat — cukup 3 item ringan)
-  6: [
-    { id:'a', label:'🃏 Anki review ringan (opsional)' },
-    { id:'b', label:'🔁 Review vocab minggu ini — mana yang sudah hafal?' },
-    { id:'c', label:'📅 Rencanakan target belajar Inggris minggu depan' },
-  ],
-};
-
-function getEngData() {
-  try {
-    const raw = localStorage.getItem(ENG_STREAK_KEY);
-    return raw ? JSON.parse(raw) : { checks: {}, days: {} };
-  } catch { return { checks: {}, days: {} }; }
-}
-
-function saveEngData(data) {
-  try { localStorage.setItem(ENG_STREAK_KEY, JSON.stringify(data)); } catch {}
-}
-
-function getMondayOfWeek() {
-  const d = new Date();
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
-  d.setHours(0, 0, 0, 0);
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-function engTodayKey() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-function engTodayIdx() {
-  const day = new Date().getDay();
-  return day === 0 ? 6 : day - 1;
-}
-
-function getEngWeekDays() {
-  const mon = new Date(getMondayOfWeek() + 'T00:00:00');
-  return Array.from({length: 7}, (_, i) => {
-    const d = new Date(mon);
-    d.setDate(mon.getDate() + i);
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  });
-}
-
-// Hitung berapa checklist hari ini sudah selesai
-function countTodayChecks() {
-  const data    = getEngData();
-  const today   = engTodayKey();
-  const todayIdx = engTodayIdx();
-  const items   = ENG_CHECKLIST[todayIdx] || [];
-  const saved   = data.checks[today] || {};
-  return { done: items.filter(it => saved[it.id]).length, total: items.length };
-}
-
-// Hari dianggap "selesai" jika semua checklist dicentang
-function isDayDone(dk, dayIdx) {
-  const data  = getEngData();
-  const items = ENG_CHECKLIST[dayIdx] || [];
-  if (!items.length) return false;
-  const saved = data.checks[dk] || {};
-  return items.every(it => saved[it.id]);
-}
-
-function renderEngStreak() {
-  const data     = getEngData();
-  const weekDays = getEngWeekDays();
-  const todayIdx = engTodayIdx();
-  const today    = engTodayKey();
-
-  // Hitung hari selesai minggu ini
-  let count = 0;
-  weekDays.forEach((dk, i) => { if (isDayDone(dk, i)) count++; });
-
-  // Hitung progres hari ini
-  const { done: todayDone, total: todayTotal } = countTodayChecks();
-
-  const badges = ['🌱','🌿','🌳','⭐','🔥','💪','🏆'];
-  const badge  = badges[Math.min(count, badges.length - 1)];
-
-  let streakLbl;
-  if (todayDone === todayTotal && todayTotal > 0) {
-    streakLbl = `hari selesai minggu ini · Hari ini tuntas! 🎉`;
-  } else if (todayDone > 0) {
-    streakLbl = `hari selesai minggu ini · Hari ini: ${todayDone}/${todayTotal} materi`;
-  } else {
-    const dayLabels = ['Mulai hari ini!','Bagus, terus!','Hampir setengah!','Setengah jalan!','Hebat!','Hampir sempurna!','Sempurna! 🎉'];
-    streakLbl = `hari · ${dayLabels[Math.min(count, dayLabels.length - 1)]}`;
-  }
-
-  const numEl = document.getElementById('eng-streak');
-  const lblEl = document.getElementById('eng-streak-lbl');
-  const bdgEl = document.getElementById('eng-badge');
-  const dotEl = document.getElementById('eng-week-dots');
-
-  if (numEl) numEl.textContent = count;
-  if (lblEl) lblEl.textContent = streakLbl;
-  if (bdgEl) bdgEl.textContent = badge;
-
-  // Week dots
-  if (dotEl) {
-    dotEl.innerHTML = '';
-    ENG_DAY_LABELS.forEach((label, i) => {
-      const dk      = weekDays[i];
-      const isDone  = isDayDone(dk, i);
-      const isToday = i === todayIdx;
-      const div = document.createElement('div');
-      div.className = 'eng-week-dot'
-        + (isDone ? ' done' : '')
-        + (!isDone && isToday ? ' today-dot' : '');
-      div.title = label + (isDone ? ' ✓' : isToday ? ' (hari ini)' : '');
-      div.textContent = label;
-      dotEl.appendChild(div);
-    });
-  }
-
-  // Render checklist hari ini
-  renderEngChecklist();
-}
-
-function renderEngChecklist() {
-  const container = document.getElementById('eng-checklist-wrap');
-  if (!container) return;
-
-  const data     = getEngData();
-  const today    = engTodayKey();
-  const todayIdx = engTodayIdx();
-  const items    = ENG_CHECKLIST[todayIdx] || [];
-  const saved    = data.checks[today] || {};
-  const doneCnt  = items.filter(it => saved[it.id]).length;
-
-  container.innerHTML = `
-    <div class="eng-checklist-header">
-      <span class="eng-checklist-title">📋 Materi Hari Ini</span>
-      <span class="eng-checklist-prog">${doneCnt}/${items.length} selesai</span>
-    </div>
-    <div class="eng-prog-bar-wrap">
-      <div class="eng-prog-bar-fill" style="width:${items.length ? Math.round(doneCnt/items.length*100) : 0}%"></div>
-    </div>
-    <div class="eng-checklist-items">
-      ${items.map(it => {
-        const checked = !!saved[it.id];
-        return `<div class="eng-check-item ${checked ? 'checked' : ''}" onclick="toggleEngCheck('${it.id}')">
-          <div class="eng-check-box">${checked ? '✓' : ''}</div>
-          <div class="eng-check-label">${it.label}</div>
-        </div>`;
-      }).join('')}
-    </div>
-    ${doneCnt === items.length && items.length > 0
-      ? `<div class="eng-all-done">🎉 Semua materi hari ini selesai! Streak bertambah.</div>`
-      : ''}
-  `;
-}
-
-window.toggleEngCheck = function(itemId) {
-  const data    = getEngData();
-  const today   = engTodayKey();
-  data.checks   = data.checks || {};
-  data.checks[today] = data.checks[today] || {};
-  data.checks[today][itemId] = !data.checks[today][itemId];
-  // Jika semua selesai, tandai hari ini done
-  const todayIdx = engTodayIdx();
-  const items    = ENG_CHECKLIST[todayIdx] || [];
-  data.days      = data.days || {};
-  if (items.length && items.every(it => data.checks[today][it.id])) {
-    data.days[today] = true;
-  } else {
-    delete data.days[today];
-  }
-  saveEngData(data);
-  renderEngStreak();
-};
-
-// Tetap ada tombol "Tandai Selesai" sebagai shortcut selesaikan semua
-window.saveEngStreak = function() {
-  const data     = getEngData();
-  const today    = engTodayKey();
-  const todayIdx = engTodayIdx();
-  const items    = ENG_CHECKLIST[todayIdx] || [];
-  data.checks    = data.checks || {};
-  data.checks[today] = data.checks[today] || {};
-  items.forEach(it => { data.checks[today][it.id] = true; });
-  data.days      = data.days || {};
-  data.days[today] = true;
-  saveEngData(data);
-  renderEngStreak();
-};
-
-window.resetEngWeek = function() {
-  if (!confirm('Reset semua checklist & streak minggu ini?')) return;
-  const data     = getEngData();
-  const weekDays = getEngWeekDays();
-  weekDays.forEach(dk => {
-    delete data.days[dk];
-    delete data.checks[dk];
-  });
-  saveEngData(data);
-  renderEngStreak();
-};
 
 /* ================================================
    HARI INI — Dynamic agenda & checklist

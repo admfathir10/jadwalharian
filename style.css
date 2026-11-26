@@ -1790,176 +1790,26 @@ body:not(.app-unlocked) .pin-lock-screen {
 .d-reminder-item:last-child { border-bottom: none; }
 .d-reminder-ico { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
 
-/* ================================================
-   ENGLISH — Enhanced streak card & day cards
-   ================================================ */
 
-.eng-streak-card {
-  background: linear-gradient(135deg, #1a1f3a 0%, #2d3561 100%);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 1.25rem;
-  box-shadow: 0 4px 20px rgba(26,31,58,0.3);
-  position: relative;
-  overflow: hidden;
-}
 
-.eng-streak-card::before {
-  content: '';
-  position: absolute;
-  top: -50px; right: -30px;
-  width: 180px; height: 180px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(240,192,96,0.12) 0%, transparent 70%);
-  pointer-events: none;
-}
 
-.eng-streak-num {
-  font-size: 52px;
-  font-weight: 800;
-  color: var(--gold);
-  line-height: 1;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-}
 
-.eng-streak-sub {
-  font-size: 13px;
-  color: rgba(255,255,255,0.6);
-  margin-top: 4px;
-}
 
-.eng-badge-big {
-  font-size: 52px;
-  flex-shrink: 0;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-}
 
-.eng-week-dots {
-  display: flex;
-  gap: 7px;
-  margin-top: 10px;
-}
 
-.eng-week-dot {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.07);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.4);
-  letter-spacing: 0;
-  transition: all 0.2s;
-}
 
-.eng-week-dot.done {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  border-color: #16a34a;
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(34,197,94,0.35);
-}
 
-.eng-week-dot.today-dot {
-  border-color: var(--gold);
-  color: var(--gold);
-  background: rgba(240,192,96,0.12);
-}
 
 /* ── Day cards enhanced ── */
-.eng-day-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-med);
-  padding: 1rem 1.15rem;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  position: relative;
-  overflow: hidden;
-}
 
-.eng-day-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.09);
-  transform: translateX(3px);
-  border-color: #c4b5fd;
-}
 
-.eng-day-card.today-card {
-  border-color: #6d63d4;
-  background: linear-gradient(135deg, #fefffe, #f5f3ff);
-  box-shadow: 0 0 0 2px #c4b5fd, 0 4px 16px rgba(109,99,212,0.12);
-}
 
-.eng-day-card.done-card {
-  opacity: 0.7;
-  background: var(--bg-surface);
-}
 
-.eng-day-card.done-card::after {
-  content: '✓';
-  position: absolute;
-  top: 10px; right: 14px;
-  font-size: 18px;
-  color: #22c55e;
-  font-weight: 800;
-}
 
-.eng-ico {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-}
 
-.eng-day-name {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-}
 
-.eng-day-focus {
-  font-size: 12px;
-  font-weight: 600;
-  color: #4338ca;
-  margin-bottom: 3px;
-}
 
-.eng-day-detail {
-  font-size: 11.5px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
 
-.eng-time-tag {
-  margin-left: auto;
-  flex-shrink: 0;
-  font-size: 10.5px;
-  font-weight: 700;
-  background: #ede9fe;
-  color: #4338ca;
-  border-radius: 20px;
-  padding: 3px 10px;
-  height: fit-content;
-  white-space: nowrap;
-  align-self: flex-start;
-}
 
 /* Section divider */
 .dash-section-label {
@@ -2537,131 +2387,21 @@ body:not(.app-unlocked) .pin-lock-screen {
 }
 
 
-/* ================================================
-   ENGLISH — Daily checklist materi
-   ================================================ */
 
-#eng-checklist-wrap {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  border: 1.5px solid #c4b5fd;
-  margin-bottom: 1.1rem;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(109,99,212,0.08);
-}
 
-.eng-checklist-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.85rem 1.15rem 0.5rem;
-  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
-}
 
-.eng-checklist-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #3730a3;
-}
 
-.eng-checklist-prog {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #6d63d4;
-  background: rgba(109,99,212,0.12);
-  padding: 2px 10px;
-  border-radius: 20px;
-}
 
-.eng-prog-bar-wrap {
-  height: 5px;
-  background: #e0daf8;
-  margin: 0;
-}
 
-.eng-prog-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #6d63d4, #4f46e5);
-  border-radius: 0 3px 3px 0;
-  transition: width 0.4s ease;
-}
 
-.eng-checklist-items {
-  padding: 0.6rem 1.15rem 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
 
-.eng-check-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.12s;
-  border: 1px solid transparent;
-}
 
-.eng-check-item:hover {
-  background: #f5f3ff;
-  border-color: #e0daf8;
-}
 
-.eng-check-item.checked {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-}
 
-.eng-check-box {
-  width: 20px;
-  height: 20px;
-  border-radius: 6px;
-  border: 2px solid #c4b5fd;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 800;
-  color: transparent;
-  background: #fff;
-  transition: all 0.18s;
-  margin-top: 1px;
-}
 
-.eng-check-item.checked .eng-check-box {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  border-color: #16a34a;
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(34,197,94,0.28);
-}
 
-.eng-check-label {
-  font-size: 12.5px;
-  color: var(--text-primary);
-  line-height: 1.45;
-  flex: 1;
-  transition: color 0.15s;
-}
 
-.eng-check-item.checked .eng-check-label {
-  color: var(--text-muted);
-  text-decoration: line-through;
-}
 
-.eng-all-done {
-  margin: 0 1.15rem 0.85rem;
-  padding: 9px 14px;
-  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-  border: 1px solid #86efac;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #15803d;
-  text-align: center;
-}
 
 /* ================================================
    MINDSET HARIAN — card berganti tiap hari
@@ -2821,12 +2561,8 @@ body:not(.app-unlocked) .pin-lock-screen {
 
 /* ── Mobile-specific tweaks ── */
 @media (max-width: 600px) {
-  .eng-streak-num { font-size: 40px; }
-  .eng-badge-big  { font-size: 40px; }
   .fam-alert-time { font-size: 34px; }
   .dash-stat-num  { font-size: 22px; }
-  .eng-day-card   { flex-wrap: wrap; }
-  .eng-time-tag   { margin-left: 0; }
   .mindset-ganti  { display: none; }
 }
 
@@ -3209,3 +2945,24 @@ body:not(.app-unlocked) .pin-lock-screen {
   .fin-alloc-label { min-width: 90px; font-size: 10.5px; }
   .fin-chk-btn { width: 28px; height: 28px; }
 }
+
+
+/* ================================================
+   AKSES KELUARGA — peran Suami / Istri / Keluarga
+   ================================================ */
+body.role-keluarga .only-couple { display: none !important; }
+body:not(.role-suami) .only-suami { display: none !important; }
+.who-bar { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; font-size: 12px; color: rgba(255,255,255,0.85); }
+.who-bar button { font: inherit; font-weight: 600; padding: 4px 12px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.45); background: rgba(255,255,255,0.12); color: #fff; cursor: pointer; }
+.who-bar button:hover { background: rgba(255,255,255,0.25); }
+.akses-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 9999; }
+.akses-modal.open { display: flex; }
+.akses-box { background: var(--bg-surface, #fff); color: var(--text-primary, #1a1a18); border-radius: 14px; padding: 20px; width: min(100%, 380px); display: flex; flex-direction: column; gap: 12px; }
+.akses-box h3 { margin: 0; font-size: 17px; }
+.akses-note { margin: 0; font-size: 13px; color: var(--text-muted, #666); line-height: 1.5; }
+.akses-box label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; }
+.akses-box input { font: inherit; padding: 10px 12px; border: 1px solid var(--border-med, #ccc); border-radius: 8px; letter-spacing: 0.3em; }
+.akses-info { min-height: 18px; font-size: 12.5px; color: var(--text-secondary, #444); }
+.akses-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.akses-actions button { font: inherit; font-weight: 600; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-med, #ccc); background: transparent; cursor: pointer; color: inherit; }
+.akses-actions button.primary { background: #3730a3; border-color: #3730a3; color: #fff; }

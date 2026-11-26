@@ -88,9 +88,27 @@
     <button id="mtab-jadwal" class="active" onclick="showView('jadwal')">Jadwal Harian</button>
     <button id="mtab-bersama" onclick="showView('bersama')">🤝 Momen Bersama</button>
     <button id="mtab-menu" onclick="showView('menu')">🍳 Menu Masakan</button>
-    <button id="mtab-finansial" onclick="showView('finansial')">💰 Finansial</button>
+    <button id="mtab-finansial" class="only-couple" onclick="showView('finansial')">💰 Finansial</button>
   </nav>
+  <div class="who-bar">
+    <span id="who-label"></span>
+    <button class="only-suami" onclick="bukaAkses()">🔑 Akses</button>
+    <button onclick="kunciAplikasi()">🔒 Kunci</button>
+  </div>
 </header>
+
+
+<!-- ===================== PANEL AKSES (hanya Suami) ===================== -->
+<div class="akses-modal" id="akses-modal">
+  <div class="akses-box">
+    <h3>🔑 Akses Keluarga</h3>
+    <p class="akses-note">Atur PIN 6 angka untuk anggota keluarga. Pengguna <b>Keluarga</b> tidak bisa melihat tab Finansial. Kosongkan kolom yang tidak ingin diubah.</p>
+    <label>PIN Istri<input id="akses-istri" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="6 angka"></label>
+    <label>PIN Keluarga (anak)<input id="akses-keluarga" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="6 angka"></label>
+    <div class="akses-info" id="akses-info"></div>
+    <div class="akses-actions"><button onclick="tutupAkses()">Tutup</button><button class="primary" onclick="simpanAkses()">Simpan</button></div>
+  </div>
+</div>
 
 <!-- ===================== LEGEND ===================== -->
 <div class="legend-bar">
@@ -629,7 +647,7 @@
   </div><!-- /view-menu -->
 
   <!-- ═══ FINANSIAL ═══ -->
-  <div id="view-finansial" class="view-panel">
+  <div id="view-finansial" class="view-panel only-couple">
   <div class="main-content fin-main">
 
     <!-- ── Hero strip ── -->

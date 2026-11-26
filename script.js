@@ -17,6 +17,8 @@
   // ═══════════════════════════════════════════════════════
   const PIN_HASH    = 'b446cdb79227871c27c8b3bd88f7370d716e67416a6617f7bfde99600f248deb'; // SHA-256 dari PIN
   const STORAGE_KEY = 'jk_pin_unlock';
+  const ROLE_KEY    = 'jk_role';
+  const ROLE_LABEL  = { suami: 'Suami', istri: 'Istri', keluarga: 'Keluarga' };
   const REMEMBER_MS = 12 * 60 * 60 * 1000; // 12 jam
   let enteredPin    = '';
 
@@ -39,9 +41,19 @@
     }
   }
 
-  function unlockApp() {
+  function applyRole(role) {
+    ['suami','istri','keluarga'].forEach(r => document.body.classList.remove('role-' + r));
+    document.body.classList.add('role-' + role);
+    window.currentRole = role;
+    const who = document.getElementById('who-label');
+    if (who) who.textContent = 'Masuk sebagai ' + (ROLE_LABEL[role] || role);
+  }
+
+  function unlockApp(role) {
+    role = role || 'suami';
+    applyRole(role);
     document.body.classList.add('app-unlocked');
-    try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch(e) {}
+    try { localStorage.setItem(STORAGE_KEY, String(Date.now())); localStorage.setItem(ROLE_KEY, role); } catch(e) {}
     const screen = document.querySelector('.pin-lock-screen');
     if (screen) {
       screen.style.opacity = '0';
@@ -64,12 +76,30 @@
     return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
   }
 
+  // PIN Istri & Keluarga: hash-nya disimpan di Firebase (/akses), diatur oleh Suami lewat tombol Akses.
+  async function fetchAkses() {
+    try {
+      const r = await fetch(DATABASE_URL + 'akses.json');
+      if (!r.ok) return null;
+      return (await r.json()) || {};
+    } catch (e) { return null; }
+  }
+
   async function checkPin() {
     const inputHash = await sha256(enteredPin);
-    if (inputHash === PIN_HASH) {
+    let role = null;
+    if (inputHash === PIN_HASH) role = 'suami';
+    else {
+      const akses = await fetchAkses();
+      if (akses) {
+        if (akses.istri && inputHash === akses.istri) role = 'istri';
+        else if (akses.keluarga && inputHash === akses.keluarga) role = 'keluarga';
+      }
+    }
+    if (role) {
       const errEl = document.getElementById('pin-error');
       if (errEl) errEl.textContent = '';
-      unlockApp();
+      unlockApp(role);
     } else {
       showError('PIN salah, coba lagi');
       getDots().forEach(d => d.classList.add('error'));
@@ -95,9 +125,51 @@
   };
   window.pinDel = window.pinBackspace; // alias agar tombol ⌫ di HTML tetap berfungsi
 
+  // Kunci ulang aplikasi (ganti pengguna)
+  window.kunciAplikasi = function() {
+    try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(ROLE_KEY); } catch(e) {}
+    location.reload();
+  };
+
+  // Panel Akses (hanya Suami): atur PIN Istri & Keluarga
+  window.bukaAkses = async function() {
+    if (window.currentRole !== 'suami') return;
+    document.getElementById('akses-modal').classList.add('open');
+    const info = document.getElementById('akses-info');
+    info.textContent = 'Memuat…';
+    const a = await fetchAkses();
+    info.textContent = a === null ? 'Tidak bisa terhubung ke server. Coba lagi nanti.'
+      : 'Istri: ' + (a.istri ? 'sudah diatur' : 'belum diatur') + ' · Keluarga: ' + (a.keluarga ? 'sudah diatur' : 'belum diatur');
+  };
+  window.tutupAkses = function() { document.getElementById('akses-modal').classList.remove('open'); };
+  window.simpanAkses = async function() {
+    if (window.currentRole !== 'suami') return;
+    const info = document.getElementById('akses-info');
+    const pi = document.getElementById('akses-istri').value.trim();
+    const pk = document.getElementById('akses-keluarga').value.trim();
+    const okFmt = v => v === '' || /^\d{6}$/.test(v);
+    if (!okFmt(pi) || !okFmt(pk)) { info.textContent = 'PIN harus 6 angka (atau kosongkan untuk tidak diubah).'; return; }
+    if (!pi && !pk) { info.textContent = 'Isi minimal satu PIN.'; return; }
+    if ((pi && await sha256(pi) === PIN_HASH) || (pk && await sha256(pk) === PIN_HASH) || (pi && pk && pi === pk)) {
+      info.textContent = 'Setiap PIN harus berbeda.'; return;
+    }
+    const cur = (await fetchAkses()) || {};
+    if (pi) cur.istri = await sha256(pi);
+    if (pk) cur.keluarga = await sha256(pk);
+    try {
+      const r = await fetch(DATABASE_URL + 'akses.json', { method: 'PUT', body: JSON.stringify(cur) });
+      if (!r.ok) throw new Error('gagal');
+      document.getElementById('akses-istri').value = '';
+      document.getElementById('akses-keluarga').value = '';
+      info.textContent = 'Tersimpan. Istri: ' + (cur.istri ? 'sudah diatur' : 'belum') + ' · Keluarga: ' + (cur.keluarga ? 'sudah diatur' : 'belum');
+    } catch (e) { info.textContent = 'Gagal menyimpan. Periksa koneksi.'; }
+  };
+
   document.addEventListener('DOMContentLoaded', function() {
     if (isRemembered()) {
-      unlockApp();
+      let r = 'suami';
+      try { r = localStorage.getItem(ROLE_KEY) || 'suami'; } catch(e) {}
+      unlockApp(r);
       return;
     }
     // Keyboard support
@@ -395,6 +467,7 @@ const NAMA_HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 const ID_HARI   = ['minggu','senin','selasa','rabu','kamis','jumat','sabtu'];
 
 window.showView = function(id) {
+  if (id === 'finansial' && window.currentRole === 'keluarga') return; // Finansial privat: hanya Suami & Istri
   document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.main-tabs button').forEach(b => b.classList.remove('active'));
   const vp = document.getElementById('view-'+id);

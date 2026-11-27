@@ -1,5 +1,5 @@
 /* ============================================
-   JADWAL KELUARGA — style.css (Premium Edition)
+   RUMARA — style.css (Premium Edition)
    ============================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -3502,3 +3502,17 @@ body { padding-bottom: calc(var(--nav-h) + 18px + env(safe-area-inset-bottom, 0p
 #todo-panel[data-filter="selesai"] .todo-filters .todo-clear-btn { display: inline-flex; align-items: center; justify-content: center; }
 .todo-filters { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); padding-right: 30px; }
 #daily-checklist-wrap, #mindset-card { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; }
+
+/* ===== Rumara: logo & ajakan pasang ===== */
+.brand-logo { width: 32px; height: 32px; border-radius: 9px; vertical-align: -8px; margin-right: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
+.site-header { padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+.install-bar { display: flex; align-items: center; gap: 10px; margin: 10px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); max-width: 1208px; padding: 8px 8px 8px 10px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-card); box-shadow: var(--shadow-card); }
+@media (min-width: 1240px) { .install-bar { margin-left: auto; margin-right: auto; } }
+.install-bar[hidden] { display: none; }
+.install-ico { border-radius: 10px; flex: none; }
+.install-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.install-txt b { font-size: 14px; }
+.install-txt span { font-size: 12px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.install-go { flex: none; min-height: 38px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--accent); color: #fff; font: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer; }
+.install-go.hint-chip { background: var(--accent); color: #fff; border: 0; margin: 0; }
+.install-x { flex: none; width: 40px; min-height: 40px; border: 0; background: none; color: var(--ink-mute); font-size: 16px; cursor: pointer; border-radius: 12px; }

@@ -1307,3 +1307,25 @@ window.resetFinChk = function(prefix) {
     renderFinAlloc();
   }
 };
+
+/* ===== Tips & Trik ===== */
+window.openTip = function(id) {
+  ['sampah','cuci'].forEach(function(k){ var e=document.getElementById('tp-'+k); if(e) e.hidden = (k !== id); });
+  var hub = document.getElementById('tp-hub'); if (hub) hub.hidden = !!id;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+(function(){
+  var TIPS = [
+    'Tulang jangan ke wastafel. Taruh di wadah organik.',
+    'Kerok sisa nasi dulu sebelum mencuci piring.',
+    'Bilas kemasan sebelum masuk wadah anorganik.',
+    'Minyak jelantah ditampung di botol, bukan dibuang ke saluran.',
+    'Baterai dan lampu bekas masuk wadah B3 terpisah.',
+    'Kosongkan wadah organik dapur tiap sore.',
+    'Pasang saringan di wastafel, buang isinya tiap selesai.'
+  ];
+  document.addEventListener('DOMContentLoaded', function(){
+    var el = document.getElementById('tp-today-text');
+    if (el) el.textContent = TIPS[new Date().getDay() % TIPS.length];
+  });
+})();

@@ -223,6 +223,7 @@ function initFirebase() {
     isFirebaseReady = true;
     setTimeout(initMenuFirebase, 0);
     setTimeout(initFinAllocFirebase, 0);
+    setTimeout(initAgendaFirebase, 0);
   } catch(e) {
     setSyncStatus('error', 'Error Firebase');
     console.error(e);
@@ -1333,3 +1334,122 @@ window.openTip = function(id) {
     if (el) el.textContent = TIPS[new Date().getDay() % TIPS.length];
   });
 })();
+
+
+/* ========================
+   AGENDA KELUARGA — kalender + ringkasan mendatang
+   (terpisah dari To-Do: agenda = kejadian terjadwal, bukan tugas yang dicentang)
+   ======================== */
+const AGENDA_KEY = 'agenda_keluarga';
+let agendas = [];
+let agendaRef = null;
+let agView = new Date(); agView.setDate(1);
+let agSel = todayStr();
+const AG_WHO = { bersama: 'Bersama', suami: 'Suami', istri: 'Istri' };
+
+function agLoadLocal() {
+  try { const r = localStorage.getItem(AGENDA_KEY); agendas = r ? JSON.parse(r) : []; } catch (e) { agendas = []; }
+}
+function agSaveLocal() { try { localStorage.setItem(AGENDA_KEY, JSON.stringify(agendas)); } catch (e) {} }
+
+function initAgendaFirebase() {
+  try {
+    agendaRef = db.ref('agenda');
+    agendaRef.on('value', snap => {
+      const raw = snap.val();
+      agendas = raw ? Object.entries(raw).map(([fbKey, v]) => ({ ...v, fbKey })) : [];
+      renderAgenda();
+    }, () => { agendaRef = null; agLoadLocal(); renderAgenda(); });
+  } catch (e) { agendaRef = null; }
+}
+
+function agSorted(list) {
+  return [...list].sort((a, b) => (a.date + (a.time || '99:99')).localeCompare(b.date + (b.time || '99:99')));
+}
+function agDateLabel(ds, full) {
+  const [y, m, d] = ds.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('id-ID', full ? { weekday: 'long', day: 'numeric', month: 'long' } : { weekday: 'short', day: 'numeric', month: 'short' });
+}
+function agRelative(ds) {
+  const [y, m, d] = ds.split('-').map(Number);
+  const [ty, tm, td] = todayStr().split('-').map(Number);
+  const diff = Math.round((new Date(y, m - 1, d) - new Date(ty, tm - 1, td)) / 86400000);
+  if (diff === 0) return 'Hari ini';
+  if (diff === 1) return 'Besok';
+  return diff + ' hari lagi';
+}
+
+window.agMonth = function (n) {
+  agView = new Date(agView.getFullYear(), agView.getMonth() + n, 1);
+  renderAgenda();
+};
+window.agPick = function (ds) { agSel = ds; renderAgenda(); };
+
+window.agAdd = function (e) {
+  e.preventDefault();
+  const title = document.getElementById('ag-title');
+  const text = title.value.trim();
+  if (!text) { title.focus(); return; }
+  const item = {
+    id: Date.now(), title: text, date: agSel,
+    time: document.getElementById('ag-time').value || '',
+    who: document.getElementById('ag-who').value || 'bersama',
+    createdAt: Date.now()
+  };
+  if (agendaRef) { agendaRef.push(item); }
+  else { agendas.push(item); agSaveLocal(); renderAgenda(); }
+  title.value = ''; document.getElementById('ag-time').value = '';
+  title.focus();
+};
+
+window.agDel = function (id) {
+  const it = agendas.find(a => a.id === id);
+  if (!it) return;
+  if (agendaRef && it.fbKey) { agendaRef.child(it.fbKey).remove(); }
+  else { agendas = agendas.filter(a => a.id !== id); agSaveLocal(); renderAgenda(); }
+};
+
+function agItemHtml(a, withDate) {
+  return `<div class="ag-item ag-${escHtml(a.who || 'bersama')}">
+    <button type="button" class="ag-itembody" onclick="agPick('${escHtml(a.date)}')">
+      <span class="ag-itemtitle">${escHtml(a.title)}</span>
+      <span class="ag-meta">${withDate ? escHtml(agDateLabel(a.date)) + ' · ' : ''}${a.time ? escHtml(a.time) + ' · ' : ''}${escHtml(AG_WHO[a.who] || 'Bersama')}</span>
+    </button>
+    ${withDate ? `<span class="ag-rel">${escHtml(agRelative(a.date))}</span>` : `<button type="button" class="ag-del" onclick="agDel(${Number(a.id)})" aria-label="Hapus agenda ${escHtml(a.title)}">✕</button>`}
+  </div>`;
+}
+
+function renderAgenda() {
+  const grid = document.getElementById('ag-grid');
+  if (!grid) return;
+  const y = agView.getFullYear(), m = agView.getMonth();
+  document.getElementById('ag-month').textContent = agView.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  const first = (new Date(y, m, 1).getDay() + 6) % 7;      // Senin = 0
+  const days = new Date(y, m + 1, 0).getDate();
+  const today = todayStr();
+  const byDate = {};
+  agendas.forEach(a => { (byDate[a.date] = byDate[a.date] || []).push(a); });
+  let html = '';
+  for (let i = 0; i < first; i++) html += '<span class="ag-cell ag-empty"></span>';
+  for (let d = 1; d <= days; d++) {
+    const ds = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const n = (byDate[ds] || []).length;
+    const cls = 'ag-cell' + (ds === today ? ' is-today' : '') + (ds === agSel ? ' is-sel' : '') + (n ? ' has' : '');
+    html += `<button type="button" class="${cls}" onclick="agPick('${ds}')" aria-label="${escHtml(agDateLabel(ds, true))}${n ? ', ' + n + ' agenda' : ''}"><span>${d}</span>${n ? '<i></i>' : ''}</button>`;
+  }
+  grid.innerHTML = html;
+
+  document.getElementById('ag-daytitle').textContent = agDateLabel(agSel, true) + (agSel === today ? ' · Hari ini' : '');
+  const dayItems = agSorted(byDate[agSel] || []);
+  document.getElementById('ag-daylist').innerHTML = dayItems.length
+    ? dayItems.map(a => agItemHtml(a, false)).join('')
+    : '<div class="ag-none">Belum ada agenda di tanggal ini.</div>';
+
+  const soon = agSorted(agendas.filter(a => a.date >= today)).slice(0, 5);
+  document.getElementById('ag-soonlist').innerHTML = soon.length
+    ? soon.map(a => agItemHtml(a, true)).join('')
+    : '<div class="ag-none">Belum ada agenda mendatang. Pilih tanggal di kalender lalu tambah.</div>';
+}
+
+agLoadLocal();
+renderAgenda();

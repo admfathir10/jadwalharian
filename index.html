@@ -11,7 +11,7 @@
 <script>
 /* ── Name Injector: decode & inject nama ke elemen DOM ── */
 (function(){
-  function d(e){var s=atob(e).split('').reverse().join('');try{return new TextDecoder('utf-8').decode(Uint8Array.from(s,function(c){return c.charCodeAt(0);}));}catch(x){return s;}}
+  function d(e){var b=atob(e),s;try{s=new TextDecoder('utf-8').decode(Uint8Array.from(b,function(c){return c.charCodeAt(0);}));}catch(x){s=b;}return Array.from(s).reverse().join('');}
   var N={
     s: d('cmlodGFG'),
     i: d('YW1sYVM='),
@@ -88,6 +88,10 @@
     <span id="who-label"></span>
     <button class="only-suami" onclick="bukaAkses()">🔑 Akses</button>
     <button onclick="kunciAplikasi()">🔒 Kunci</button>
+  </div>
+  <div class="hdr-glass" aria-live="polite">
+    <div><small>HARI INI</small><b id="hg-date">-</b></div>
+    <div><small>TO-DO</small><b id="hg-todo">-</b></div>
   </div>
 </header>
 
@@ -667,10 +671,10 @@
     <button class="tp-back" onclick="openTip('')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Tips &amp; Trik</button>
     <h2 class="tp-h1">Cuci Piring Anti Mampet</h2>
     <div class="tp-steps">
-      <div><div class="tp-circ"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3730a3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12v9M9 4c0 3 1.5 5 3 5s3-2 3-5-1.5-2-3-2-3-1-3 2z"/></svg></div><em>1</em><span>Kerok sisa</span></div>
-      <div><div class="tp-circ"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3730a3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h16v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM8 8V5h8v3M9 13h6"/></svg></div><em>2</em><span>Lap minyak</span></div>
-      <div><div class="tp-circ"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3730a3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0 0 16 0zM8 15h.01M12 16h.01M16 15h.01M10 18h.01M14 18h.01M3 12h18"/></svg></div><em>3</em><span>Saring</span></div>
-      <div><div class="tp-circ"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3730a3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c3 4 5 6.5 5 9a5 5 0 0 1-10 0c0-2.5 2-5 5-9zM10 13a2 2 0 0 0 2 2"/></svg></div><em>4</em><span>Cuci dan bilas</span></div>
+      <div><div class="tp-circ"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4b5841" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12v9M9 4c0 3 1.5 5 3 5s3-2 3-5-1.5-2-3-2-3-1-3 2z"/></svg></div><em>1</em><span>Kerok sisa</span></div>
+      <div><div class="tp-circ"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4b5841" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h16v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM8 8V5h8v3M9 13h6"/></svg></div><em>2</em><span>Lap minyak</span></div>
+      <div><div class="tp-circ"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4b5841" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0 0 16 0zM8 15h.01M12 16h.01M16 15h.01M10 18h.01M14 18h.01M3 12h18"/></svg></div><em>3</em><span>Saring</span></div>
+      <div><div class="tp-circ"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4b5841" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c3 4 5 6.5 5 9a5 5 0 0 1-10 0c0-2.5 2-5 5-9zM10 13a2 2 0 0 0 2 2"/></svg></div><em>4</em><span>Cuci dan bilas</span></div>
     </div>
     <div class="tp-dest">
       <div style="background:#dff2d4"><div class="tp-row"><div class="tp-chip"><div class="tp-chipbox"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2f6b1f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11h16a8 8 0 0 1-16 0zM9 8c0-1.5 1.5-2 3-2s3 .5 3 2"/></svg></div></div><div class="tp-chip"><div class="tp-chipbox"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2f6b1f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h16M8 12l-3-4M8 12l-3 4M12 12l-2-4M12 12l-2 4M16 12l-2-4M16 12l-2 4M19 12l2-3v6z"/></svg></div></div></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2f6b1f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v15M6 13l6 6 6-6"/></svg><div class="tp-pill" style="background:#2f6b1f"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/></svg><span>Organik</span></div></div>
@@ -680,7 +684,7 @@
       <div class="tp-nohead"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9a2f1f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM5.6 5.6l12.8 12.8"/></svg><span>Jangan ke wastafel</span></div>
       <div class="tp-row tp-row4"><div class="tp-chip"><div class="tp-chipbox"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9a2f1f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h16M8 12l-3-4M8 12l-3 4M12 12l-2-4M12 12l-2 4M16 12l-2-4M16 12l-2 4M19 12l2-3v6z"/></svg></div><span style="color:#5c1f15">Tulang</span></div><div class="tp-chip"><div class="tp-chipbox"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9a2f1f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11h16a8 8 0 0 1-16 0zM9 8c0-1.5 1.5-2 3-2s3 .5 3 2"/></svg></div><span style="color:#5c1f15">Sisa nasi</span></div><div class="tp-chip"><div class="tp-chipbox"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9a2f1f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c3 4 5 6.5 5 9a5 5 0 0 1-10 0c0-2.5 2-5 5-9z"/></svg></div><span style="color:#5c1f15">Minyak</span></div><div class="tp-chip"><div class="tp-chipbox"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9a2f1f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4zM16 11h2a2 2 0 0 1 0 4h-2M8 3v3M12 3v3"/></svg></div><span style="color:#5c1f15">Ampas kopi</span></div></div>
     </div>
-    <div class="tp-note"><div class="tp-chipbox" style="background:#eceafd"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3730a3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0 0 16 0zM8 15h.01M12 16h.01M16 15h.01M10 18h.01M14 18h.01M3 12h18"/></svg></div><span>Pasang saringan, buang isinya tiap selesai</span></div>
+    <div class="tp-note"><div class="tp-chipbox" style="background:#eef1df"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4b5841" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0 0 16 0zM8 15h.01M12 16h.01M16 15h.01M10 18h.01M14 18h.01M3 12h18"/></svg></div><span>Pasang saringan, buang isinya tiap selesai</span></div>
    </div>
   </div>
   </div><!-- /view-tips -->

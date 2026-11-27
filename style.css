@@ -2966,3 +2966,195 @@ body:not(.role-suami) .only-suami { display: none !important; }
 .akses-actions { display: flex; gap: 8px; justify-content: flex-end; }
 .akses-actions button { font: inherit; font-weight: 600; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-med, #ccc); background: transparent; cursor: pointer; color: inherit; }
 .akses-actions button.primary { background: #3730a3; border-color: #3730a3; color: #fff; }
+
+
+/* =====================================================================
+   TAMPILAN BARU (v3) — nyaman dilihat, mudah dipakai di HP
+   Lapisan ini menimpa gaya lama. Menu di bawah, kartu bersih, jarak lega.
+   ===================================================================== */
+:root {
+  --ink: #1f2430;
+  --ink-soft: #566074;
+  --ink-mute: #8a93a3;
+  --paper: #f6f4ef;
+  --card: #ffffff;
+  --line: #e7e3da;
+  --accent: #4f46e5;
+  --accent-soft: #eceafd;
+  --accent-ink: #3730a3;
+  --warm: #fff4de;
+  --warm-ink: #8a5a00;
+  --radius-card: 18px;
+  --nav-h: 68px;
+  --bg-page: var(--paper);
+  --tab-active-color: var(--accent-ink);
+}
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-bottom: calc(var(--nav-h) + 28px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ---------- Header ringkas ---------- */
+.site-header {
+  background: linear-gradient(135deg, #1e2a4a 0%, #34407a 100%);
+  padding: 18px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px));
+  border-radius: 0 0 22px 22px;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+.site-header h1 { font-size: 21px; margin: 0 0 2px; }
+.site-header p  { margin: 0; font-size: 12.5px; font-style: normal; color: rgba(255,255,255,0.72); }
+.header-clock { top: 16px; right: 16px; font-size: 17px; }
+.header-clock-day { font-size: 9.5px; }
+.site-header::before { display: none; }
+.who-bar { margin-top: 10px; justify-content: flex-start; }
+body.pin-off .who-bar { display: none; }
+
+/* ---------- Menu bawah (semua tab selalu terlihat) ---------- */
+.main-tabs.app-nav {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 500;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255,255,255,0.97);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -6px 20px rgba(31,36,48,0.07);
+  -webkit-mask-image: none; mask-image: none;
+  overflow: visible;
+}
+body.role-keluarga .main-tabs.app-nav { grid-template-columns: repeat(3, 1fr); }
+.main-tabs.app-nav button {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: var(--nav-h); padding: 6px 4px;
+  border: 0; border-radius: 14px;
+  background: transparent; color: var(--ink-soft);
+  font: inherit; cursor: pointer;
+  transition: background .15s, color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.main-tabs.app-nav .ni { font-size: 23px; line-height: 1; filter: grayscale(0.6); opacity: .85; transition: transform .15s; }
+.main-tabs.app-nav .nl { font-size: 11.5px; font-weight: 600; letter-spacing: .01em; }
+.main-tabs.app-nav button:hover { background: var(--accent-soft); }
+.main-tabs.app-nav button.active { background: var(--accent-soft); color: var(--accent-ink); }
+.main-tabs.app-nav button.active .ni { filter: none; opacity: 1; transform: translateY(-1px) scale(1.08); }
+.main-tabs.app-nav button.active .nl { font-weight: 800; }
+.main-tabs.app-nav button:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+@media (min-width: 900px) {
+  .main-tabs.app-nav { left: 50%; right: auto; bottom: 16px; width: 520px; transform: translateX(-50%); border: 1px solid var(--line); border-radius: 22px; }
+}
+
+/* ---------- Lebar & jarak halaman ---------- */
+.todo-section { padding: 14px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+.main-content { padding: 14px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); }
+
+/* ---------- To-Do: kartu yang bisa dilipat ---------- */
+.todo-panel { border-radius: var(--radius-card); border: 1px solid var(--line); box-shadow: 0 2px 10px rgba(31,36,48,0.05); background: var(--card); }
+.todo-header { background: var(--card); color: var(--ink); padding: 14px 16px; cursor: pointer; gap: 10px; -webkit-tap-highlight-color: transparent; }
+.todo-header::before { display: none; }
+.todo-header:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+.todo-icon { width: 40px; height: 40px; font-size: 20px; background: var(--accent-soft); border: 0; border-radius: 12px; display: grid; place-items: center; flex: none; }
+.todo-title { gap: 12px; min-width: 0; }
+.todo-title-text { font-size: 16px; font-weight: 800; color: var(--ink); }
+.todo-title-sub { font-size: 12.5px; color: var(--ink-soft); font-weight: 500; }
+.todo-header-right { display: flex; align-items: center; gap: 8px; flex: none; }
+.todo-date-badge { display: none; }
+.todo-sync-status { background: transparent; border: 0; padding: 0; color: var(--ink-mute); font-size: 11px; }
+#sync-text { display: none; }
+@media (min-width: 600px) { #sync-text { display: inline; } .todo-date-badge { display: inline-block; background: var(--paper); color: var(--ink-soft); border: 0; } }
+.todo-chev { font-size: 20px; color: var(--ink-mute); transition: transform .2s; line-height: 1; }
+.todo-panel:not(.collapsed) .todo-chev { transform: rotate(180deg); }
+.todo-panel.collapsed .todo-input-area,
+.todo-panel.collapsed .todo-filters,
+.todo-panel.collapsed .todo-list,
+.todo-panel.collapsed .todo-footer-info { display: none; }
+.todo-input-area { padding: 4px 16px 14px; border-top: 1px solid var(--line); background: var(--card); }
+.todo-who-select { background: var(--paper); border-radius: 14px; padding: 4px; margin-top: 12px; }
+.todo-input-row { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.todo-input, .todo-deadline { width: 100%; min-height: 46px; font-size: 16px; border-radius: 12px; border: 1.5px solid var(--line); padding: 10px 14px; background: #fff; color: var(--ink); }
+.todo-input:focus, .todo-deadline:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.todo-deadline-wrap { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+.deadline-label { color: var(--ink-soft); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; position: static; background: none; opacity: 1; }
+.todo-add-btn { min-height: 48px; width: 100%; border-radius: 12px; font-size: 15px; font-weight: 800; background: var(--accent); box-shadow: none; }
+@media (min-width: 700px) {
+  .todo-input-row { flex-direction: row; align-items: flex-end; }
+  .todo-deadline-wrap { width: 190px; flex: none; }
+  .todo-add-btn { width: auto; padding: 0 22px; flex: none; }
+}
+.todo-filters { padding: 10px 16px; gap: 6px; border-top: 1px solid var(--line); background: var(--card); }
+.filter-btn { min-height: 36px; padding: 0 14px; border-radius: 999px; font-size: 13px; }
+.filter-btn.active { background: var(--accent); box-shadow: none; }
+.todo-clear-btn { min-height: 36px; border-radius: 999px; }
+.todo-section .todo-list { max-height: 340px; padding: 4px 12px 12px; }
+.todo-footer-info { font-size: 11.5px; color: var(--ink-mute); padding: 8px 16px 14px; }
+
+/* ---------- Beranda: Jadwal Aktivitas ---------- */
+.quote-card {
+  background: linear-gradient(135deg, #fff4de 0%, #ffe9c2 100%);
+  border: 1px solid #f3d9a0; border-radius: var(--radius-card);
+  padding: 16px 18px 14px; margin-bottom: 14px;
+  color: #4a3200;
+}
+.quote-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.quote-ico { font-size: 20px; }
+.quote-label { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--warm-ink); }
+.quote-tema { margin-left: auto; font-size: 11.5px; font-weight: 700; background: rgba(255,255,255,0.65); color: var(--warm-ink); padding: 3px 10px; border-radius: 999px; }
+.quote-text { margin: 0; font-size: 18px; line-height: 1.5; font-weight: 700; text-wrap: balance; }
+.quote-old { margin-top: 8px; font-size: 12.5px; color: rgba(74,50,0,0.62); }
+.quote-old em { font-style: italic; }
+
+.day-picker { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 12px; }
+.day-picker button {
+  position: relative; min-height: 46px; border-radius: 14px;
+  border: 1.5px solid var(--line); background: var(--card); color: var(--ink-soft);
+  font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.day-picker button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.day-picker button.is-today::after { content: ''; position: absolute; left: 50%; bottom: 5px; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: #f59e0b; }
+.day-picker button.is-today.active::after { background: #fde68a; }
+.day-picker button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.person-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: #ebe7dd; border-radius: 16px; padding: 4px; margin-bottom: 12px; }
+.person-toggle button { min-height: 44px; border: 0; border-radius: 12px; background: transparent; font: inherit; font-size: 14px; font-weight: 700; color: var(--ink-soft); cursor: pointer; }
+.person-toggle button.active { background: var(--card); color: var(--ink); box-shadow: 0 1px 4px rgba(31,36,48,0.12); }
+
+.legend-chips { display: flex; gap: 6px 12px; overflow-x: auto; padding: 2px 2px 12px; margin-bottom: 2px; scrollbar-width: none; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+.legend-chips::-webkit-scrollbar { display: none; }
+.legend-chips span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.legend-chips i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+.dual-grid { grid-template-columns: 1fr; gap: 14px; }
+.dual-grid.show-suami .col-card:nth-child(2) { display: none; }
+.dual-grid.show-istri .col-card:nth-child(1) { display: none; }
+@media (min-width: 900px) {
+  .dual-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+  .dual-grid.show-suami .col-card:nth-child(2), .dual-grid.show-istri .col-card:nth-child(1) { display: block; }
+  .person-toggle { display: none; }
+}
+.col-card { border-radius: var(--radius-card); border: 1px solid var(--line); box-shadow: 0 2px 10px rgba(31,36,48,0.05); background: var(--card); overflow: hidden; }
+.col-card:hover { box-shadow: 0 2px 10px rgba(31,36,48,0.05); transform: none; }
+.col-body { padding: 14px 14px 16px; }
+.day-tabs { display: none; }               /* diganti pilihan hari di atas */
+.istri-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.istri-tabs button { min-height: 38px; padding: 0 14px; border-radius: 999px; font-size: 13px; }
+.col-day-label { font-size: 12px; letter-spacing: .06em; }
+.timeline .row { gap: 10px; margin-bottom: 7px; }
+.timeline .time { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); min-width: 44px; }
+.timeline .block { font-size: 14px; line-height: 1.45; padding: 10px 12px; border-radius: 12px; }
+
+/* ---------- Kartu lain: bernapas lebih lega ---------- */
+.together-card, .dash-card, .menu-card { border-radius: var(--radius-card); }
+@media (max-width: 600px) {
+  .main-content { padding-top: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+.timeline .time { min-width: 52px; white-space: normal; text-align: right; line-height: 1.25; }
+.timeline .row { grid-template-columns: 58px 1fr; }

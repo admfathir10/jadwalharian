@@ -11,7 +11,7 @@
 <script>
 /* ── Name Injector: decode & inject nama ke elemen DOM ── */
 (function(){
-  function d(e){return atob(e).split('').reverse().join('');}
+  function d(e){var s=atob(e).split('').reverse().join('');try{return new TextDecoder('utf-8').decode(Uint8Array.from(s,function(c){return c.charCodeAt(0);}));}catch(x){return s;}}
   var N={
     s: d('cmlodGFG'),
     i: d('YW1sYVM='),
@@ -83,13 +83,7 @@
 <!-- ===================== HEADER + MAIN TABS ===================== -->
 <header class="site-header">
   <h1>📅 Jadwal Keluarga</h1>
-  <p>Keluarga Kecil Kami - Tumbuh dan Merekah, Bismillah</p>
-  <nav class="main-tabs">
-    <button id="mtab-jadwal" class="active" onclick="showView('jadwal')">Jadwal Harian</button>
-    <button id="mtab-bersama" onclick="showView('bersama')">🤝 Momen Bersama</button>
-    <button id="mtab-menu" onclick="showView('menu')">🍳 Menu Masakan</button>
-    <button id="mtab-finansial" class="only-couple" onclick="showView('finansial')">💰 Finansial</button>
-  </nav>
+  <p>Keluarga Kecil Kami · Tumbuh dan Merekah, Bismillah</p>
   <div class="who-bar">
     <span id="who-label"></span>
     <button class="only-suami" onclick="bukaAkses()">🔑 Akses</button>
@@ -110,27 +104,15 @@
   </div>
 </div>
 
-<!-- ===================== LEGEND ===================== -->
-<div class="legend-bar">
-  <div class="leg"><div class="leg-dot" style="background:#639922"></div>Ibadah</div>
-  <div class="leg"><div class="leg-dot" style="background:#378add"></div>Olahraga</div>
-  <div class="leg"><div class="leg-dot" style="background:#7f77dd"></div>Kerja/Sekolah</div>
-  <div class="leg"><div class="leg-dot" style="background:#888780"></div>Istirahat/Makan</div>
-  <div class="leg"><div class="leg-dot" style="background:#ba7517"></div>Nongki/Sosial</div>
-  <div class="leg"><div class="leg-dot" style="background:#d85a30"></div>Hobi & Kreatif</div>
-  <div class="leg"><div class="leg-dot" style="background:#d4537e"></div>Keluarga</div>
-  <div class="leg"><div class="leg-dot" style="background:#1d9e75"></div>Toko Shopee</div>
-</div>
-
 <!-- ===================== TO-DO KELUARGA ===================== -->
 <section class="todo-section">
-  <div class="todo-panel">
-      <div class="todo-header">
+  <div class="todo-panel collapsed" id="todo-panel">
+      <div class="todo-header" onclick="toggleTodo()" role="button" tabindex="0" aria-expanded="false" id="todo-head">
         <div class="todo-title">
           <span class="todo-icon">✅</span>
           <div>
             <div class="todo-title-text">To-Do Keluarga</div>
-            <div class="todo-title-sub">Rencana bersama — centang kalau sudah selesai</div>
+            <div class="todo-title-sub" id="todo-count">Rencana bersama</div>
           </div>
         </div>
         <div class="todo-header-right">
@@ -139,6 +121,7 @@
             <span id="sync-text">Menghubungkan...</span>
           </div>
           <div class="todo-date-badge" id="todo-date-badge"></div>
+          <span class="todo-chev" aria-hidden="true">⌄</span>
         </div>
       </div>
 
@@ -195,9 +178,42 @@
 <!-- ===================== MAIN CONTENT ===================== -->
 <main class="main-content">
 
-  <!-- ========== VIEW: JADWAL HARIAN ========== -->
+  <!-- ========== VIEW: JADWAL AKTIVITAS (BERANDA) ========== -->
   <div id="view-jadwal" class="view-panel active">
-    <div class="dual-grid">
+
+    <!-- Quote hari ini -->
+    <div id="mindset-card"></div>
+
+    <!-- Pilih hari (berlaku untuk jadwal suami & istri) -->
+    <div class="day-picker" id="day-picker" role="tablist" aria-label="Pilih hari">
+      <button data-day="senin"  onclick="pickDay('senin')">Sen</button>
+      <button data-day="selasa" onclick="pickDay('selasa')">Sel</button>
+      <button data-day="rabu"   onclick="pickDay('rabu')">Rab</button>
+      <button data-day="kamis"  onclick="pickDay('kamis')">Kam</button>
+      <button data-day="jumat"  onclick="pickDay('jumat')">Jum</button>
+      <button data-day="sabtu"  onclick="pickDay('sabtu')">Sab</button>
+      <button data-day="minggu" onclick="pickDay('minggu')">Min</button>
+    </div>
+
+    <!-- Pilih orang (di HP satu per satu, di layar lebar berdampingan) -->
+    <div class="person-toggle" id="person-toggle">
+      <button data-p="suami" class="active" onclick="setPerson('suami')">👨 Jadwal Suami</button>
+      <button data-p="istri" onclick="setPerson('istri')">👩 Jadwal Istri</button>
+    </div>
+
+    <!-- Arti warna -->
+    <div class="legend-chips">
+      <span><i style="background:#639922"></i>Ibadah</span>
+      <span><i style="background:#378add"></i>Olahraga</span>
+      <span><i style="background:#7f77dd"></i>Kerja</span>
+      <span><i style="background:#888780"></i>Istirahat</span>
+      <span><i style="background:#ba7517"></i>Sosial</span>
+      <span><i style="background:#d85a30"></i>Hobi</span>
+      <span><i style="background:#d4537e"></i>Keluarga</span>
+      <span><i style="background:#1d9e75"></i>Toko</span>
+    </div>
+
+    <div class="dual-grid show-suami" id="dual-grid">
 
       <!-- ===== KOLOM SUAMI ===== -->
       <div class="col-card">
@@ -540,12 +556,6 @@
 
     </div><!-- /dual-grid -->
 
-    <!-- ✅ Checklist Harian — di bawah jadwal, lebar penuh seperti To-Do -->
-    <div id="daily-checklist-wrap"></div>
-
-    <!-- 🧠 Mindset Hari Ini — lebar penuh sejajar To-Do -->
-    <div id="mindset-card"></div>
-
   </div><!-- /view-jadwal -->
 
 
@@ -593,6 +603,14 @@
   </div><!-- /view-bersama -->
 
 </main>
+<!-- ===================== NAVIGASI BAWAH ===================== -->
+<nav class="main-tabs app-nav" aria-label="Menu utama">
+  <button id="mtab-jadwal" class="active" onclick="showView('jadwal')"><span class="ni">🗓️</span><span class="nl">Aktivitas</span></button>
+  <button id="mtab-bersama" onclick="showView('bersama')"><span class="ni">🤝</span><span class="nl">Bersama</span></button>
+  <button id="mtab-menu" onclick="showView('menu')"><span class="ni">🍳</span><span class="nl">Menu</span></button>
+  <button id="mtab-finansial" class="only-couple" onclick="showView('finansial')"><span class="ni">💰</span><span class="nl">Finansial</span></button>
+</nav>
+
 
 
   <!-- ========== VIEW: MENU MASAKAN ========== -->
@@ -1056,6 +1074,6 @@
 </div><!-- /app-content -->
 
 
-<script src="script.js"></script>
+<script src="script.js" charset="UTF-8"></script>
 </body>
 </html>

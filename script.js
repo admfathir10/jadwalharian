@@ -634,6 +634,10 @@ function updateTodoCount() {
   const n = todos.filter(t => !t.done).length;
   const late = todos.filter(t => !t.done && t.deadline && t.deadline < todayStr()).length;
   el.textContent = n ? `${n} belum selesai${late ? ` · ${late} terlambat` : ''}` : 'Semua beres 🎉';
+  const hg = document.getElementById('hg-todo');
+  if (hg) { hg.textContent = n ? `${n} belum selesai` : 'Semua beres'; hg.classList.toggle('late', late > 0); }
+  const hd = document.getElementById('hg-date');
+  if (hd) hd.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
 function injectClock() {

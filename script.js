@@ -1586,7 +1586,7 @@ renderAgenda();
    Langganan disimpan di Firebase 'push_subs'; pengiriman oleh GitHub Actions (scripts/send-push.mjs)
    ======================== */
 (function () {
-  const VAPID_PUBLIC = 'BO3B2-EeJDEFkEdM2j6DijOwu-BGZbRRBymvqD5emQCK-tc-_sbRw3UHAoqPMRO0_UexAuemu9wv6DqGy6kEYMg';
+  const VAPID_PUBLIC = 'BEF3ASpSO1Zpyg8ZhF4Nk2IyYjjF0zQKbCtdQ2e4wHs339iI_kCPmiHDc8787KS7cfJET9s7AVHv8L9GToKzOrQ';
   const bar = document.getElementById('push-bar');
   if (!bar) return;
   if (!window.isSecureContext) return;

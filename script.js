@@ -1580,3 +1580,83 @@ renderAgenda();
     try { localStorage.setItem('rumara_install_x', '1'); } catch (e) {}
   });
 })();
+
+/* ========================
+   RUMARA — pengingat (Web Push)
+   Langganan disimpan di Firebase 'push_subs'; pengiriman oleh GitHub Actions (scripts/send-push.mjs)
+   ======================== */
+(function () {
+  const VAPID_PUBLIC = 'BO3B2-EeJDEFkEdM2j6DijOwu-BGZbRRBymvqD5emQCK-tc-_sbRw3UHAoqPMRO0_UexAuemu9wv6DqGy6kEYMg';
+  const bar = document.getElementById('push-bar');
+  if (!bar) return;
+  if (!window.isSecureContext) return;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
+  const go = document.getElementById('push-go');
+  const sel = document.getElementById('push-who');
+  const x = document.getElementById('push-x');
+  const sub = bar.querySelector('.install-txt b');
+  let dismissed = false;
+  try { dismissed = localStorage.getItem('rumara_push_x') === '1'; } catch (e) {}
+
+  function u8(b64) {
+    const pad = '='.repeat((4 - b64.length % 4) % 4);
+    const raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+    return Uint8Array.from(raw, function (c) { return c.charCodeAt(0); });
+  }
+  async function idOf(endpoint) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(endpoint));
+    return Array.from(new Uint8Array(buf)).slice(0, 10).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+  }
+  function waitDb(cb, tries) {
+    if (typeof db !== 'undefined' && db) return cb(db);
+    if ((tries || 0) > 40) return cb(null);
+    setTimeout(function () { waitDb(cb, (tries || 0) + 1); }, 250);
+  }
+  function save(subscription, who) {
+    return new Promise(function (resolve) {
+      waitDb(function (d) {
+        if (!d) return resolve(false);
+        idOf(subscription.endpoint).then(function (id) {
+          d.ref('push_subs/' + id).set({ sub: subscription.toJSON(), who: who, ts: Date.now() })
+            .then(function () { resolve(true); }, function () { resolve(false); });
+        });
+      });
+    });
+  }
+  function done(msg) {
+    sub.textContent = msg;
+    sel.parentNode.style.display = 'none';
+    go.hidden = true;
+    setTimeout(function () { bar.hidden = true; }, 3500);
+  }
+
+  navigator.serviceWorker.ready.then(function (reg) {
+    reg.pushManager.getSubscription().then(function (existing) {
+      if (existing) {
+        // sudah aktif: pastikan tersimpan, lalu sembunyikan ajakan
+        try { var w = localStorage.getItem('rumara_push_who'); if (w) save(existing, w); } catch (e) {}
+        return;
+      }
+      if (dismissed || Notification.permission === 'denied') return;
+      try { var last = localStorage.getItem('rumara_push_who'); if (last) sel.value = last; else if (window.currentRole === 'istri') sel.value = 'istri'; } catch (e) {}
+      bar.hidden = false;
+    });
+    go.addEventListener('click', function () {
+      go.disabled = true;
+      Notification.requestPermission().then(function (perm) {
+        if (perm !== 'granted') { go.disabled = false; done('Izin notifikasi ditolak'); return null; }
+        return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: u8(VAPID_PUBLIC) });
+      }).then(function (subscription) {
+        if (!subscription) return;
+        try { localStorage.setItem('rumara_push_who', sel.value); } catch (e) {}
+        return save(subscription, sel.value).then(function (ok) {
+          done(ok ? 'Pengingat aktif ✓' : 'Gagal menyimpan, coba lagi nanti');
+        });
+      }).catch(function () { go.disabled = false; done('Gagal mengaktifkan pengingat'); });
+    });
+  });
+  x.addEventListener('click', function () {
+    bar.hidden = true;
+    try { localStorage.setItem('rumara_push_x', '1'); } catch (e) {}
+  });
+})();

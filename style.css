@@ -3516,3 +3516,8 @@ body { padding-bottom: calc(var(--nav-h) + 18px + env(safe-area-inset-bottom, 0p
 .install-go { flex: none; min-height: 38px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--accent); color: #fff; font: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer; }
 .install-go.hint-chip { background: var(--accent); color: #fff; border: 0; margin: 0; }
 .install-x { flex: none; width: 40px; min-height: 40px; border: 0; background: none; color: var(--ink-mute); font-size: 16px; cursor: pointer; border-radius: 12px; }
+
+/* Pengingat (push) */
+.push-ico { flex: none; width: 36px; height: 36px; display: grid; place-items: center; font-size: 20px; background: var(--accent-soft); border-radius: 10px; }
+.push-who { font: inherit; font-size: 12px; color: var(--ink-soft); background: none; border: 0; padding: 0; max-width: 100%; }
+.push-bar .install-txt span { overflow: visible; }

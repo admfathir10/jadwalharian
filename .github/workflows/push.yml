@@ -1,0 +1,36 @@
+name: Pengingat Rumara
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # tiap ±10 menit (GitHub kadang telat beberapa menit)
+  workflow_dispatch:
+    inputs:
+      test:
+        description: 'Kirim notifikasi tes ke semua perangkat?'
+        type: boolean
+        default: false
+
+concurrency:
+  group: rumara-push
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  kirim:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pasang web-push
+        run: npm install --no-save --no-audit --no-fund web-push@3
+      - name: Kirim pengingat
+        env:
+          VAPID_PUBLIC_KEY: BO3B2-EeJDEFkEdM2j6DijOwu-BGZbRRBymvqD5emQCK-tc-_sbRw3UHAoqPMRO0_UexAuemu9wv6DqGy6kEYMg
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          PUSH_TEST: ${{ github.event.inputs.test }}
+        run: node scripts/send-push.mjs

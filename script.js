@@ -1419,7 +1419,48 @@ function agItemHtml(a, withDate) {
   </div>`;
 }
 
+function agDiff(ds) {
+  const [y, m, d] = ds.split('-').map(Number);
+  const [ty, tm, td] = todayStr().split('-').map(Number);
+  return Math.round((new Date(y, m - 1, d) - new Date(ty, tm - 1, td)) / 86400000);
+}
+
+window.agOpen = function (ds) {
+  agSel = ds;
+  const [y, m] = ds.split('-').map(Number);
+  agView = new Date(y, m - 1, 1);
+  showView('bersama');
+  renderAgenda();
+  const c = document.getElementById('agenda-card');
+  if (c) c.scrollIntoView({ block: 'start' });
+};
+
+function renderAgendaRemind() {
+  const box = document.getElementById('agenda-remind');
+  if (!box) return;
+  const today = todayStr();
+  const up = agSorted(agendas.filter(a => a.date >= today));
+  if (!up.length) {
+    box.innerHTML = `<button type="button" class="ag-rcard" onclick="agOpen('${today}')"><div class="ag-rtop"><div class="ag-rico" aria-hidden="true">📆</div><div class="ag-rtxt"><div class="ag-rlabel">AGENDA TERDEKAT</div><div class="ag-rtitle">Belum ada agenda</div><div class="ag-rmeta">Ketuk untuk menambah di tab Bersama</div></div></div></button>`;
+    return;
+  }
+  const first = up[0];
+  const dd = agDiff(first.date);
+  const near = dd <= 1;
+  const more = up.slice(1, 3);
+  const meta = agDateLabel(first.date) + (first.time ? ' · ' + first.time : '') + ' · ' + (AG_WHO[first.who] || 'Bersama');
+  box.innerHTML = `<button type="button" class="ag-rcard${near ? ' soon' : ''}" onclick="agOpen('${escHtml(first.date)}')" aria-label="Agenda terdekat: ${escHtml(first.title)}, ${escHtml(agRelative(first.date))}">
+    <div class="ag-rtop">
+      <div class="ag-rico" aria-hidden="true">${near ? '🔔' : '📆'}</div>
+      <div class="ag-rtxt"><div class="ag-rlabel">AGENDA TERDEKAT</div><div class="ag-rtitle">${escHtml(first.title)}</div><div class="ag-rmeta">${escHtml(meta)}</div></div>
+      <div class="ag-rbadge">${escHtml(agRelative(first.date))}</div>
+    </div>
+    ${more.length ? '<div class="ag-rmore">' + more.map(a => `<div class="ag-rline"><span>${escHtml(a.title)}</span><span>${escHtml(agRelative(a.date))}</span></div>`).join('') + '</div>' : ''}
+  </button>`;
+}
+
 function renderAgenda() {
+  renderAgendaRemind();
   const grid = document.getElementById('ag-grid');
   if (!grid) return;
   const y = agView.getFullYear(), m = agView.getMonth();

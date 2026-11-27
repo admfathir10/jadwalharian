@@ -1,5 +1,5 @@
 /* ============================================
-   JADWAL KELUARGA — script.js (FIXED)
+   RUMARA — script.js (FIXED)
    Bug fixes:
    1. PIN system unified — removed duplicate inline PIN, uses class-based unlock
    2. showDay() scoped to suami column only (tidak tabrakan dengan day-panel lain)
@@ -1540,4 +1540,43 @@ renderAgenda();
     });
   }
   compactNotes();
+})();
+
+
+/* ========================
+   RUMARA — pasang di HP (PWA)
+   ======================== */
+(function () {
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+  const bar = document.getElementById('install-bar');
+  if (!bar) return;
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  let dismissed = false;
+  try { dismissed = localStorage.getItem('rumara_install_x') === '1'; } catch (e) {}
+  if (standalone || dismissed) return;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const go = document.getElementById('install-go');
+  const sub = document.getElementById('install-sub');
+  let deferred = null;
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; bar.hidden = false; });
+  window.addEventListener('appinstalled', function () { bar.hidden = true; });
+  if (isIOS) {
+    bar.hidden = false;
+    sub.textContent = 'Lewat tombol Bagikan';
+    go.textContent = 'Caranya';
+    go.setAttribute('data-hint', 'Buka di Safari. Ketuk tombol Bagikan (kotak dengan panah ke atas), lalu pilih "Tambah ke Layar Utama" dan ketuk Tambah.');
+    go.classList.add('hint-chip');
+  } else {
+    go.addEventListener('click', function () {
+      if (!deferred) return;
+      deferred.prompt();
+      deferred.userChoice.finally(function () { deferred = null; bar.hidden = true; });
+    });
+  }
+  document.getElementById('install-x').addEventListener('click', function () {
+    bar.hidden = true;
+    try { localStorage.setItem('rumara_install_x', '1'); } catch (e) {}
+  });
 })();

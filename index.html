@@ -3,7 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jadwal Keluarga</title>
+  <title>Rumara</title>
+  <meta name="description" content="Rumara — jadwal, agenda, dan tips untuk rumah tangga keluarga." />
+  <meta name="theme-color" content="#4b5841" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Rumara" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="stylesheet" href="style.css" />
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -49,7 +59,7 @@
 <div class="pin-lock-screen">
   <div class="pin-lock-box" id="pin-lock-box">
     <div class="pin-lock-icon">📅</div>
-    <h2>Jadwal Keluarga</h2>
+    <h2>Rumara</h2>
     <p id="pin-subtitle">Keluarga · Masukkan PIN 6 digit</p>
     <div class="pin-dots" id="pin-dots">
       <div class="pin-dot"></div>
@@ -82,7 +92,7 @@
 
 <!-- ===================== HEADER + MAIN TABS ===================== -->
 <header class="site-header">
-  <h1>📅 Jadwal Keluarga</h1>
+  <h1><img class="brand-logo" src="icons/icon-192.png" alt="" width="32" height="32"> Rumara</h1>
   <p>Keluarga Kecil Kami · Tumbuh dan Merekah, Bismillah</p>
   <div class="who-bar">
     <span id="who-label"></span>
@@ -94,6 +104,12 @@
     <div><small>TO-DO</small><b id="hg-todo">-</b></div>
   </div>
 </header>
+<div class="install-bar" id="install-bar" hidden>
+  <img src="icons/icon-192.png" alt="" width="36" height="36" class="install-ico">
+  <div class="install-txt"><b>Pasang Rumara</b><span id="install-sub">Buka lebih cepat, layar penuh</span></div>
+  <button type="button" class="install-go" id="install-go">Pasang</button>
+  <button type="button" class="install-x" id="install-x" aria-label="Tutup ajakan pasang">✕</button>
+</div>
 
 
 <!-- ===================== PANEL AKSES (hanya Suami) ===================== -->
@@ -1175,7 +1191,7 @@
   </div><!-- /view-finansial -->
 
 <footer class="site-footer">
-  Jadwal Keluarga · dibuat dengan ❤️ · diperbarui sesuai kebutuhan
+  Rumara · dibuat dengan ❤️ · diperbarui sesuai kebutuhan
 </footer>
 
 </div><!-- /app-content -->

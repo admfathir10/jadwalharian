@@ -567,6 +567,37 @@
   <div id="view-bersama" class="view-panel">
     <div class="together-grid">
 
+      <div class="together-card agenda-card" id="agenda-card">
+        <h3>📆 Agenda Keluarga</h3>
+        <div class="ag-nav">
+          <button type="button" class="ag-navbtn" onclick="agMonth(-1)" aria-label="Bulan sebelumnya">‹</button>
+          <div class="ag-month" id="ag-month" aria-live="polite"></div>
+          <button type="button" class="ag-navbtn" onclick="agMonth(1)" aria-label="Bulan berikutnya">›</button>
+        </div>
+        <div class="ag-dow"><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span></div>
+        <div class="ag-grid" id="ag-grid"></div>
+        <div class="ag-day">
+          <div class="ag-daytitle" id="ag-daytitle"></div>
+          <div id="ag-daylist"></div>
+          <form class="ag-form" onsubmit="agAdd(event)">
+            <input type="text" id="ag-title" class="ag-input" placeholder="Tambah agenda di tanggal ini…" maxlength="80" required aria-label="Judul agenda">
+            <div class="ag-formrow">
+              <input type="time" id="ag-time" class="ag-input" aria-label="Jam (boleh kosong)">
+              <select id="ag-who" class="ag-input" aria-label="Untuk siapa">
+                <option value="bersama">Bersama</option>
+                <option value="suami">Suami</option>
+                <option value="istri">Istri</option>
+              </select>
+              <button type="submit" class="ag-add">Tambah</button>
+            </div>
+          </form>
+        </div>
+        <div class="ag-soon">
+          <div class="ag-soontitle">AGENDA MENDATANG</div>
+          <div id="ag-soonlist"></div>
+        </div>
+      </div>
+
       <div class="together-card">
         <h3>🍽️ Rutinitas Harian Bersama</h3>
         <div class="timeline">

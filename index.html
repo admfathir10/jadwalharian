@@ -146,8 +146,8 @@
             onkeydown="if(event.key==='Enter') addTodo()"
           />
           <div class="todo-deadline-wrap">
-            <label class="deadline-label">Target</label>
-            <input type="date" id="todo-deadline" class="todo-deadline" />
+            <label class="deadline-label sr-only" for="todo-deadline">Target selesai (boleh kosong)</label>
+            <input type="date" id="todo-deadline" class="todo-deadline" title="Target selesai (boleh kosong)" />
           </div>
           <button class="todo-add-btn" onclick="addTodo()">+ Tambah</button>
         </div>
@@ -156,13 +156,13 @@
       <!-- Filter tabs -->
       <div class="todo-filters">
         <button class="filter-btn active" onclick="setFilter('semua',this)">Semua</button>
-        <button class="filter-btn" onclick="setFilter('hari-ini',this)">📅 Hari ini</button>
-        <button class="filter-btn" onclick="setFilter('terlambat',this)">🔴 Terlambat</button>
+        <button class="filter-btn" onclick="setFilter('hari-ini',this)">Hari ini</button>
+        <button class="filter-btn" onclick="setFilter('terlambat',this)">Terlambat</button>
         <button class="filter-btn" onclick="setFilter('suami',this)">👨 <span class="nm-suami">S</span></button>
         <button class="filter-btn" onclick="setFilter('istri',this)">👩 <span class="nm-istri">I</span></button>
-        <button class="filter-btn" onclick="setFilter('bersama',this)">👨‍👩‍👦 Bersama</button>
-        <button class="filter-btn" onclick="setFilter('selesai',this)">✅ Selesai</button>
-        <button class="todo-clear-btn" onclick="clearDone()">Hapus yang selesai</button>
+        <button class="filter-btn" onclick="setFilter('bersama',this)" aria-label="Bersama">👨‍👩‍👦 Bersama</button>
+        <button class="filter-btn" onclick="setFilter('selesai',this)">Selesai</button>
+        <button class="todo-clear-btn" onclick="clearDone()" title="Hapus yang selesai" aria-label="Hapus semua tugas yang selesai">🗑</button>
       </div>
 
       <!-- List -->
@@ -173,9 +173,7 @@
         </div>
       </div>
 
-      <div class="todo-footer-info">
-        Data tersimpan permanen · tugas belum selesai tetap muncul sampai dicentang atau dihapus
-      </div>
+      <div class="todo-footer-info" hidden>Data tersimpan permanen · tugas belum selesai tetap muncul sampai dicentang atau dihapus</div>
     </div>
 </section>
 
@@ -744,8 +742,7 @@
         <div class="bahan-title">
           <span>🧺</span>
           <div>
-            <div class="bahan-title-text">Stok Bahan & Bumbu</div>
-            <div class="bahan-title-sub">Centang yang tersedia — merah berarti perlu dibeli</div>
+            <div class="bahan-title-text">Stok Bahan & Bumbu <button type="button" class="hint" data-hint="Centang yang tersedia. Yang berwarna merah berarti perlu dibeli." aria-label="Penjelasan">?</button></div>
           </div>
         </div>
         <div class="bahan-actions">

@@ -343,6 +343,7 @@ window.setFilter = function(filter, btn) {
   activeFilter = filter;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  const tp = document.getElementById('todo-panel'); if (tp) tp.setAttribute('data-filter', filter);
   renderTodos();
 };
 
@@ -1494,3 +1495,49 @@ function renderAgenda() {
 
 agLoadLocal();
 renderAgenda();
+
+
+/* ========================
+   Petunjuk ringkas: ikon ? / catatan -> popup kecil (hemat ruang)
+   ======================== */
+(function () {
+  let pop = null, anchor = null, openedAt = 0;
+  function close() { if (pop) { pop.remove(); pop = null; } if (anchor) { anchor.setAttribute('aria-expanded', 'false'); anchor = null; } }
+  function open(btn) {
+    close();
+    pop = document.createElement('div');
+    pop.className = 'hint-pop'; pop.setAttribute('role', 'tooltip');
+    pop.textContent = btn.getAttribute('data-hint') || '';
+    document.body.appendChild(pop);
+    anchor = btn; openedAt = Date.now(); btn.setAttribute('aria-expanded', 'true');
+    const r = btn.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
+    let left = Math.min(Math.max(12, r.left + r.width / 2 - pw / 2), window.innerWidth - pw - 12);
+    let top = r.bottom + 8;
+    if (top + ph > window.innerHeight - 12) top = Math.max(12, r.top - ph - 8);
+    pop.style.left = (left + window.scrollX) + 'px';
+    pop.style.top = (top + window.scrollY) + 'px';
+  }
+  document.addEventListener('click', function (e) {
+    const b = e.target.closest('.hint, .hint-chip');
+    if (b) { e.preventDefault(); e.stopPropagation(); (anchor === b) ? close() : open(b); return; }
+    close();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+  window.addEventListener('scroll', function () { if (Date.now() - openedAt > 400) close(); }, { passive: true });
+  window.addEventListener('resize', close);
+
+  // Catatan panjang di bawah jadwal -> satu tombol kecil "Catatan"
+  function compactNotes() {
+    document.querySelectorAll('.note:not([data-compact])').forEach(function (n) {
+      if (n.closest('#todo-panel')) return;
+      n.setAttribute('data-compact', '1');
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'hint-chip';
+      b.setAttribute('data-hint', n.textContent.trim()); b.setAttribute('aria-expanded', 'false');
+      b.innerHTML = '<span aria-hidden="true">ⓘ</span> Catatan';
+      n.parentNode.insertBefore(b, n);
+      n.hidden = true;
+    });
+  }
+  compactNotes();
+})();

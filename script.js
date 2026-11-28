@@ -1316,7 +1316,7 @@ window.resetFinChk = function(prefix) {
 
 /* ===== Tips & Trik ===== */
 window.openTip = function(id) {
-  ['sampah','cuci'].forEach(function(k){ var e=document.getElementById('tp-'+k); if(e) e.hidden = (k !== id); });
+  ['sampah','cuci','mesin'].forEach(function(k){ var e=document.getElementById('tp-'+k); if(e) e.hidden = (k !== id); });
   var hub = document.getElementById('tp-hub'); if (hub) hub.hidden = !!id;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
@@ -1328,11 +1328,14 @@ window.openTip = function(id) {
     'Minyak jelantah ditampung di botol, bukan dibuang ke saluran.',
     'Baterai dan lampu bekas masuk wadah B3 terpisah.',
     'Kosongkan wadah organik dapur tiap sore.',
-    'Pasang saringan di wastafel, buang isinya tiap selesai.'
+    'Pasang saringan di wastafel, buang isinya tiap selesai.',
+    'Mesin cuci dipakai sebelum jam 5 sore. Isi secukupnya.',
+    'Tata baju di pengering agar tidak membentur dinding tabung.',
+    'Rendaman dan baju di pengering jangan dibiarkan semalaman.'
   ];
   document.addEventListener('DOMContentLoaded', function(){
     var el = document.getElementById('tp-today-text');
-    if (el) el.textContent = TIPS[new Date().getDay() % TIPS.length];
+    if (el) el.textContent = TIPS[Math.floor(Date.now() / 86400000) % TIPS.length];
   });
 })();
 

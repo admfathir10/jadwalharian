@@ -3521,3 +3521,17 @@ body { padding-bottom: calc(var(--nav-h) + 18px + env(safe-area-inset-bottom, 0p
 .push-ico { flex: none; width: 36px; height: 36px; display: grid; place-items: center; font-size: 20px; background: var(--accent-soft); border-radius: 10px; }
 .push-who { font: inherit; font-size: 12px; color: var(--ink-soft); background: none; border: 0; padding: 0; max-width: 100%; }
 .push-bar .install-txt span { overflow: visible; }
+
+/* ===== Tips: Mesin Cuci ===== */
+.tp-soongrid { grid-template-columns: repeat(2, 1fr); }
+.tp-mstrip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.tp-mstrip > div { background: #fff4de; border: 1px solid #f3d9a0; border-radius: 16px; padding: 12px 4px 10px; display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; }
+.tp-mstrip b { font-size: 13px; font-weight: 800; color: #4a3200; line-height: 1.2; }
+.tp-mstrip small { font-size: 11px; font-weight: 700; color: #8a5a00; }
+.tp-tiplist { display: flex; flex-direction: column; gap: 10px; }
+.tp-tip { display: flex; align-items: center; gap: 12px; background: var(--card, #fff); border: 1px solid var(--line); border-radius: 18px; padding: 10px 14px 10px 10px; }
+.tp-tip .tp-circ { flex: none; width: 52px; height: 52px; background: #e3ecfb; }
+.tp-tip b { display: block; font-size: 14.5px; font-weight: 800; line-height: 1.25; }
+.tp-tip small { display: block; font-size: 12px; font-weight: 600; color: var(--ink-soft); margin-top: 2px; }
+.tp-row2 { justify-content: space-around; }
+.tp-row2 .tp-chip { width: 78px; }
